@@ -83,7 +83,7 @@ function Card({ title, subtitle, toolbar, className, children }) {
       <header className={styles.cardHead}>
         <div>
           <h3 className={styles.cardTitle}>{title}</h3>
-          {subtitle && <p className={styles.cardSub}>{subtitle}</p>}
+        <p className={styles.cardSub}>{subtitle}</p>
         </div>
         {toolbar && <div className={styles.cardTools}>{toolbar}</div>}
       </header>
@@ -152,17 +152,17 @@ export default function Dashboard() {
       {/* Charts */}
       <div className={styles.grid}>
         <Card
-          className={styles.span7}
+          className={`${styles.span7} ${styles.tall}`}
           title="Store Growth Over Time"
           subtitle="Monthly onboarded stores"
           toolbar={<RangeTabs value={range} onChange={setRange} />}
         >
           <div className={styles.chartPad}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthView} margin={{ left: 10, right: 10, top: 6, bottom: 6 }}>
+              <LineChart data={growthView} margin={{ left: 12, right: 12, top: 8, bottom: 10 }}>
                 <CartesianGrid vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={8} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} />
+                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={10} />
                 <Tooltip cursor={{ stroke: "#D1D5DB" }} />
                 <Line
                   type="monotone"
@@ -177,7 +177,11 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card className={styles.span5} title="Verification Status Ratio" subtitle="Approved / Pending / Rejected">
+        <Card
+          className={`${styles.span5} ${styles.tall}`}
+          title="Verification Status Ratio"
+          subtitle="Approved / Pending / Rejected"
+        >
           <div className={styles.pieArea}>
             <div className={styles.pieSquare}>
               <ResponsiveContainer width="100%" height="100%">
@@ -186,7 +190,7 @@ export default function Dashboard() {
                     data={verificationStatusData}
                     cx="50%"
                     cy="50%"
-                    outerRadius="80%"        // stays perfect circle because box is square
+                    outerRadius="80%"
                     paddingAngle={2}
                     stroke="#fff"
                     strokeWidth={2}
@@ -212,24 +216,23 @@ export default function Dashboard() {
           </div>
         </Card>
 
-
         <Card
-          className={styles.span12}
+          className={`${styles.span12} ${styles.tallWide}`}
           title="Popular Categories / Most Requested Medicines"
           subtitle="Top ordered categories"
         >
-          <div className={styles.chartPad}>
+          <div className={styles.barPad}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={popularCategoriesData}
-                margin={{ left: 10, right: 10, top: 6, bottom: 6 }}
-                barCategoryGap={18}
+                margin={{ left: 14, right: 14, top: 8, bottom: 10 }}
+                barCategoryGap={22}
               >
                 <CartesianGrid vertical={false} stroke="#E5E7EB" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={8} />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={10} />
+                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={10} domain={[0, "dataMax + 20"]} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[9, 9, 0, 0]} fill="#111" />
+                <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="#111" />
               </BarChart>
             </ResponsiveContainer>
           </div>

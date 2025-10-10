@@ -68,50 +68,53 @@
   box-shadow: 0 14px 32px rgba(17,17,17,.08), inset 0 1px 0 rgba(255,255,255,.9);
   display:flex;flex-direction:column;min-width:0;
   min-height: 360px;
-  overflow: hidden; /* keep everything inside rounded corners */
+  overflow: hidden;
 }
+.tall{ min-height: 440px; }      /* more space for 2nd card */
+.tallWide{ min-height: 460px; }  /* more space for 3rd card (bars) */
+
 .cardHead{
   display:flex;align-items:flex-start;justify-content:space-between;
-  padding: var(--card-pad) var(--card-pad) 0 var(--card-pad);
+  padding: calc(var(--card-pad) + 2px) var(--card-pad) 6px;
   gap: 12px;
 }
 .cardTitle{font-weight:800;letter-spacing:.2px;margin:0;}
 .cardSub{color:var(--muted);margin:4px 0 0 0;font-size:12px;}
 .cardTools{display:flex;align-items:center;gap:8px;}
 .cardBody{
-  padding: 8px var(--card-pad) var(--card-pad) var(--card-pad);
+  padding: 10px var(--card-pad) var(--card-pad);
   display:flex; flex-direction:column; min-height:0;
 }
 
-.chartPad{ flex:1; min-height: 260px; }
+.chartPad{ flex:1; min-height: 300px; }
 
-/* Pie layout: square chart + legend below */
+/* Pie layout: square chart + generous legend spacing */
 .pieArea{
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap: 12px;
-  min-height: 340px;                 /* gives breathing room on tall cards */
-  padding: 6px var(--card-pad) 12px;
+  gap: 16px;
+  min-height: 380px;
+  padding: 6px var(--card-pad) 14px;
 }
-
 .pieSquare{
-  width: min(100%, 360px);           /* cap width so it doesn’t dominate on wide screens */
-  aspect-ratio: 1 / 1;               /* <-- guarantees a perfect circle */
+  width: min(100%, 440px);
+  aspect-ratio: 1 / 1;
 }
-
 .legendTight{
   display:flex;
-  gap:16px;
+  gap:20px;
   flex-wrap:wrap;
   justify-content:center;
   align-items:center;
 }
-
 .legendItem{display:flex;align-items:center;gap:8px;color:#374151;font-size:12px;}
 .legendItem b{margin-left:2px;}
 .legendDot{width:10px;height:10px;border-radius:999px;border:1px solid #e5e7eb;}
+
+/* Bars: taller pad so gridlines and labels breathe */
+.barPad{ flex:1; min-height: 360px; }
 
 /* Tabs */
 .tabs{display:inline-flex;border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden}
@@ -141,8 +144,8 @@
 @media (max-width: 1200px){
   .kpiRow{grid-template-columns: repeat(3, minmax(160px, 1fr));}
   .span7, .span5 { grid-column: span 12; }
-  .card{ min-height: 340px; }
-  .actionsRow{grid-template-columns:repeat(2, minmax(160px, 1fr));}
+  .tall, .tallWide { min-height: 420px; }
+  .barPad{ min-height: 340px; }
 }
 @media (max-width: 720px){
   .kpiRow{grid-template-columns: repeat(2, minmax(150px, 1fr));}
