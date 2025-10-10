@@ -4,6 +4,15 @@
   --muted: #6b7280;
   --text: #111111;
 
+  /* Pharma palette */
+  --mint-500:#10b981;
+  --mint-400:#34d399;
+  --indigo-500:#6366f1;
+  --sky-500:#0ea5e9;
+  --amber-500:#f59e0b;
+  --rose-500:#ef4444;
+  --slate-500:#64748b;
+
   --gap-sm: clamp(8px, 1vw, 12px);
   --gap-md: clamp(12px, 1.2vw, 16px);
   --gap-lg: clamp(14px, 1.6vw, 22px);
@@ -12,8 +21,7 @@
 
 /* page wrapper */
 .wrap{
-  display:flex;
-  flex-direction:column;
+  display:flex; flex-direction:column;
   gap: var(--gap-lg);
   padding-bottom: 24px;
 }
@@ -29,9 +37,9 @@
   backdrop-filter:blur(3px) saturate(110%);
   color:var(--text);
 }
-.alertPill a{color:var(--text); font-weight:700; text-decoration:none;}
+.alertPill a{color:var(--indigo-500); font-weight:700; text-decoration:none;}
 .alertPill a:hover{text-decoration:underline;}
-.alertDot{width:8px;height:8px;border-radius:999px;background:#10b981;}
+.alertDot{width:8px;height:8px;border-radius:999px;background:var(--mint-500);}
 
 /* ===== KPI Row ===== */
 .kpiRow{
@@ -44,16 +52,48 @@
   padding:14px;border-radius:16px;background:var(--card);
   border:1px solid var(--border);
   box-shadow:0 12px 26px rgba(17,17,17,.06), inset 0 1px 0 rgba(255,255,255,.95);
-  min-height: 74px;
+  min-height: 78px;
+  position:relative;
+  overflow:hidden;
+}
+.kpiCard::after{
+  content:"";
+  position:absolute; inset:0;
+  background: radial-gradient(120% 100% at 100% 0%, rgba(17,17,17,0.03), transparent 60%);
 }
 .kpiIcon{
   display:grid;place-items:center;
-  width:36px;height:36px;border-radius:12px;
+  width:38px;height:38px;border-radius:12px;
   border:1px solid var(--border); background:#fff;
 }
 .kpiMeta{display:flex;flex-direction:column;}
+.kpiValueRow{display:flex;align-items:center;gap:8px;}
 .kpiValue{font-size:18px;font-weight:800;line-height:1;}
 .kpiLabel{font-size:12px;color:var(--muted);}
+
+/* KPI tones */
+.tone-mint .kpiIcon{background:linear-gradient(180deg, #ecfdf5, #ffffff);}
+.tone-indigo .kpiIcon{background:linear-gradient(180deg, #eef2ff, #ffffff);}
+.tone-sky .kpiIcon{background:linear-gradient(180deg, #e0f2fe, #ffffff);}
+.tone-amber .kpiIcon{background:linear-gradient(180deg, #fffbeb, #ffffff);}
+.tone-rose .kpiIcon{background:linear-gradient(180deg, #fef2f2, #ffffff);}
+.tone-slate .kpiIcon{background:linear-gradient(180deg, #f1f5f9, #ffffff);}
+
+.tone-mint{background:linear-gradient(180deg, rgba(16,185,129,0.08), transparent 55%), #fff;}
+.tone-indigo{background:linear-gradient(180deg, rgba(99,102,241,0.08), transparent 55%), #fff;}
+.tone-sky{background:linear-gradient(180deg, rgba(14,165,233,0.08), transparent 55%), #fff;}
+.tone-amber{background:linear-gradient(180deg, rgba(245,158,11,0.10), transparent 55%), #fff;}
+.tone-rose{background:linear-gradient(180deg, rgba(239,68,68,0.08), transparent 55%), #fff;}
+.tone-slate{background:linear-gradient(180deg, rgba(100,116,139,0.06), transparent 55%), #fff;}
+
+/* KPI deltas */
+.deltaPill{
+  font-size:11px; font-weight:700;
+  padding:4px 8px; border-radius:999px; line-height:1;
+  border:1px solid var(--border); background:#fff;
+}
+.deltaUp{ color:var(--mint-500); border-color: rgba(16,185,129,.25); }
+.deltaDown{ color:var(--rose-500); border-color: rgba(239,68,68,.25); }
 
 /* ===== Cards / Charts ===== */
 .grid{
@@ -70,8 +110,8 @@
   min-height: 360px;
   overflow: hidden;
 }
-.tall{ min-height: 440px; }      /* more space for 2nd card */
-.tallWide{ min-height: 460px; }  /* more space for 3rd card (bars) */
+.tall{ min-height: 440px; }
+.tallWide{ min-height: 460px; }
 
 .cardHead{
   display:flex;align-items:flex-start;justify-content:space-between;
@@ -88,7 +128,7 @@
 
 .chartPad{ flex:1; min-height: 300px; }
 
-/* Pie layout: square chart + generous legend spacing */
+/* Pie layout */
 .pieArea{
   display:flex;
   flex-direction:column;
@@ -103,23 +143,19 @@
   aspect-ratio: 1 / 1;
 }
 .legendTight{
-  display:flex;
-  gap:20px;
-  flex-wrap:wrap;
-  justify-content:center;
-  align-items:center;
+  display:flex; gap:20px; flex-wrap:wrap; justify-content:center; align-items:center;
 }
 .legendItem{display:flex;align-items:center;gap:8px;color:#374151;font-size:12px;}
 .legendItem b{margin-left:2px;}
 .legendDot{width:10px;height:10px;border-radius:999px;border:1px solid #e5e7eb;}
 
-/* Bars: taller pad so gridlines and labels breathe */
+/* Bars */
 .barPad{ flex:1; min-height: 360px; }
 
 /* Tabs */
 .tabs{display:inline-flex;border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden}
 .tab{ padding:6px 10px;border:none;background:transparent;font-weight:700;cursor:pointer;}
-.tabActive{background:#111;color:#fff;}
+.tabActive{background:var(--text);color:#fff;}
 
 /* Actions */
 .actionsRow{
@@ -131,9 +167,12 @@
   padding:14px;border-radius:14px;text-decoration:none;color:var(--text);
   background:#fff; border:1px solid var(--border);
   box-shadow:0 12px 26px rgba(17,17,17,.06);
-  transition:transform .12s ease, box-shadow .12s ease;
+  transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 .actionBtn:hover{transform:translateY(-1px);box-shadow:0 18px 40px rgba(17,17,17,.10);}
+.accentMint:hover{border-color: rgba(16,185,129,.45);}
+.accentIndigo:hover{border-color: rgba(99,102,241,.45);}
+.accentSky:hover{border-color: rgba(14,165,233,.45);}
 
 /* grid spans */
 .span12{ grid-column: span 12; }
