@@ -1,0 +1,50 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 20%;  /* Sidebar takes up 20% of screen width */
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: width 0.3s ease;
+}
+
+.collapsed {
+  width: 5%;  /* When collapsed, sidebar shrinks to 5% */
+}
+
+.main-content {
+  flex-grow: 1;
+  background-color: #f8f9fa;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+li:hover {
+  background-color: #e9ecef;
+}
+
+.toggleButton {
+  cursor: pointer;
+  padding: 5px;
+  font-size: 20px;
+  text-align: center;
+  color: #333;
+}
