@@ -19,14 +19,13 @@ import { format } from "date-fns";
 /* -----------------------  Mock data  ----------------------- */
 const makeMonthly = (months = 12) => {
   const now = new Date();
-  return Array.from({ length: months })
-    .map((_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
-      return {
-        month: format(d, "MMM yy"),
-        stores: Math.max(40, 40 + i * 8 + Math.round(Math.random() * 30)),
-      };
-    });
+  return Array.from({ length: months }).map((_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1);
+    return {
+      month: format(d, "MMM yy"),
+      stores: Math.max(40, 40 + i * 8 + Math.round(Math.random() * 30)),
+    };
+  });
 };
 
 const storeGrowthData = makeMonthly(12);
@@ -46,7 +45,6 @@ const popularCategoriesData = [
   { name: "Cardiac", value: 48 },
 ];
 
-/* -----------------------  Tiny helpers  ----------------------- */
 const COLORS = ["#111111", "#9CA3AF", "#E5E7EB"]; // black, gray, light gray
 
 const kpi = [
@@ -66,7 +64,7 @@ function Icon({ d, size = 18 }) {
   );
 }
 
-/* -----------------------  Components  ----------------------- */
+/* -----------------------  UI bits  ----------------------- */
 function KPICard({ label, value, icon }) {
   return (
     <div className={styles.kpiCard}>
@@ -79,9 +77,9 @@ function KPICard({ label, value, icon }) {
   );
 }
 
-function Card({ title, subtitle, toolbar, children }) {
+function Card({ title, subtitle, toolbar, className, children }) {
   return (
-    <section className={styles.card}>
+    <section className={`${styles.card} ${className || ""}`}>
       <header className={styles.cardHead}>
         <div>
           <h3 className={styles.cardTitle}>{title}</h3>
@@ -115,13 +113,16 @@ function RangeTabs({ value, onChange }) {
 export default function Dashboard() {
   const [range, setRange] = useState("90d");
 
-  // For now, range just changes the last n points displayed
   const growthView = useMemo(() => {
     switch (range) {
-      case "7d": return storeGrowthData.slice(-3);
-      case "30d": return storeGrowthData.slice(-4);
-      case "90d": return storeGrowthData.slice(-6);
-      default: return storeGrowthData;
+      case "7d":
+        return storeGrowthData.slice(-3);
+      case "30d":
+        return storeGrowthData.slice(-4);
+      case "90d":
+        return storeGrowthData.slice(-6);
+      default:
+        return storeGrowthData;
     }
   }, [range]);
 
@@ -129,43 +130,40 @@ export default function Dashboard() {
     <div className={styles.wrap}>
       {/* Alerts */}
       <div className={styles.alerts}>
-        <div className={styles.alertPill}>
+        <div className={styles.alertPill} role="status" aria-live="polite">
           <span className={styles.alertDot} />
-          <strong>5 stores</strong> are awaiting verification.{" "}
-          <a href="#" onClick={(e)=>e.preventDefault()}>Review now →</a>
+          <strong>5 stores</strong> are awaiting verification.&nbsp;
+          <a href="#" onClick={(e) => e.preventDefault()}>
+            Review now →
+          </a>
         </div>
       </div>
 
       {/* KPIs */}
       <div className={styles.kpiRow}>
-        <KPICard label="Total Stores" value={kpi[0].value}
-          icon={<Icon d="M3 6h18M3 12h18M3 18h18" />} />
-        <KPICard label="Pending Verifications" value={kpi[1].value}
-          icon={<Icon d="M7 7h10M7 12h10M7 17h6" />} />
-        <KPICard label="Active Stores" value={kpi[2].value}
-          icon={<Icon d="M4 6h16v12H4z" />} />
-        <KPICard label="Rejected Stores" value={kpi[3].value}
-          icon={<Icon d="M6 6l12 12M18 6L6 18" />} />
-        <KPICard label="Total Products" value={kpi[4].value}
-          icon={<Icon d="M4 7h16M4 12h16M4 17h10" />} />
-        <KPICard label="Open Tickets" value={kpi[5].value}
-          icon={<Icon d="M3 8l9 6 9-6M5 19h14" />} />
+        <KPICard label="Total Stores" value={kpi[0].value} icon={<Icon d="M3 6h18M3 12h18M3 18h18" />} />
+        <KPICard label="Pending Verifications" value={kpi[1].value} icon={<Icon d="M7 7h10M7 12h10M7 17h6" />} />
+        <KPICard label="Active Stores" value={kpi[2].value} icon={<Icon d="M4 6h16v12H4z" />} />
+        <KPICard label="Rejected Stores" value={kpi[3].value} icon={<Icon d="M6 6l12 12M18 6L6 18" />} />
+        <KPICard label="Total Products" value={kpi[4].value} icon={<Icon d="M4 7h16M4 12h16M4 17h10" />} />
+        <KPICard label="Open Tickets" value={kpi[5].value} icon={<Icon d="M3 8l9 6 9-6M5 19h14" />} />
       </div>
 
       {/* Charts */}
       <div className={styles.grid}>
         <Card
+          className={styles.span7}
           title="Store Growth Over Time"
           subtitle="Monthly onboarded stores"
           toolbar={<RangeTabs value={range} onChange={setRange} />}
         >
           <div className={styles.chartPad}>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={growthView} margin={{ left: 6, right: 6, top: 8 }}>
-                <CartesianGrid vertical={false} stroke="#eee" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} width={40} />
-                <Tooltip cursor={{ stroke: "#ccc" }} />
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={growthView} margin={{ left: 8, right: 8, top: 6, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="#E5E7EB" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={8} />
+                <Tooltip cursor={{ stroke: "#D1D5DB" }} />
                 <Line
                   type="monotone"
                   dataKey="stores"
@@ -179,15 +177,15 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card title="Verification Status Ratio" subtitle="Approved / Pending / Rejected">
+        <Card className={styles.span5} title="Verification Status Ratio" subtitle="Approved / Pending / Rejected">
           <div className={styles.chartPad}>
-            <ResponsiveContainer width="100%" height={260}>
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={verificationStatusData}
                   cx="50%"
-                  cy="50%"
-                  outerRadius={90}
+                  cy="45%"
+                  outerRadius={92}
                   dataKey="value"
                   paddingAngle={2}
                   stroke="#fff"
@@ -200,10 +198,14 @@ export default function Dashboard() {
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
+
             <div className={styles.legendRow}>
               {verificationStatusData.map((s, i) => (
                 <div className={styles.legendItem} key={s.name}>
-                  <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
+                  <span
+                    className={styles.legendDot}
+                    style={{ background: COLORS[i % COLORS.length] }}
+                  />
                   {s.name} <b>{s.value}</b>
                 </div>
               ))}
@@ -211,15 +213,23 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        <Card title="Popular Categories / Most Requested Medicines" subtitle="Top ordered categories">
+        <Card
+          className={styles.span12}
+          title="Popular Categories / Most Requested Medicines"
+          subtitle="Top ordered categories"
+        >
           <div className={styles.chartPad}>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={popularCategoriesData} margin={{ left: 6, right: 6, top: 8 }}>
-                <CartesianGrid vertical={false} stroke="#eee" />
-                <XAxis dataKey="name" tickLine={false} axisLine={false} />
-                <YAxis tickLine={false} axisLine={false} width={40} />
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={popularCategoriesData}
+                margin={{ left: 8, right: 8, top: 6, bottom: 0 }}
+                barCategoryGap={18}
+              >
+                <CartesianGrid vertical={false} stroke="#E5E7EB" />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickLine={false} axisLine={false} width={36} tickMargin={8} />
                 <Tooltip />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]} fill="#111" />
+                <Bar dataKey="value" radius={[9, 9, 0, 0]} fill="#111" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -228,15 +238,15 @@ export default function Dashboard() {
 
       {/* Quick actions */}
       <div className={styles.actionsRow}>
-        <a href="#" onClick={(e)=>e.preventDefault()} className={styles.actionBtn}>
+        <a href="#" onClick={(e) => e.preventDefault()} className={styles.actionBtn}>
           <Icon d="M7 7h10M7 12h10M7 17h6" />
           <span>View Pending Stores</span>
         </a>
-        <a href="#" onClick={(e)=>e.preventDefault()} className={styles.actionBtn}>
+        <a href="#" onClick={(e) => e.preventDefault()} className={styles.actionBtn}>
           <Icon d="M12 4v16M4 12h16" />
           <span>Create New Admin Role</span>
         </a>
-        <a href="#" onClick={(e)=>e.preventDefault()} className={styles.actionBtn}>
+        <a href="#" onClick={(e) => e.preventDefault()} className={styles.actionBtn}>
           <Icon d="M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" />
           <span>Generate Analytics Report</span>
         </a>
