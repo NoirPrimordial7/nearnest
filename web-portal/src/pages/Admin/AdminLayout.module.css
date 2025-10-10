@@ -1,7 +1,7 @@
 /* ===== GRID ===== */
 .shell{
   display:grid;
-  grid-template-columns:256px 1fr; /* sidebar | main */
+  grid-template-columns:256px 1fr;
   min-height:100vh; width:100%;
   background:var(--bg); color:var(--text);
   min-width:0;
@@ -14,16 +14,15 @@
   display:flex; flex-direction:column; gap:10px; z-index:30;
   min-width:0;
 }
+
 .brandRow{display:flex;align-items:center;gap:10px;padding:6px 6px 8px;}
 
-/* Hamburger (used only on mobile) */
 .hamburger{
   height:34px;width:34px;border-radius:10px;border:1px solid var(--border);
   background:#fff;color:#111;display:none;place-items:center;
 }
 .onlyMobile{ display:none; }
 
-/* Brand chip (outline look) */
 .brandChip{
   display:inline-flex;align-items:center;gap:8px;
   border:1px solid var(--border); background:#fff; border-radius:999px;
@@ -33,32 +32,43 @@
 .brandText{font-weight:800;letter-spacing:.2px;}
 
 .searchWrap{padding:2px 6px 8px;}
-.search{
-  width:100%;height:36px;border-radius:10px;border:1px solid var(--border);
-  background:#fff;color:var(--text);padding:0 12px;
-}
+.search{width:100%;height:36px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);padding:0 12px;}
 
-/* Nav */
 .section{padding:6px 6px;}
 .section ul{list-style:none;margin:0;padding:0;display:grid;gap:6px;}
 .section a{
   display:flex;align-items:center;gap:10px;
-  padding:10px;border-radius:12px;
+  padding:10px;border-radius:14px;
   color:#222;text-decoration:none;border:1px solid transparent;
   transition:background .15s,border-color .15s,transform .12s;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .section a:hover{background:var(--ghost);border-color:var(--border);transform:translateY(-1px);}
+
+/* number badge */
+.badge{
+  display:inline-grid; place-items:center;
+  min-width:18px; height:18px; padding:0 6px;
+  font-size:12px; font-weight:700; line-height:1;
+  border-radius:6px; border:1px solid #dbeafe;
+  background:#e8efff; color:#1f3a8a;
+}
+
 .active{
   background:#111; color:#fff!important;
   box-shadow: 0 8px 18px rgba(17,17,17,.18);
 }
+.active .badge{
+  background:rgba(255,255,255,.12);
+  color:#fff; border-color:rgba(255,255,255,.28);
+}
+
 .sectionTitle{font-weight:700;font-size:13px;color:#111;margin:8px 8px;}
 .sectionSub{color:#6b7280;font-size:11px;letter-spacing:.18em;margin:10px 14px 0}
 
-.icon{display:block}
+.icon{display:block; flex-shrink:0;}
 
-/* ===== MAIN + SHEEN ===== */
+/* ===== MAIN ===== */
 .main{
   position:relative; display:grid; grid-template-rows:64px 1fr;
   min-width:0; background:transparent;
@@ -72,7 +82,6 @@
   mask-image: linear-gradient(180deg, rgba(0,0,0,.9), rgba(0,0,0,.45));
 }
 
-/* ===== TOPBAR ===== */
 .topbar{
   position:sticky; top:0; z-index:5;
   display:flex; align-items:center; justify-content:space-between;
@@ -88,30 +97,29 @@
   height:34px;width:34px;border-radius:10px;border:1px solid var(--border);
   background:#fff;color:#111;display:grid;place-items:center;
 }
-.hideMobile{} /* toggled below */
+.hideMobile{}
 .avatar{width:32px;height:32px;border-radius:50%;border:1px solid var(--border);background:#fff}
 
-/* ===== CONTENT ===== */
 .content{
   position:relative; z-index:1;
   padding: clamp(12px, 2vw, 26px);
   min-width:0; overflow-x:hidden;
 }
 
-/* ===== SCRIM (mobile) ===== */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,0);visibility:hidden;opacity:0;transition:opacity .15s,visibility .15s;}
 .scrimShow{background:rgba(0,0,0,.25);visibility:visible;opacity:1;z-index:20}
 
-/* ===== RESPONSIVE BREAKPOINTS ===== */
-/* Tablet: compact icon rail */
+/* ===== RESPONSIVE ===== */
+/* Tablet: compact icon rail (hide labels & badges) */
 @media (max-width: 1200px){
   .shell{grid-template-columns:80px 1fr;}
   .brandChip{display:none}
   .searchWrap{display:none}
-  .section a span{display:none}      /* hide labels on tablet rail */
+  .section a span{display:none}
+  .section a .badge{display:none}
 }
 
-/* Mobile drawer: show labels again */
+/* Mobile drawer: show full nav again + mobile hamburger */
 @media (max-width: 720px){
   .shell{grid-template-columns:1fr;}
   .sidebar{
@@ -119,11 +127,10 @@
     transform:translateX(-100%); transition:transform .2s ease;
   }
   .sidebarOpen{transform:translateX(0)}
-
-  /* SHOW THESE ON MOBILE */
-  .onlyMobile{ display:grid; }       /* hamburger/close buttons */
-  .hideMobile{ display:none; }       /* hide bell */
-  .brandChip{ display:inline-flex; } /* bring back brand */
-  .searchWrap{ display:block; }      /* bring back search */
-  .section a span{ display:inline; } /* bring back labels */
+  .onlyMobile{ display:grid; }
+  .hideMobile{ display:none; }
+  .brandChip{ display:inline-flex; }
+  .searchWrap{ display:block; }
+  .section a span{ display:inline; }
+  .section a .badge{ display:inline-grid; }
 }
