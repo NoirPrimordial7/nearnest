@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import styles from "./AdminLayout.module.css";
 
@@ -10,11 +11,16 @@ function Icon({ path, size = 18 }) {
 }
 
 export default function AdminLayout() {
+  const [open, setOpen] = useState(false); // mobile sidebar
+
   return (
     <div className={styles.shell}>
       {/* LEFT SIDEBAR */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}>
         <div className={styles.brandRow}>
+          <button className={styles.hamburger} onClick={() => setOpen(false)} aria-label="Close sidebar">
+            <Icon path="M4 6h16M4 12h16M4 18h16" />
+          </button>
           <div className={styles.logoOutline} aria-label="logo" />
           <span className={styles.brand}>nearnest</span>
         </div>
@@ -53,10 +59,22 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
+      {/* MOBILE OVERLAY */}
+      <button
+        className={`${styles.scrim} ${open ? styles.scrimShow : ""}`}
+        onClick={() => setOpen(false)}
+        aria-label="Close menu"
+      />
+
       {/* MAIN */}
       <main className={styles.main}>
         <header className={styles.topbar}>
-          <div className={styles.crumb}>Admin</div>
+          <div className={styles.leftTop}>
+            <button className={styles.hamburger} onClick={() => setOpen(true)} aria-label="Open sidebar">
+              <Icon path="M4 6h16M4 12h16M4 18h16" />
+            </button>
+            <div className={styles.crumb}>Admin</div>
+          </div>
           <div className={styles.topActions}>
             <button className={styles.ghostBtn} title="Notifications">
               <Icon path="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2z" />
@@ -66,22 +84,11 @@ export default function AdminLayout() {
         </header>
 
         <section className={styles.content}>
-          <Outlet />
+          <div className={styles.container}>
+            <Outlet />
+          </div>
         </section>
       </main>
-
-      {/* RIGHT RAIL */}
-      <aside className={styles.rail}>
-        {[
-          "M3 12h18",                   // line
-          "M5 12l5 5L19 8",             // check
-          "M12 5v14M5 12h14",           // plus
-          "M4 4h16v16H4z",              // square
-          "M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5 20l2-7L2 9h7z", // star
-        ].map((p, i) => (
-          <button key={i} className={styles.railBtn}><Icon path={p} /></button>
-        ))}
-      </aside>
     </div>
   );
 }
