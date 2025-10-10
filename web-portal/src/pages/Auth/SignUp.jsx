@@ -29,6 +29,10 @@ export default function SignUp() {
   };
 
   return (
+    // SignIn.jsx
+    <div className={styles.authShell}>
+      
+
     <div className={styles.container}>
       <main className={styles.card} role="main" aria-labelledby="title">
         <h1 id="title" className={styles.title}>Create Account</h1>
@@ -77,6 +81,7 @@ export default function SignUp() {
           <p className={styles.switch}>Already have an account? <a href="/signin" className={styles.link}>Sign In</a></p>
         </form>
       </main>
+    </div>
     </div>
   );
 }

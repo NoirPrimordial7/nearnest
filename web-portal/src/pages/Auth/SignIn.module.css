@@ -180,3 +180,11 @@ html, body, #root {
     font-size: 20px;  /* Larger button font size */
   }
 }
+/* SignIn.module.css */
+.authShell{
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+

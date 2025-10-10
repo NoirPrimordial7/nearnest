@@ -1,24 +1,31 @@
-.wrap { /* container applied by layout; leave layout to center */ }
+/* Canvas stays centered by AdminLayout's .container */
+.wrap { padding-block: clamp(6px, 1.2vw, 12px); }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+/* Auto-fit columns, never overflows; clean responsive */
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(12px, 1.6vw, 20px);
   grid-auto-rows: 180px;
-  gap: 20px;                      /* more spacious */
 }
 
-.cell {
-  background: #fff;
-  border-radius: 16px;
+/* Denqid-like soft cards (dotted outline option) */
+.cell{
+  background: var(--panel);
+  border-radius: 20px;
   border: 1px dashed #dcdcdc;
-  box-shadow: 0 8px 18px rgba(17,17,17,.04);
+  box-shadow:
+    0 12px 26px rgba(17,17,17,.06),
+    inset 0 1px 0 rgba(255,255,255,.8);
   transition: transform .12s ease, box-shadow .12s ease;
 }
-.cell:hover { transform: translateY(-2px); box-shadow: 0 12px 22px rgba(17,17,17,.06); }
+.cell:hover{
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 30px rgba(17,17,17,.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
 
+/* Make a couple of cells tall to create rhythm (optional) */
 .cell:nth-child(5),
-.cell:nth-child(6) { grid-row: span 2; }
-
-@media (max-width: 1200px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 900px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px)  { .grid { grid-template-columns: 1fr; } }
+.cell:nth-child(6){ grid-row: span 2; }

@@ -21,6 +21,7 @@ export default function SignIn() {
   };
 
   return (
+    <div className={styles.authShell}>
     <div className={styles.container}>
       <main className={styles.card} role="main" aria-labelledby="title">
         <h1 id="title" className={styles.title}>Sign In</h1>
@@ -71,6 +72,7 @@ export default function SignIn() {
           </p>
         </form>
       </main>
+    </div>
     </div>
   );
 }

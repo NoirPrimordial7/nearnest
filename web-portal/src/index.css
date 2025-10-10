@@ -1,21 +1,22 @@
-/* --- Global reset & theme --- */
+/* ---------- Global reset ---------- */
 *,
 *::before,
 *::after { box-sizing: border-box; }
 
-html, body, #root { height: 100%; }
+html, body, #root { height: 100%; width: 100%; }
 
 :root{
-  --bg:#f7f7f5;   /* light cream/white */
-  --panel:#fff;
-  --text:#121417; /* near-black */
-  --muted:#6b7280;
-  --border:#e7e7e7;
-  --accent:#111;
-  --accent-ghost:rgba(0,0,0,.04);
+  /* Light theme */
+  --bg:#f6f6f4;         /* light cream / white */
+  --panel:#ffffff;      /* cards */
+  --text:#111315;       /* near-black */
+  --muted:#6b7280;      /* secondary */
+  --border:#e7e7e7;     /* subtle hairline */
+  --accent:#111111;     /* pills / active */
+  --ghost:rgba(0,0,0,.04);
 }
 
-html { color-scheme: light; }
+html { color-scheme: light; -webkit-text-size-adjust: 100%; }
 
 body{
   margin: 0;
@@ -25,9 +26,19 @@ body{
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* IMPORTANT: no global centering here */
-  display: block;
+  /* kill horizontal jiggle everywhere */
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
+
+img, svg, video, canvas { max-width: 100%; height: auto; }
+
+/* generic centered container (used by AdminLayout, not global pages) */
+.container { width: min(1440px, 96vw); margin-inline: auto; }
+
+/* lock body when mobile drawer is open */
+.body--lock { overflow: hidden; }
+
 
 #root{
   min-height: 100%;

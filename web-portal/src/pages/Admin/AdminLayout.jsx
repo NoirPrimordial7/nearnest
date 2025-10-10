@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import styles from "./AdminLayout.module.css";
 
+/** Simple stroke icon */
 function Icon({ path, size = 18 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={styles.icon}>
@@ -11,18 +12,29 @@ function Icon({ path, size = 18 }) {
 }
 
 export default function AdminLayout() {
-  const [open, setOpen] = useState(false); // mobile sidebar
+  const [open, setOpen] = useState(false); // mobile drawer
+
+  // Lock body scroll when the drawer is open
+  useEffect(() => {
+    if (open) document.body.classList.add("body--lock");
+    else document.body.classList.remove("body--lock");
+    return () => document.body.classList.remove("body--lock");
+  }, [open]);
 
   return (
     <div className={styles.shell}>
-      {/* LEFT SIDEBAR */}
+      {/* SIDEBAR */}
       <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}>
         <div className={styles.brandRow}>
           <button className={styles.hamburger} onClick={() => setOpen(false)} aria-label="Close sidebar">
             <Icon path="M4 6h16M4 12h16M4 18h16" />
           </button>
-          <div className={styles.logoOutline} aria-label="logo" />
-          <span className={styles.brand}>nearnest</span>
+
+          {/* Brand chip (black outline logo look) */}
+          <div className={styles.brandChip}>
+            <span className={styles.logoDot} />
+            <span className={styles.brandText}>nearnest</span>
+          </div>
         </div>
 
         <div className={styles.searchWrap}>
@@ -59,7 +71,7 @@ export default function AdminLayout() {
         </nav>
       </aside>
 
-      {/* MOBILE OVERLAY */}
+      {/* SCRIM (mobile) */}
       <button
         className={`${styles.scrim} ${open ? styles.scrimShow : ""}`}
         onClick={() => setOpen(false)}
@@ -68,6 +80,9 @@ export default function AdminLayout() {
 
       {/* MAIN */}
       <main className={styles.main}>
+        {/* Sheen / gradient background */}
+        <div className={styles.sheen} aria-hidden />
+
         <header className={styles.topbar}>
           <div className={styles.leftTop}>
             <button className={styles.hamburger} onClick={() => setOpen(true)} aria-label="Open sidebar">
@@ -75,6 +90,7 @@ export default function AdminLayout() {
             </button>
             <div className={styles.crumb}>Admin</div>
           </div>
+
           <div className={styles.topActions}>
             <button className={styles.ghostBtn} title="Notifications">
               <Icon path="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2z" />
@@ -84,7 +100,7 @@ export default function AdminLayout() {
         </header>
 
         <section className={styles.content}>
-          <div className={styles.container}>
+          <div className="container">
             <Outlet />
           </div>
         </section>
