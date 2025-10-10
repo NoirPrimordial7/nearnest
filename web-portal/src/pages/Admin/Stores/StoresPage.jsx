@@ -6,14 +6,7 @@ import styles from "./stores.module.css";
 /* Small stroke icon */
 function Icon({ d, size = 18, className }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path d={d} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -37,18 +30,16 @@ function formatDate(d) {
 }
 
 export default function StoresPage() {
-  // filters
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
 
-  // table + pagination
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const pageSize = 10;
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
-  // drawer
   const [selected, setSelected] = useState(null);
 
   const load = async (targetPage = 1) => {
@@ -58,7 +49,7 @@ export default function StoresPage() {
       search,
       page: targetPage,
       pageSize,
-      cursor: (targetPage - 1) * pageSize, // harmless for page-based services
+      cursor: (targetPage - 1) * pageSize,
     });
     setLoading(false);
 
@@ -110,7 +101,6 @@ export default function StoresPage() {
   }, [selected]);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-
   const openDrawer = (s) => setSelected(s);
 
   return (
@@ -145,13 +135,14 @@ export default function StoresPage() {
             <thead>
               <tr>
                 <th>Store</th>
-                <th>Owner</th>
-                <th>City</th>
+                <th className={styles.colOwner}>Owner</th>
+                <th className={styles.colCity}>City</th>
                 <th>Status</th>
-                <th>Joined</th>
+                <th className={styles.colJoined}>Joined</th>
                 <th style={{ width: 300 }}></th>
               </tr>
             </thead>
+
             <tbody>
               {rows.length === 0 && !loading && (
                 <tr>
@@ -163,7 +154,7 @@ export default function StoresPage() {
                 <tr
                   key={s.id}
                   className={styles.row}
-                  onClick={() => openDrawer(s)}           /* click row to open */
+                  onClick={() => openDrawer(s)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openDrawer(s)}
@@ -172,7 +163,7 @@ export default function StoresPage() {
                     <button
                       type="button"
                       className={`${styles.primaryCell} ${styles.clickable}`}
-                      onClick={(e) => { e.stopPropagation(); openDrawer(s); }}  /* also click avatar/name */
+                      onClick={(e) => { e.stopPropagation(); openDrawer(s); }}
                     >
                       <div className={styles.logo}>{s.name.slice(0, 2)}</div>
                       <div className={styles.nameWrap}>
@@ -182,13 +173,13 @@ export default function StoresPage() {
                     </button>
                   </td>
 
-                  <td>{s.owner}</td>
-                  <td>{s.city}</td>
+                  <td className={styles.colOwner}>{s.owner}</td>
+                  <td className={styles.colCity}>{s.city}</td>
                   <td><StatusPill status={s.status} /></td>
-                  <td>{formatDate(s.joinedAt)}</td>
+                  <td className={styles.colJoined}>{formatDate(s.joinedAt)}</td>
 
                   <td className={styles.actions} onClick={(e) => e.stopPropagation()}>
-                    {/* tiny eye icon only for small screens (CSS hides it on desktop) */}
+                    {/* tiny eye icon (hidden on desktop) */}
                     <button
                       className={styles.iconGhost}
                       title="View"
@@ -238,7 +229,6 @@ export default function StoresPage() {
             </header>
 
             <div className={styles.drawerBody}>
-              {/* Info */}
               <section className={styles.infoCard}>
                 <div className={styles.infoGrid}>
                   <div><span>Owner</span><b>{selected.owner}</b></div>
@@ -250,7 +240,6 @@ export default function StoresPage() {
                 </div>
               </section>
 
-              {/* Documents */}
               <section className={styles.docsCard}>
                 <h4>Documents</h4>
                 <ul className={styles.docList}>
@@ -272,7 +261,6 @@ export default function StoresPage() {
                 </ul>
               </section>
 
-              {/* Activity */}
               <section className={styles.activity}>
                 <h4>Activity Log</h4>
                 <ul className={styles.timeline}>
