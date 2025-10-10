@@ -26,32 +26,51 @@
 }
 
 /* table */
-.tableWrap{overflow:auto;border-radius:20px}
+.tableWrap{overflow:auto;border-radius:20px; position:relative;}
 .table{width:100%;border-collapse:separate;border-spacing:0}
 .table thead th{
-  position:sticky;top:0;background:#fafafa;border-bottom:1px solid var(--border);
-  text-align:left;padding:14px 16px;font-weight:800;z-index:1;
+  position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);
+  text-align:left;padding:14px 16px;font-weight:800;z-index:2; /* under drawer */
+  box-shadow:0 6px 12px rgba(17,17,17,.04);
 }
+.table thead th:first-child{ border-top-left-radius:16px; }
+.table thead th:last-child{  border-top-right-radius:16px; }
 .table tbody td{padding:14px 16px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
 .empty{padding:32px 16px;text-align:center;color:var(--muted)}
 
-.primaryCell{display:flex;align-items:center;gap:12px}
+/* interactive row */
+.row{transition:background .12s ease}
+.row:hover{background:linear-gradient(#fff,#fff) padding-box, linear-gradient(180deg, rgba(17,17,17,.08), transparent) border-box}
+
+/* primary cell as button */
+.primaryCell{
+  display:flex;align-items:center;gap:12px;
+  padding:6px 8px;border-radius:12px;border:1px solid transparent;background:transparent;
+  cursor:pointer;width:100%;text-align:left;
+}
+.clickable:hover{background:#fafafa;border-color:#f0f0f0}
+.nameWrap{display:flex;flex-direction:column}
 .logo{
   width:36px;height:36px;border-radius:10px;border:1px solid var(--border);display:grid;place-items:center;background:#fff;font-weight:800
 }
 .name{font-weight:800}
 .sub{font-size:12px;color:var(--muted)}
 
-.actions{display:flex;gap:8px;justify-content:flex-end}
+/* actions */
+.actions{display:flex;gap:10px;justify-content:flex-end;align-items:center}
+.iconGhost{
+  height:34px;width:34px;border:1px solid var(--border);border-radius:10px;background:#fff;
+  display:grid;place-items:center;color:#111;
+}
 
-/* buttons */
+/* buttons (fixed width so Suspend ↔ Unsuspend doesn’t shift layout) */
+.fixedBtn{min-width:104px;text-align:center}
 .ghost{padding:8px 10px;border:1px solid var(--border);background:#fff;border-radius:10px;cursor:pointer}
 .mint{padding:8px 10px;border:1px solid rgba(16,185,129,.3);background:#fff;border-radius:10px;color:var(--mint);cursor:pointer}
-.rose{padding:8px 10px;border:1px solid rgba(239,68,68,.3);background:#fff;border-radius:10px;color:var(--rose);cursor:pointer}
 .slate{padding:8px 10px;border:1px solid rgba(100,116,139,.3);background:#fff;border-radius:10px;color:var(--slate);cursor:pointer}
+.danger{padding:8px 10px;border:1px solid rgba(239,68,68,.35);background:#fff;border-radius:10px;color:var(--rose);cursor:pointer}
 
 .footer{display:flex;justify-content:center;padding:12px}
-.loadMore{padding:10px 14px;border:1px solid var(--border);background:#fff;border-radius:12px;font-weight:700;cursor:pointer}
 
 /* status pills */
 .stPill{
@@ -63,14 +82,14 @@
 .stRejected{color:var(--rose);border-color:rgba(239,68,68,.25)}
 .stSuspended{color:var(--slate);border-color:rgba(100,116,139,.25)}
 
-/* drawer */
+/* drawer sits above table header */
 .backdrop{
-  position:fixed;inset:0;background:rgba(0,0,0,.12);backdrop-filter:blur(1px);
+  position:fixed;inset:0;background:rgba(0,0,0,.12);backdrop-filter:blur(1px);z-index:90;
 }
 .drawer{
   position:fixed;top:0;right:0;height:100%;width:min(540px, 92vw);
   background:#fff;border-left:1px solid var(--border);
-  box-shadow:-20px 0 60px rgba(17,17,17,.12);display:flex;flex-direction:column;
+  box-shadow:-20px 0 60px rgba(17,17,17,.12);display:flex;flex-direction:column;z-index:100;
 }
 .drawerHead{
   display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px;border-bottom:1px solid var(--border)
@@ -98,3 +117,8 @@
 .timeline{display:flex;flex-direction:column;gap:8px}
 .timeline li{display:flex;gap:8px}
 .timeline span{color:var(--muted);font-size:12px}
+
+/* Hide tiny eye action on wide screens (row is already clickable) */
+@media (min-width: 980px){
+  .iconGhost{ display:none; }
+}
