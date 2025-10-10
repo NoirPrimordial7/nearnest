@@ -178,41 +178,40 @@ export default function Dashboard() {
         </Card>
 
         <Card className={styles.span5} title="Verification Status Ratio" subtitle="Approved / Pending / Rejected">
-          {/* Legend is pinned inside the card, bottom area reserved via padding */}
           <div className={styles.pieArea}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={verificationStatusData}
-                  cx="50%"
-                  cy="40%"
-                  outerRadius={94}
-                  dataKey="value"
-                  paddingAngle={2}
-                  stroke="#fff"
-                  strokeWidth={2}
-                >
-                  {verificationStatusData.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className={styles.pieSquare}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={verificationStatusData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius="80%"        // stays perfect circle because box is square
+                    paddingAngle={2}
+                    stroke="#fff"
+                    strokeWidth={2}
+                    dataKey="value"
+                  >
+                    {verificationStatusData.map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
 
-            <div className={styles.legendInside}>
+            <div className={styles.legendTight}>
               {verificationStatusData.map((s, i) => (
                 <div className={styles.legendItem} key={s.name}>
-                  <span
-                    className={styles.legendDot}
-                    style={{ background: COLORS[i % COLORS.length] }}
-                  />
+                  <span className={styles.legendDot} style={{ background: COLORS[i % COLORS.length] }} />
                   {s.name} <b>{s.value}</b>
                 </div>
               ))}
             </div>
           </div>
         </Card>
+
 
         <Card
           className={styles.span12}

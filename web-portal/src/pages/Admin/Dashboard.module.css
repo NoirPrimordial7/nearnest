@@ -85,21 +85,30 @@
 
 .chartPad{ flex:1; min-height: 260px; }
 
-/* Pie layout with inside legend */
+/* Pie layout: square chart + legend below */
 .pieArea{
-  position: relative;
-  flex: 1;
-  min-height: 260px;
-  /* reserve space for legend at the bottom of the card */
-  padding-bottom: 48px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap: 12px;
+  min-height: 340px;                 /* gives breathing room on tall cards */
+  padding: 6px var(--card-pad) 12px;
 }
-.legendInside{
-  position: absolute;
-  left: var(--card-pad);
-  right: var(--card-pad);
-  bottom: 10px;
-  display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:center;
+
+.pieSquare{
+  width: min(100%, 360px);           /* cap width so it doesn’t dominate on wide screens */
+  aspect-ratio: 1 / 1;               /* <-- guarantees a perfect circle */
 }
+
+.legendTight{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+}
+
 .legendItem{display:flex;align-items:center;gap:8px;color:#374151;font-size:12px;}
 .legendItem b{margin-left:2px;}
 .legendDot{width:10px;height:10px;border-radius:999px;border:1px solid #e5e7eb;}
