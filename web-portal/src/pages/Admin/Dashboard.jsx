@@ -159,7 +159,7 @@ export default function Dashboard() {
         >
           <div className={styles.chartPad}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={growthView} margin={{ left: 8, right: 8, top: 6, bottom: 0 }}>
+              <LineChart data={growthView} margin={{ left: 10, right: 10, top: 6, bottom: 6 }}>
                 <CartesianGrid vertical={false} stroke="#E5E7EB" />
                 <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                 <YAxis tickLine={false} axisLine={false} width={36} tickMargin={8} />
@@ -178,14 +178,15 @@ export default function Dashboard() {
         </Card>
 
         <Card className={styles.span5} title="Verification Status Ratio" subtitle="Approved / Pending / Rejected">
-          <div className={styles.chartPad}>
+          {/* Legend is pinned inside the card, bottom area reserved via padding */}
+          <div className={styles.pieArea}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={verificationStatusData}
                   cx="50%"
-                  cy="45%"
-                  outerRadius={92}
+                  cy="40%"
+                  outerRadius={94}
                   dataKey="value"
                   paddingAngle={2}
                   stroke="#fff"
@@ -199,7 +200,7 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
 
-            <div className={styles.legendRow}>
+            <div className={styles.legendInside}>
               {verificationStatusData.map((s, i) => (
                 <div className={styles.legendItem} key={s.name}>
                   <span
@@ -222,7 +223,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={popularCategoriesData}
-                margin={{ left: 8, right: 8, top: 6, bottom: 0 }}
+                margin={{ left: 10, right: 10, top: 6, bottom: 6 }}
                 barCategoryGap={18}
               >
                 <CartesianGrid vertical={false} stroke="#E5E7EB" />
