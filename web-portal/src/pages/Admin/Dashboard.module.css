@@ -1,31 +1,27 @@
-/* Canvas stays centered by AdminLayout's .container */
 .wrap { padding-block: clamp(6px, 1.2vw, 12px); }
 
-/* Auto-fit columns, never overflows; clean responsive */
 .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: clamp(12px, 1.6vw, 20px);
-  grid-auto-rows: 180px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(14px, 1.8vw, 22px);
+  grid-auto-rows: 200px;
 }
 
-/* Denqid-like soft cards (dotted outline option) */
 .cell{
-  background: var(--panel);
+  background: linear-gradient(#fff,#fff) padding-box,
+              linear-gradient(180deg, rgba(17,17,17,.06), rgba(17,17,17,0)) border-box;
+  border: 1px solid var(--border);
   border-radius: 20px;
-  border: 1px dashed #dcdcdc;
   box-shadow:
-    0 12px 26px rgba(17,17,17,.06),
-    inset 0 1px 0 rgba(255,255,255,.8);
+    0 14px 32px rgba(17,17,17,.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
   transition: transform .12s ease, box-shadow .12s ease;
 }
 .cell:hover{
   transform: translateY(-2px);
   box-shadow:
-    0 16px 30px rgba(17,17,17,.08),
-    inset 0 1px 0 rgba(255,255,255,.9);
+    0 18px 40px rgba(17,17,17,.10),
+    inset 0 1px 0 rgba(255,255,255,1);
 }
-
-/* Make a couple of cells tall to create rhythm (optional) */
 .cell:nth-child(5),
 .cell:nth-child(6){ grid-row: span 2; }
