@@ -1,9 +1,16 @@
-import { useMemo, useState } from "react";
+// src/pages/Admin/Support/SupportTickets.jsx
+import React, { useMemo, useState } from "react";
 import {
-  FiSearch, FiFilter, FiMessageCircle, FiPaperclip, FiSend,
-  FiCheckCircle, FiXCircle, FiCornerUpLeft, FiChevronDown
+  FiSearch,
+  FiFilter,
+  FiEye,
+  FiCheckCircle,
+  FiXCircle,
+  FiCornerUpLeft,
+  FiChevronDown,
 } from "react-icons/fi";
 import styles from "./SupportTickets.module.css";
+
 
 /* ---------- Mock data ---------- */
 const MOCK_TICKETS = Array.from({ length: 32 }).map((_, i) => ({
