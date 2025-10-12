@@ -169,3 +169,57 @@
 @media (min-width: 980px){
   .iconGhost{ display:none; }
 }
+
+/* Search field with leading icon */
+.searchField{
+  position: relative;
+  flex: 1;
+}
+.searchIcon{
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color:#9ca3af;           /* muted */
+  pointer-events: none;
+}
+.input{
+  padding-left: 38px;      /* room for the icon */
+}
+
+/* Button icon + label */
+.btnIcon{ margin-right: 8px; }
+.btnText{ line-height: 1; }
+
+/* Mobile: make the button full width under input when wrapped */
+@media (max-width: 720px){
+  .searchWrap{ gap: 10px; }
+  .searchBtn{ width: 100%; display: inline-flex; align-items:center; justify-content:center; }
+}
+
+/* Search field with leading icon */
+.searchField{
+  position: relative;
+  flex: 1;
+}
+.searchIcon{
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color:#9ca3af;           /* muted */
+  pointer-events: none;
+}
+.input{
+  padding-left: 38px;      /* room for the icon */
+}
+
+/* Button icon + label */
+.btnIcon{ margin-right: 8px; }
+.btnText{ line-height: 1; }
+
+/* Mobile: make the button full width under input when wrapped */
+@media (max-width: 720px){
+  .searchWrap{ gap: 10px; }
+  .searchBtn{ width: 100%; display: inline-flex; align-items:center; justify-content:center; }
+}

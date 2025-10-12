@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import styles from "./AdminLayout.module.css";
 
-/** Simple SVG icon helper (stroke-based) */
+/** Thin SVG icon helper */
 function Icon({ path, size = 18, className }) {
   return (
     <svg
@@ -24,48 +24,51 @@ function Icon({ path, size = 18, className }) {
   );
 }
 
-/** Sidebar items (rename freely later) */
+/** Sidebar items */
 const NAV = {
-  primary: [{ label: "Overview", to: "/admin", icon: "M3 6h18M3 12h18M3 18h18" }],
+  primary: [
+    { label: "Overview", to: "/admin", icon: "M3 6h18M3 12h18M3 18h18", end: true },
+  ],
   platform: [
-    { label: "Stores", icon: "M4 6h16v12H4z" },
-    { label: "Verification", icon: "M7 7h10M7 12h10M7 17h6" },
-    { label: "Roles & Permissions", icon: "M12 3v18M3 12h18" },
-    { label: "Admins", icon: "M16 11a4 4 0 1 0-8 0v6h8v-6zM4 21h16" },
-    { label: "Support / Tickets", icon: "M3 8l9 6 9-6M5 19h14" },
-    { label: "Analytics", icon: "M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" },
-    { label: "Settings", icon: "M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" },
-    { label: "Schema", icon: "M4 7h16M4 12h16M4 17h10" },
+    { label: "Stores", to: "/admin/stores", icon: "M4 6h16v12H4z" },
+    { label: "Verification", to: "/admin/verification", icon: "M7 7h10M7 12h10M7 17h6" },
+    { label: "Roles & Permissions", to: "/admin/roles", icon: "M12 3v18M3 12h18" },
+    { label: "Admins", to: "/admin/admins", icon: "M16 11a4 4 0 1 0-8 0v6h8v-6zM4 21h16" },
+    { label: "Support / Tickets", to: "/admin/support", icon: "M3 8l9 6 9-6M5 19h14" },
+    { label: "Analytics", to: "/admin/analytics", icon: "M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" },
+    { label: "Settings", to: "/admin/settings", icon: "M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" },
+    { label: "Schema", to: "/admin/schema", icon: "M4 7h16M4 12h16M4 17h10" },
   ],
 };
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
 
-  // lock scroll when drawer is open
+  // lock scroll when drawer is open (mobile)
   useEffect(() => {
     document.body.classList.toggle("body--lock", open);
     return () => document.body.classList.remove("body--lock");
   }, [open]);
 
+  const closeIfMobile = () => setOpen(false);
+
   return (
     <div className={styles.shell}>
       {/* ===== SIDEBAR ===== */}
       <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}>
-        {/* Brand / close button (mobile) */}
         <div className={styles.brandRow}>
           <button
             className={`${styles.hamburger} ${styles.onlyMobile}`}
             onClick={() => setOpen(false)}
             aria-label="Close menu"
           >
-            {/* Force black lines */}
+            {/* X icon (black lines) */}
             <svg className={styles.hIcon} width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
 
-          {/* Text-only brand pill */}
+          {/* Text brand capsule */}
           <div className={styles.brandPill}>nearnest</div>
         </div>
 
@@ -80,7 +83,8 @@ export default function AdminLayout() {
               <li key={item.label} title={item.label}>
                 <NavLink
                   to={item.to}
-                  end
+                  end={item.end}
+                  onClick={closeIfMobile}
                   className={({ isActive }) =>
                     isActive ? `${styles.navItem} ${styles.active}` : styles.navItem
                   }
@@ -98,17 +102,23 @@ export default function AdminLayout() {
           <ul>
             {NAV.platform.map((item) => (
               <li key={item.label} title={item.label}>
-                <a href="#" onClick={(e) => e.preventDefault()} className={styles.navItem}>
+                <NavLink
+                  to={item.to}
+                  onClick={closeIfMobile}
+                  className={({ isActive }) =>
+                    isActive ? `${styles.navItem} ${styles.active}` : styles.navItem
+                  }
+                >
                   <Icon path={item.icon} />
                   <span>{item.label}</span>
-                </a>
+                </NavLink>
               </li>
             ))}
           </ul>
         </nav>
       </aside>
 
-      {/* scrim for mobile */}
+      {/* Mobile scrim */}
       <button
         className={`${styles.scrim} ${open ? styles.scrimShow : ""}`}
         onClick={() => setOpen(false)}
@@ -125,7 +135,7 @@ export default function AdminLayout() {
               onClick={() => setOpen(true)}
               aria-label="Open menu"
             >
-              {/* Force black lines */}
+              {/* Hamburger (black lines) */}
               <svg className={styles.hIcon} width="18" height="18" viewBox="0 0 24 24" fill="none">
                 <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

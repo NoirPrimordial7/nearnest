@@ -95,3 +95,10 @@ export async function setStoreStatus(storeId, status) {
   await updateDoc(ref, { status });
   ========================================================== */
 }
+
+export async function deleteStore(id) {
+  // Replace this mock with your real API call
+  await new Promise((r) => setTimeout(r, 250));
+  DB.stores = DB.stores.filter((s) => s.id !== id);
+  return { ok: true };
+}

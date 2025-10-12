@@ -35,7 +35,6 @@ export default function StoresPage() {
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
-
   const pageSize = 10;
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -77,7 +76,6 @@ export default function StoresPage() {
     load(1);
   };
 
-  /* Actions */
   const suspend = async (id) => {
     await setStoreStatus(id, "suspended");
     setRows((r) => r.map((x) => (x.id === id ? { ...x, status: "suspended" } : x)));
@@ -92,7 +90,6 @@ export default function StoresPage() {
     setRows((r) => r.filter((x) => x.id !== id));
   };
 
-  // close drawer on ESC
   useEffect(() => {
     if (!selected) return;
     const onKey = (e) => e.key === "Escape" && setSelected(null);
@@ -108,14 +105,32 @@ export default function StoresPage() {
       {/* Filters */}
       <form className={styles.filters} onSubmit={onSearch}>
         <div className={styles.searchWrap}>
-          <input
-            className={styles.input}
-            placeholder="Search by store, owner, city…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button className={styles.searchBtn} type="submit">Search</button>
+          {/* input with leading search icon */}
+          <div className={styles.searchField}>
+            <Icon
+              d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"
+              size={18}
+              className={styles.searchIcon}
+            />
+            <input
+              className={styles.input}
+              placeholder="Search by store, owner, city…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* button with search icon */}
+          <button className={styles.searchBtn} type="submit">
+            <Icon
+              d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"
+              size={16}
+              className={styles.btnIcon}
+            />
+            <span className={styles.btnText}>Search</span>
+          </button>
         </div>
+
         <div className={styles.selectWrap}>
           <label>Status</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -128,7 +143,7 @@ export default function StoresPage() {
         </div>
       </form>
 
-      {/* Table */}
+      {/* Table (unchanged below) */}
       <section className={styles.card}>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -142,14 +157,12 @@ export default function StoresPage() {
                 <th style={{ width: 300 }}></th>
               </tr>
             </thead>
-
             <tbody>
               {rows.length === 0 && !loading && (
                 <tr>
                   <td colSpan="6" className={styles.empty}>No stores match your filters.</td>
                 </tr>
               )}
-
               {rows.map((s) => (
                 <tr
                   key={s.id}
@@ -172,14 +185,11 @@ export default function StoresPage() {
                       </div>
                     </button>
                   </td>
-
                   <td className={styles.colOwner}>{s.owner}</td>
                   <td className={styles.colCity}>{s.city}</td>
                   <td><StatusPill status={s.status} /></td>
                   <td className={styles.colJoined}>{formatDate(s.joinedAt)}</td>
-
                   <td className={styles.actions} onClick={(e) => e.stopPropagation()}>
-                    {/* tiny eye icon (hidden on desktop) */}
                     <button
                       className={styles.iconGhost}
                       title="View"
@@ -188,7 +198,6 @@ export default function StoresPage() {
                     >
                       <Icon d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
                     </button>
-
                     {s.status === "suspended" ? (
                       <button className={`${styles.mint} ${styles.fixedBtn}`} onClick={() => unsuspend(s.id)}>
                         Unsuspend
@@ -198,7 +207,6 @@ export default function StoresPage() {
                         Suspend
                       </button>
                     )}
-
                     <button className={`${styles.danger} ${styles.fixedBtn}`} onClick={() => remove(s.id)}>
                       Delete
                     </button>
@@ -209,13 +217,11 @@ export default function StoresPage() {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className={styles.footer}>
-          <Pagination current={page} total={totalPages} onChange={(p) => load(p)} />
+          <Pagination current={page} total={Math.max(1, Math.ceil(total / pageSize))} onChange={(p) => load(p)} />
         </div>
       </section>
 
-      {/* Drawer */}
       {selected && (
         <>
           <div className={styles.backdrop} onClick={() => setSelected(null)} />

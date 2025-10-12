@@ -1,285 +1,412 @@
-import React, { useMemo, useState } from "react";
-import {
-  FaSearch, FaFilter, FaEye, FaCheck, FaTimes, FaFlag, FaArrowRight,
-} from "react-icons/fa";
-import Pagination from "../../../components/Pagination"; // already used in Stores
+import { useEffect, useMemo, useState } from "react";
 import styles from "./DocumentVerification.module.css";
 
-/* ---------- helpers ---------- */
-const prettyStatus = (s) =>
-  ({ Accepted: "Approved", Pending: "Pending", Rejected: "Rejected", Flagged: "Flagged" }[s] || s);
+// --- tiny inline icon helper (no react-icons) ---
+const Icon = ({ d, size = 18, className }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d={d} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
-const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+// status pill
+const Pill = ({ value }) => {
+  const cls =
+    value === "approved" ? styles.pApproved :
+    value === "rejected" ? styles.pRejected :
+    styles.pPending;
+  return <span className={`${styles.pill} ${cls}`}>{value}</span>;
+};
 
-/* ---------- page ---------- */
+// canned reject reasons (edit freely)
+const CANNED = [
+  "Document unreadable",
+  "Name / details mismatch",
+  "Expired / invalid",
+  "Wrong document type",
+  "Please re-upload clearer copy",
+];
+
+// ---- Fake service stubs (replace with your real API) ----
+/* Expected shapes:
+   queue item: { id, store: {...}, docType, uploadedAt, status, docUrl }
+   store: { id, name, owner, category, address, gstin, licenseNo, city, pincode, lat, lng, activity: [] , docs: []}
+*/
+async function fetchVerificationQueue({ q = "", status = "all", page = 1, pageSize = 10 }) {
+  // hook up to your backend; here we reuse stores mock if you have it
+  const seed = (i) => ({
+    id: `row-${page}-${i}`,
+    store: {
+      id: `store-${i}`,
+      name: `Store #NE-${300 + i}`,
+      owner: ["Dinesh", "Anita", "Sejal", "Rohit", "Kiran"][i % 5],
+      category: ["Pharmacy", "Clinic", "Diagnostics"][i % 3],
+      address: "MG Road, Pune",
+      city: "Pune",
+      pincode: "411001",
+      gstin: "22ABCDE1234F1Z5",
+      licenseNo: "LIC-10000",
+      lat: 18.5167,
+      lng: 73.8563,
+      activity: [
+        { ts: Date.now() - 86400000 * 2, text: "KYC submitted" },
+        { ts: Date.now() - 86400000, text: "Document reviewed by admin" },
+      ],
+      docs: [
+        { id: "gst", name: "GST Certificate", status: "pending", url: "", uploadedAt: Date.now() - 86400000 * 4 },
+        { id: "drug", name: "Drug License", status: i % 2 ? "approved" : "pending", url: "", uploadedAt: Date.now() - 86400000 * 5 },
+        { id: "pan", name: "PAN", status: "pending", url: "", uploadedAt: Date.now() - 86400000 * 6 },
+        { id: "addr", name: "Address Proof", status: "pending", url: "", uploadedAt: Date.now() - 86400000 * 3 },
+      ],
+    },
+    docType: ["Address Proof", "Drug License", "PAN", "GST Certificate"][i % 4],
+    uploadedAt: Date.now() - 86400000 * (i + 1),
+    status: ["pending", "approved", "pending", "pending"][i % 4],
+    docUrl: "",
+  });
+
+  const items = Array.from({ length: pageSize }, (_, i) => seed(i));
+  return { items, total: 42 };
+}
+async function approveDocument(storeId, docId) { return { ok: true }; }
+async function rejectDocument(storeId, docId, reason) { return { ok: true }; }
+async function approveStore(storeId) { return { ok: true }; }
+// --------------------------------------------------------
+
 export default function DocumentVerification() {
-  // mock data (replace with API later)
-  const [docs, setDocs] = useState([
-    { id: 1,  storeName: "Health Plus Pharma", ownerName: "Rahul Sharma",  contact: "9876543210", email: "rahul@example.com",  storeType: "Pharmacy",            uploadDate: "2025-01-10", documentUrl: "https://via.placeholder.com/800x1100", status: "Pending"  },
-    { id: 2,  storeName: "CareMed Clinic",     ownerName: "Priya Verma",   contact: "9876501234", email: "priya@example.com",  storeType: "Clinic + Medicals",   uploadDate: "2025-01-15", documentUrl: "https://via.placeholder.com/800x1100", status: "Accepted" },
-    { id: 3,  storeName: "MediQuick",          ownerName: "Amit Joshi",    contact: "9876549870", email: "amit@example.com",   storeType: "Pharmacy",            uploadDate: "2025-02-05", documentUrl: "https://via.placeholder.com/800x1100", status: "Rejected" },
-    { id: 4,  storeName: "WellCare Pharmacy",  ownerName: "Sneha Patil",   contact: "9876504321", email: "sneha@example.com",  storeType: "Pharmacy",            uploadDate: "2025-02-18", documentUrl: "https://via.placeholder.com/800x1100", status: "Pending"  },
-    { id: 5,  storeName: "HealWell Pharma",    ownerName: "Vikram Singh",  contact: "9876512345", email: "vikram@example.com", storeType: "Ayurvedic Medicals",  uploadDate: "2025-03-02", documentUrl: "https://via.placeholder.com/800x1100", status: "Accepted" },
-    { id: 6,  storeName: "MediTrust",          ownerName: "Anjali Rao",    contact: "9876540001", email: "anjali@example.com", storeType: "Clinic + Medicals",   uploadDate: "2025-03-20", documentUrl: "https://via.placeholder.com/800x1100", status: "Flagged"  },
-    { id: 7,  storeName: "LifeCare Pharmacy",  ownerName: "Rohan Mehta",   contact: "9876541111", email: "rohan@example.com",  storeType: "Pharmacy",            uploadDate: "2025-04-08", documentUrl: "https://via.placeholder.com/800x1100", status: "Pending"  },
-    { id: 8,  storeName: "PharmaHub",          ownerName: "Kavita Desai",  contact: "9876542222", email: "kavita@example.com", storeType: "Clinic + Medicals",   uploadDate: "2025-04-25", documentUrl: "https://via.placeholder.com/800x1100", status: "Accepted" },
-    { id: 9,  storeName: "QuickMeds",          ownerName: "Saurabh Jain",  contact: "9876543333", email: "saurabh@example.com",storeType: "Pharmacy",            uploadDate: "2025-05-11", documentUrl: "https://via.placeholder.com/800x1100", status: "Rejected" },
-    { id: 10, storeName: "TotalCare Pharma",   ownerName: "Neha Kapoor",   contact: "9876544444", email: "neha@example.com",   storeType: "Ayurvedic Medicals",  uploadDate: "2025-05-30", documentUrl: "https://via.placeholder.com/800x1100", status: "Pending"  },
-  ]);
+  // filters
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState("all");
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");   // Pending/Approved/Rejected/Flagged
-  const [typeFilter, setTypeFilter]     = useState("");
-  const [monthFilter, setMonthFilter]   = useState("");
-
-  const [selectedIds, setSelectedIds]   = useState(new Set());
-  const [selectedDoc, setSelectedDoc]   = useState(null);
-  const [showDrawer, setShowDrawer]     = useState(false);
-  const [tab, setTab]                   = useState("owner");
-
-  // paging (client-side for now)
-  const pageSize = 8;
+  // table data
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
 
-  /* ---------- filtering ---------- */
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return docs.filter((d) => {
-      const month = months[new Date(d.uploadDate).getMonth()];
-      const matchesQ =
-        !q ||
-        d.storeName.toLowerCase().includes(q) ||
-        d.ownerName.toLowerCase().includes(q) ||
-        prettyStatus(d.status).toLowerCase().includes(q) ||
-        d.uploadDate.includes(q);
-      const matchesStatus = statusFilter ? prettyStatus(d.status) === statusFilter : true;
-      const matchesType   = typeFilter ? d.storeType === typeFilter : true;
-      const matchesMonth  = monthFilter ? month === monthFilter : true;
-      return matchesQ && matchesStatus && matchesType && matchesMonth;
-    });
-  }, [docs, search, statusFilter, typeFilter, monthFilter]);
+  // modal
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [tab, setTab] = useState("documents");
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageRows   = filtered.slice((page - 1) * pageSize, page * pageSize);
-
-  /* ---------- actions ---------- */
-  const openDrawer = (doc) => { setSelectedDoc(doc); setTab("owner"); setShowDrawer(true); };
-  const closeDrawer = () => { setShowDrawer(false); setSelectedDoc(null); };
-
-  const approve = (id, withComment = false) => {
-    let comment = "";
-    if (withComment) comment = window.prompt("Optional comment for approval:", "") || "";
-    setDocs((arr) => arr.map((d) => (d.id === id ? { ...d, status: "Accepted", comment } : d)));
+  const load = async (p = 1) => {
+    setLoading(true);
+    const { items, total } = await fetchVerificationQueue({ q: query, status, page: p, pageSize });
+    setLoading(false);
+    setRows(items);
+    setTotal(total || items.length);
+    setPage(p);
   };
-  const reject = (id) => {
-    const comment = window.prompt("Reason for rejection:", "") || "";
-    setDocs((arr) => arr.map((d) => (d.id === id ? { ...d, status: "Rejected", comment } : d)));
-  };
-  const flag = (id) => setDocs((arr) => arr.map((d) => (d.id === id ? { ...d, status: "Flagged" } : d)));
 
-  // bulk
-  const bulkApprove = () => { selectedIds.forEach((id) => approve(id)); setSelectedIds(new Set()); };
-  const bulkReject  = () => { selectedIds.forEach((id) => reject(id));  setSelectedIds(new Set()); };
-  const bulkFlag    = () => { selectedIds.forEach((id) => flag(id));    setSelectedIds(new Set()); };
+  useEffect(() => { load(1); /* eslint-disable-next-line */ }, [status]);
 
-  const toggleRow = (id) => {
-    setSelectedIds((s) => {
-      const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const onSearch = (e) => { e.preventDefault(); load(1); };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const openModal = (row) => {
+    setSelected(row.store);
+    setTab("documents");
+    setOpen(true);
   };
-  const togglePage = (checked) => {
-    const idsOnPage = pageRows.map((d) => d.id);
-    setSelectedIds((s) => {
-      const next = new Set(s);
-      idsOnPage.forEach((id) => (checked ? next.add(id) : next.delete(id)));
-      return next;
-    });
+
+  const closeModal = () => setOpen(false);
+
+  // store-level computed
+  const allApproved = useMemo(() => {
+    if (!selected?.docs?.length) return false;
+    return selected.docs.every((d) => d.status === "approved");
+  }, [selected]);
+
+  // doc actions (update local UI optimistically)
+  const onApproveDoc = async (docId) => {
+    if (!selected) return;
+    await approveDocument(selected.id, docId);
+    setSelected((s) => ({
+      ...s,
+      docs: s.docs.map((d) => (d.id === docId ? { ...d, status: "approved", _reason: undefined } : d)),
+    }));
+  };
+
+  const onRejectDoc = async (docId, reason) => {
+    if (!selected) return;
+    await rejectDocument(selected.id, docId, reason || "");
+    setSelected((s) => ({
+      ...s,
+      docs: s.docs.map((d) => (d.id === docId ? { ...d, status: "rejected", _reason: reason || "" } : d)),
+    }));
+  };
+
+  const onApproveStore = async () => {
+    if (!selected) return;
+    await approveStore(selected.id);
+    closeModal();
+    load(page);
   };
 
   return (
-    <div className={styles.container}>
-      <h2>Document Verification</h2>
-
+    <div className={styles.page}>
       {/* Filters */}
-      <div className={styles.filters}>
-        <div className={styles.searchWrapper}>
-          <FaSearch className={styles.searchIcon} />
+      <form className={styles.filters} onSubmit={onSearch}>
+        <div className={styles.searchWrap}>
+          <span className={styles.searchIcon}>
+            <Icon d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
+          </span>
           <input
-            className={styles.searchBar}
-            placeholder="Search by store, owner, status or date…"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className={styles.input}
+            placeholder="Search by store, owner, doc type…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
           />
+          <button className={styles.searchBtn} type="submit">Search</button>
         </div>
 
-        <div className={styles.filterWrapper}>
-          <FaFilter className={styles.filterIcon} />
-          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
-            <option value="">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-            <option value="Flagged">Flagged</option>
+        <div className={styles.selectWrap}>
+          <label>Status</label>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
           </select>
         </div>
-
-        <div className={styles.filterWrapper}>
-          <FaFilter className={styles.filterIcon} />
-          <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }}>
-            <option value="">All Types</option>
-            <option>Pharmacy</option>
-            <option>Clinic + Medicals</option>
-            <option>Ayurvedic Medicals</option>
-          </select>
-        </div>
-
-        <div className={styles.filterWrapper}>
-          <FaFilter className={styles.filterIcon} />
-          <select value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setPage(1); }}>
-            <option value="">All Months</option>
-            {months.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-        </div>
-      </div>
-
-      {/* Bulk bar */}
-      {selectedIds.size > 0 && (
-        <div className={styles.bulkBar}>
-          <span>{selectedIds.size} selected</span>
-          <div className={styles.bulkActions}>
-            <button onClick={bulkApprove} className={styles.approveBtn}><FaCheck /> Approve</button>
-            <button onClick={bulkReject}  className={styles.rejectBtn}><FaTimes /> Reject</button>
-            <button onClick={bulkFlag}    className={styles.flagBtn}><FaFlag /> Flag</button>
-          </div>
-        </div>
-      )}
+      </form>
 
       {/* Table */}
-      <div className={styles.tableWrap}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th style={{ width: 46 }}>
-                <input
-                  type="checkbox"
-                  aria-label="Select page"
-                  checked={pageRows.every(r => selectedIds.has(r.id)) && pageRows.length > 0}
-                  onChange={(e) => togglePage(e.target.checked)}
-                />
-              </th>
-              <th>Store</th>
-              <th>Owner</th>
-              <th>Type</th>
-              <th>Uploaded</th>
-              <th>Status</th>
-              <th style={{ width: 170 }}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pageRows.length === 0 && (
-              <tr><td colSpan="7" style={{ textAlign: "center", padding: 18 }}>No matching records.</td></tr>
-            )}
-
-            {pageRows.map((d) => (
-              <tr key={d.id} className={styles.row}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.has(d.id)}
-                    onChange={() => toggleRow(d.id)}
-                    aria-label={`Select ${d.storeName}`}
-                  />
-                </td>
-                <td>
-                  <button className={styles.storeCell} onClick={() => openDrawer(d)}>
-                    <span className={styles.avatar}>{d.storeName.slice(0,2)}</span>
-                    <span className={styles.storeName}>{d.storeName}</span>
-                  </button>
-                </td>
-                <td>{d.ownerName}</td>
-                <td>{d.storeType}</td>
-                <td>{d.uploadDate}</td>
-                <td>
-                  <span className={`${styles.pill} ${styles[prettyStatus(d.status).toLowerCase()]}`}>
-                    {prettyStatus(d.status)}
-                  </span>
-                </td>
-                <td className={styles.actions}>
-                  <button className={styles.viewBtn} title="Preview" onClick={() => openDrawer(d)}><FaEye /></button>
-                  <button className={styles.approveBtn} title="Approve" onClick={() => approve(d.id, true)}><FaCheck /></button>
-                  <button className={styles.rejectBtn}  title="Reject"  onClick={() => reject(d.id)}><FaTimes /></button>
-                  <button className={styles.flagBtn}    title="Flag"    onClick={() => flag(d.id)}><FaFlag /></button>
-                </td>
+      <section className={styles.card}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Store</th>
+                <th>Doc</th>
+                <th>Uploaded</th>
+                <th>Preview</th>
+                <th>Status</th>
+                <th style={{ width: 90 }}></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
 
-      {/* Pagination */}
-      <div className={styles.pager}>
-        <Pagination current={page} total={totalPages} onChange={setPage} />
-      </div>
+            <tbody>
+              {rows.length === 0 && !loading && (
+                <tr><td colSpan="6" className={styles.empty}>No results.</td></tr>
+              )}
 
-      {/* Drawer */}
-      {showDrawer && <div className={styles.overlay} onClick={closeDrawer} />}
-      <aside className={`${styles.drawer} ${showDrawer ? styles.open : ""}`} role="dialog" aria-modal="true">
-        <div className={styles.drawerHeader}>
-          <h3>Store Details</h3>
-          <button className={styles.closeDrawerBtn} onClick={closeDrawer} aria-label="Close drawer"><FaArrowRight /></button>
+              {rows.map((r) => (
+                <tr key={r.id} className={styles.row} onClick={() => openModal(r)}>
+                  <td>
+                    <div className={styles.primary}>
+                      <div className={styles.logo}>St</div>
+                      <div>
+                        <div className={styles.name}>{r.store.name}</div>
+                        <div className={styles.sub}>{r.store.owner}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{r.docType}</td>
+                  <td>{new Date(r.uploadedAt).toLocaleDateString()}</td>
+                  <td className={styles.previewCell}>
+                    <span className={styles.eye}>
+                      <Icon d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+                      Preview
+                    </span>
+                  </td>
+                  <td><Pill value={r.status} /></td>
+                  <td className={styles.chev}><Icon d="M9 6l6 6-6 6" /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        {selectedDoc && (
-          <>
-            <div className={styles.drawerTabs}>
-              <button className={`${styles.tabBtn} ${tab === "owner" ? styles.activeTab : ""}`} onClick={() => setTab("owner")}>Owner Info</button>
-              <button className={`${styles.tabBtn} ${tab === "store" ? styles.activeTab : ""}`} onClick={() => setTab("store")}>Store Info</button>
-              <button className={`${styles.tabBtn} ${tab === "doc"   ? styles.activeTab : ""}`} onClick={() => setTab("doc")}>Document</button>
-            </div>
+        {/* simple pagination */}
+        <div className={styles.pager}>
+          <button
+            className={styles.pageBtn}
+            disabled={page <= 1}
+            onClick={() => load(page - 1)}
+          >‹</button>
+          <span className={styles.pageBadge}>{page} / {totalPages}</span>
+          <button
+            className={styles.pageBtn}
+            disabled={page >= totalPages}
+            onClick={() => load(page + 1)}
+          >›</button>
+        </div>
+      </section>
 
-            <div className={styles.tabContent}>
-              {tab === "owner" && (
-                <>
-                  <p><strong>Name:</strong> {selectedDoc.ownerName}</p>
-                  <p><strong>Contact:</strong> {selectedDoc.contact}</p>
-                  <p><strong>Email:</strong> {selectedDoc.email}</p>
-                  <div className={styles.actionButtonsDrawer}>
-                    <button className={styles.approveBtn} onClick={() => approve(selectedDoc.id)}><FaCheck /> Approve</button>
-                    <button className={styles.rejectBtn}  onClick={() => reject(selectedDoc.id)}><FaTimes /> Reject</button>
-                  </div>
-                </>
-              )}
+      {/* ===== Modal Sheet ===== */}
+      {open && selected && (
+        <>
+          <div className={styles.backdrop} onClick={closeModal} />
+          <section className={styles.sheet} role="dialog" aria-modal="true">
+            {/* header */}
+            <header className={styles.sheetHead}>
+              <div className={styles.sheetTitle}>
+                <div className={styles.logo}>St</div>
+                <div>
+                  <h3>{selected.name}</h3>
+                  <div className={styles.smallMuted}>{selected.category} • {selected.owner}</div>
+                </div>
+              </div>
 
+              <button className={styles.iconBtn} onClick={closeModal} aria-label="Close">
+                <Icon d="M6 6l12 12M6 18L18 6" />
+              </button>
+            </header>
+
+            {/* tabs */}
+            <nav className={styles.tabs}>
+              {["documents", "store", "activity", "location"].map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`${styles.tab} ${tab === t ? styles.tabActive : ""}`}
+                >
+                  {t === "store" ? "Store Info" : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </nav>
+
+            {/* body */}
+            <div className={styles.sheetBody}>
               {tab === "store" && (
-                <>
-                  <p><strong>Store:</strong> {selectedDoc.storeName}</p>
-                  <p><strong>Type:</strong> {selectedDoc.storeType}</p>
-                  <p><strong>Address:</strong> 123 Medical Street, Pune 411001</p>
-                  <p><strong>GSTIN:</strong> 27ABCDE1234F1Z5</p>
-                  <p><strong>Drug License:</strong> MED123456</p>
-                  <p><strong>Uploaded:</strong> {selectedDoc.uploadDate}</p>
-                  <div className={styles.actionButtonsDrawer}>
-                    <button className={styles.approveBtn} onClick={() => approve(selectedDoc.id)}><FaCheck /> Approve</button>
-                    <button className={styles.rejectBtn}  onClick={() => reject(selectedDoc.id)}><FaTimes /> Reject</button>
-                  </div>
-                </>
+                <div className={styles.infoGrid}>
+                  <div className={styles.infoItem}><span>Owner</span><b>{selected.owner}</b></div>
+                  <div className={styles.infoItem}><span>Category</span><b>{selected.category}</b></div>
+                  <div className={styles.infoItem}><span>GSTIN</span><b>{selected.gstin || "—"}</b></div>
+                  <div className={styles.infoItem}><span>License No.</span><b>{selected.licenseNo || "—"}</b></div>
+                  <div className={styles.infoItemWide}><span>Address</span><b>{selected.address} • {selected.city} {selected.pincode}</b></div>
+                </div>
               )}
 
-              {tab === "doc" && (
-                <>
-                  <img className={styles.drawerDoc} src={selectedDoc.documentUrl} alt="Uploaded document preview" />
-                  <div className={styles.actionButtonsDrawer}>
-                    <button className={styles.approveBtn} onClick={() => approve(selectedDoc.id)}><FaCheck /> Approve</button>
-                    <button className={styles.rejectBtn}  onClick={() => reject(selectedDoc.id)}><FaTimes /> Reject</button>
+              {tab === "documents" && (
+                <DocList
+                  docs={selected.docs}
+                  onApprove={onApproveDoc}
+                  onReject={onRejectDoc}
+                />
+              )}
+
+              {tab === "activity" && (
+                <ul className={styles.timeline}>
+                  {(selected.activity || []).map((a, i) => (
+                    <li key={i}>
+                      <span>{new Date(a.ts).toLocaleString()}</span>
+                      <b>{a.text}</b>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {tab === "location" && (
+                <div className={styles.mapCard}>
+                  <div className={styles.mapPlaceholder}>Map Preview</div>
+                  <div className={styles.mapMeta}>
+                    <span>Lat: <b>{selected.lat}</b></span>
+                    <span>Lng: <b>{selected.lng}</b></span>
+                    <a
+                      className={styles.openMaps}
+                      href={`https://www.google.com/maps?q=${selected.lat},${selected.lng}`}
+                      target="_blank" rel="noreferrer"
+                    >
+                      Open in Maps
+                    </a>
                   </div>
-                </>
+                </div>
               )}
             </div>
-          </>
-        )}
-      </aside>
+
+            {/* footer */}
+            <footer className={styles.sheetFoot}>
+              <div className={styles.footNote}>
+                Approve all required documents to enable final approval.
+              </div>
+              <button
+                className={styles.approveStore}
+                disabled={!allApproved}
+                onClick={onApproveStore}
+              >
+                Approve Store
+              </button>
+            </footer>
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ====== Documents list (with inline reject reason UI) ====== */
+function DocList({ docs = [], onApprove, onReject }) {
+  const [openReason, setOpenReason] = useState(null);
+  const [text, setText] = useState("");
+
+  const startReject = (id) => { setOpenReason(id); setText(""); };
+  const cancelReject = () => { setOpenReason(null); setText(""); };
+  const confirmReject = (id, reason) => { onReject(id, (reason ?? text).trim()); cancelReject(); };
+
+  return (
+    <div className={styles.docList}>
+      {docs.map((d) => (
+        <div key={d.id} className={styles.docRow}>
+          <div className={styles.docMeta}>
+            <div className={styles.docThumb} />
+            <div className={styles.docText}>
+              <b>{d.name}</b>
+              <span className={styles.smallMuted}>
+                Uploaded {new Date(d.uploadedAt || Date.now()).toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <Pill value={d.status} />
+
+          <div className={styles.docActions}>
+            <button className={styles.ghostBtn} title="Preview">
+              <Icon d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
+              Preview
+            </button>
+
+            {d.status !== "approved" && (
+              <button className={styles.mintBtn} onClick={() => onApprove(d.id)}>
+                <Icon d="M5 12l4 4L19 6" /> Approve
+              </button>
+            )}
+
+            {d.status !== "rejected" && (
+              <button className={styles.roseBtn} onClick={() => startReject(d.id)}>
+                <Icon d="M6 18L18 6M6 6l12 12" /> Reject
+              </button>
+            )}
+          </div>
+
+          {/* inline reject reason */}
+          {openReason === d.id && (
+            <div className={styles.rejectBox}>
+              <div className={styles.chips}>
+                {CANNED.map((c) => (
+                  <button key={c} className={styles.chip} onClick={() => confirmReject(d.id, c)}>
+                    {c}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                className={styles.reason}
+                placeholder="Add a note (optional)…"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+              <div className={styles.rejectActions}>
+                <button className={styles.roseBtn} onClick={() => confirmReject(d.id)}>
+                  Confirm Reject
+                </button>
+                <button className={styles.ghostBtn} onClick={cancelReject}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
