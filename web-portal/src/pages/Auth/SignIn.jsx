@@ -1,78 +1,118 @@
-import React, { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../firebase';
-import styles from './SignIn.module.css';
+// src/pages/Login.jsx
+import React, { useState } from "react";
+import { auth } from "../firebaseConfig";
+import { signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
-export default function SignIn() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-  const [error, setError] = useState('');
+const Login = () => {
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  // Email login state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  // Phone login state
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
+
+  const setupRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container-login", {
+        size: "invisible",
+        callback: () => {}
+      });
+    }
+  };
+
+  const handleEmailLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setEmailError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      window.location.href = '/admin';
+      // If successful, onAuthStateChanged will handle navigation in our App or context.
+      // We can optionally navigate to dashboard:
+      navigate("/");
     } catch (err) {
-      setError(err.message.replace('Firebase: ', ''));
+      setEmailError(err.message);
+    }
+  };
+
+  const sendOtpCode = async (e) => {
+    e.preventDefault();
+    setPhoneError("");
+    try {
+      setupRecaptcha();
+      const appVerifier = window.recaptchaVerifier;
+      const phoneNumber = phone;
+      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      setOtpSent(true);
+      window.confirmationResult = confirmationResult;
+    } catch (err) {
+      setPhoneError(err.message);
+    }
+  };
+
+  const verifyOtpCode = async (e) => {
+    e.preventDefault();
+    setPhoneError("");
+    try {
+      const confirmationResult = window.confirmationResult;
+      await confirmationResult.confirm(otp);
+      // User is now signed in (if phone was registered). If phone was not yet registered,
+      // this will create a new user - but in login context, it means it's a first-time use of phone.
+      // You might want to prevent that or handle it as sign-up.
+      navigate("/");
+    } catch (err) {
+      setPhoneError("Failed to verify code. Please try again.");
     }
   };
 
   return (
-    <div className={styles.authShell}>
-    <div className={styles.container}>
-      <main className={styles.card} role="main" aria-labelledby="title">
-        <h1 id="title" className={styles.title}>Sign In</h1>
+    <div className="login-page">
+      <h2>Login</h2>
+      {/* Email Login Form */}
+      <form onSubmit={handleEmailLogin}>
+        <h3>Email Login</h3>
+        <input 
+          type="email" placeholder="Email" value={email} required 
+          onChange={e => setEmail(e.target.value)} 
+        />
+        <input 
+          type="password" placeholder="Password" value={password} required 
+          onChange={e => setPassword(e.target.value)} 
+        />
+        <button type="submit">Login</button>
+        {emailError && <p className="error">{emailError}</p>}
+      </form>
 
-        <form onSubmit={handleSubmit} className={styles.form} noValidate>
-          <label className={styles.label}>
-            Email
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={styles.input}
-              placeholder="you@company.com"
+      {/* Phone Login Form */}
+      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode}>
+        <h3>Phone Login</h3>
+        {!otpSent ? (
+          <>
+            <input 
+              type="tel" placeholder="Phone number e.g. +1234567890" value={phone} required
+              onChange={e => setPhone(e.target.value)}
             />
-          </label>
-
-          <label className={styles.label}>
-            Password
-            <div className={styles.passRow}>
-              <input
-                type={show ? 'text' : 'password'}
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className={styles.input}
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                className={styles.eye}
-                aria-label={show ? 'Hide password' : 'Show password'}
-                onClick={() => setShow(s => !s)}
-              >
-                {show ? 'Hide' : 'Show'}
-              </button>
-            </div>
-          </label>
-
-          {error && <p className={styles.error}>{error}</p>}
-
-          <button type="submit" className={styles.primary}>Sign In</button>
-
-          <p className={styles.switch}>
-            Don’t have an account? <a href="/signup" className={styles.link}>Create one</a>
-          </p>
-        </form>
-      </main>
-    </div>
+            <div id="recaptcha-container-login"></div>
+            <button type="submit">Send OTP</button>
+          </>
+        ) : (
+          <>
+            <input 
+              type="text" placeholder="Enter OTP" value={otp} required
+              onChange={e => setOtp(e.target.value)}
+            />
+            <button type="submit">Verify & Login</button>
+          </>
+        )}
+        {phoneError && <p className="error">{phoneError}</p>}
+      </form>
     </div>
   );
-}
+};
+
+export default Login;

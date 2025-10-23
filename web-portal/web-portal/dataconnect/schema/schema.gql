@@ -1,0 +1,42 @@
+type User @table {
+  uid: String!
+  createdAt: Timestamp!
+  email: String
+  displayName: String
+  photoUrl: String
+}
+
+type Store @table {
+  name: String!
+  address: String!
+  latitude: Float!
+  longitude: Float!
+  owner: User!
+  createdAt: Timestamp!
+  phoneNumber: String
+  website: String
+  openingHours: String
+}
+
+type Product @table {
+  name: String!
+  description: String
+  category: String
+}
+
+type StoreProduct @table(key: ["store", "product"]) {
+  store: Store!
+  product: Product!
+  price: Float!
+  quantity: Int!
+  updatedAt: Timestamp!
+  sku: String
+  isOnSale: Boolean
+  salePrice: Float
+}
+
+type SearchHistory @table {
+  user: User!
+  searchQuery: String!
+  searchedAt: Timestamp!
+}
