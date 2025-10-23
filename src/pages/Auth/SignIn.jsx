@@ -1,8 +1,11 @@
-// src/pages/Login.jsx
+// src/pages/Auth/Login.jsx
 import React, { useState } from "react";
-import { auth } from "../firebaseConfig";
+import { auth } from "../../firebase/firebaseConfig";
 import { signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import authStyles from "./auth.module.css";
+import styles from "./SignIn.module.css"; // keep the main one as styles
+
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,9 +35,7 @@ const Login = () => {
     setEmailError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // If successful, onAuthStateChanged will handle navigation in our App or context.
-      // We can optionally navigate to dashboard:
-      navigate("/");
+      navigate("/"); // redirect to homepage or dashboard
     } catch (err) {
       setEmailError(err.message);
     }
@@ -46,8 +47,7 @@ const Login = () => {
     try {
       setupRecaptcha();
       const appVerifier = window.recaptchaVerifier;
-      const phoneNumber = phone;
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      const confirmationResult = await signInWithPhoneNumber(auth, phone, appVerifier);
       setOtpSent(true);
       window.confirmationResult = confirmationResult;
     } catch (err) {
@@ -61,9 +61,6 @@ const Login = () => {
     try {
       const confirmationResult = window.confirmationResult;
       await confirmationResult.confirm(otp);
-      // User is now signed in (if phone was registered). If phone was not yet registered,
-      // this will create a new user - but in login context, it means it's a first-time use of phone.
-      // You might want to prevent that or handle it as sign-up.
       navigate("/");
     } catch (err) {
       setPhoneError("Failed to verify code. Please try again.");
@@ -71,45 +68,34 @@ const Login = () => {
   };
 
   return (
-    <div className="login-page">
+    <div className={styles.authContainer}>
       <h2>Login</h2>
+
       {/* Email Login Form */}
-      <form onSubmit={handleEmailLogin}>
+      <form onSubmit={handleEmailLogin} className={styles.authForm}>
         <h3>Email Login</h3>
-        <input 
-          type="email" placeholder="Email" value={email} required 
-          onChange={e => setEmail(e.target.value)} 
-        />
-        <input 
-          type="password" placeholder="Password" value={password} required 
-          onChange={e => setPassword(e.target.value)} 
-        />
+        <input type="email" placeholder="Email" value={email} required onChange={e => setEmail(e.target.value)} />
+        <input type="password" placeholder="Password" value={password} required onChange={e => setPassword(e.target.value)} />
         <button type="submit">Login</button>
-        {emailError && <p className="error">{emailError}</p>}
+        {emailError && <p className={styles.error}>{emailError}</p>}
       </form>
 
       {/* Phone Login Form */}
-      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode}>
+      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode} className={styles.authForm}>
         <h3>Phone Login</h3>
         {!otpSent ? (
           <>
-            <input 
-              type="tel" placeholder="Phone number e.g. +1234567890" value={phone} required
-              onChange={e => setPhone(e.target.value)}
-            />
+            <input type="tel" placeholder="Phone number e.g. +919123456789" value={phone} required onChange={e => setPhone(e.target.value)} />
             <div id="recaptcha-container-login"></div>
             <button type="submit">Send OTP</button>
           </>
         ) : (
           <>
-            <input 
-              type="text" placeholder="Enter OTP" value={otp} required
-              onChange={e => setOtp(e.target.value)}
-            />
+            <input type="text" placeholder="Enter OTP" value={otp} required onChange={e => setOtp(e.target.value)} />
             <button type="submit">Verify & Login</button>
           </>
         )}
-        {phoneError && <p className="error">{phoneError}</p>}
+        {phoneError && <p className={styles.error}>{phoneError}</p>}
       </form>
     </div>
   );

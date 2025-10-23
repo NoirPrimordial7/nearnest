@@ -1,0 +1,552 @@
+extend type Mutation {
+  """
+  ✨ Insert a single `Product` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `SearchHistory` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  searchHistory_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: SearchHistory_Data!
+  ): SearchHistory_KeyOutput! @fdc_generated(from: "SearchHistory", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `Store` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  store_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: Store_Data!
+  ): Store_KeyOutput! @fdc_generated(from: "Store", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `StoreProduct` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  storeProduct_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: StoreProduct_Data!
+  ): StoreProduct_KeyOutput! @fdc_generated(from: "StoreProduct", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert a single `User` into the table and return its key. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insert(
+    """
+    Data object to insert into the table.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: INSERT_SINGLE)
+  """
+  ✨ Insert `Product` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  product_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `SearchHistory` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  searchHistory_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [SearchHistory_Data!]!
+  ): [SearchHistory_KeyOutput!]! @fdc_generated(from: "SearchHistory", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `Store` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  store_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [Store_Data!]!
+  ): [Store_KeyOutput!]! @fdc_generated(from: "Store", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `StoreProduct` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  storeProduct_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [StoreProduct_Data!]!
+  ): [StoreProduct_KeyOutput!]! @fdc_generated(from: "StoreProduct", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert `User` objects into the table and return their keys. Columns not specified in `data` will receive defaults (e.g. `null`).
+  """
+  user_insertMany(
+    """
+    List of data objects to insert into the table.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: INSERT_MULTIPLE)
+  """
+  ✨ Insert or update a single `Product` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
+  """
+  product_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput! @fdc_generated(from: "Product", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `SearchHistory` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `SearchHistory`.
+  """
+  searchHistory_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: SearchHistory_Data!
+  ): SearchHistory_KeyOutput! @fdc_generated(from: "SearchHistory", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `Store` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Store`.
+  """
+  store_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: Store_Data!
+  ): Store_KeyOutput! @fdc_generated(from: "Store", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `StoreProduct` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `StoreProduct`.
+  """
+  storeProduct_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: StoreProduct_Data!
+  ): StoreProduct_KeyOutput! @fdc_generated(from: "StoreProduct", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update a single `User` into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsert(
+    """
+    Data object to insert or update if it already exists.
+    """
+    data: User_Data!
+  ): User_KeyOutput! @fdc_generated(from: "User", purpose: UPSERT_SINGLE)
+  """
+  ✨ Insert or update `Product` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Product`.
+  """
+  product_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Product_Data!]!
+  ): [Product_KeyOutput!]! @fdc_generated(from: "Product", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `SearchHistory` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `SearchHistory`.
+  """
+  searchHistory_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [SearchHistory_Data!]!
+  ): [SearchHistory_KeyOutput!]! @fdc_generated(from: "SearchHistory", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `Store` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `Store`.
+  """
+  store_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [Store_Data!]!
+  ): [Store_KeyOutput!]! @fdc_generated(from: "Store", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `StoreProduct` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `StoreProduct`.
+  """
+  storeProduct_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [StoreProduct_Data!]!
+  ): [StoreProduct_KeyOutput!]! @fdc_generated(from: "StoreProduct", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Insert or update `User` objects into the table, based on the primary key. Returns the key of the newly inserted or existing updated `User`.
+  """
+  user_upsertMany(
+    """
+    List of data objects to insert or update if it already exists.
+    """
+    data: [User_Data!]!
+  ): [User_KeyOutput!]! @fdc_generated(from: "User", purpose: UPSERT_MULTIPLE)
+  """
+  ✨ Update a single `Product` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Product` or `null` if not found.
+  """
+  product_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Product_Data!
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `SearchHistory` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `SearchHistory` or `null` if not found.
+  """
+  searchHistory_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SearchHistory_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SearchHistory_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: SearchHistory_Data!
+  ): SearchHistory_KeyOutput @fdc_generated(from: "SearchHistory", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `Store` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `Store` or `null` if not found.
+  """
+  store_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Store_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Store_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: Store_Data!
+  ): Store_KeyOutput @fdc_generated(from: "Store", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `StoreProduct` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `StoreProduct` or `null` if not found.
+  """
+  storeProduct_update(
+    """
+    The key used to identify the object.
+    """
+    key: StoreProduct_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: StoreProduct_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: StoreProduct_Data!
+  ): StoreProduct_KeyOutput @fdc_generated(from: "StoreProduct", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update a single `User` based on `id`, `key` or `first`, setting columns specified in `data`. Returns the key of the updated `User` or `null` if not found.
+  """
+  user_update(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+
+    """
+    Data object containing fields to be updated.
+    """
+    data: User_Data!
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: UPDATE_SINGLE)
+  """
+  ✨ Update `Product` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  product_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Product_Data!
+  ): Int! @fdc_generated(from: "Product", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `SearchHistory` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  searchHistory_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: SearchHistory_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: SearchHistory_Data!
+  ): Int! @fdc_generated(from: "SearchHistory", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `Store` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  store_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: Store_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: Store_Data!
+  ): Int! @fdc_generated(from: "Store", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `StoreProduct` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  storeProduct_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: StoreProduct_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: StoreProduct_Data!
+  ): Int! @fdc_generated(from: "StoreProduct", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Update `User` objects matching `where` conditions (or `all`, if true) according to `data`. Returns the number of rows updated.
+  """
+  user_updateMany(
+    """
+    Filter condition to specify which rows to update.
+    """
+    where: User_Filter
+
+    """
+    Set to true to update all rows.
+    """
+    all: Boolean = false
+
+    """
+    Data object containing fields to update.
+    """
+    data: User_Data!
+  ): Int! @fdc_generated(from: "User", purpose: UPDATE_MULTIPLE)
+  """
+  ✨ Delete a single `Product` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  product_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Product_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Product_FirstRow
+  ): Product_KeyOutput @fdc_generated(from: "Product", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `SearchHistory` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  searchHistory_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: SearchHistory_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: SearchHistory_FirstRow
+  ): SearchHistory_KeyOutput @fdc_generated(from: "SearchHistory", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `Store` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  store_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: Store_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: Store_FirstRow
+  ): Store_KeyOutput @fdc_generated(from: "Store", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `StoreProduct` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  storeProduct_delete(
+    """
+    The key used to identify the object.
+    """
+    key: StoreProduct_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: StoreProduct_FirstRow
+  ): StoreProduct_KeyOutput @fdc_generated(from: "StoreProduct", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete a single `User` based on `id`, `key` or `first` and return its key (or `null` if not found).
+  """
+  user_delete(
+    """
+    The unique ID of the object.
+    """
+    id: UUID
+
+    """
+    The key used to identify the object.
+    """
+    key: User_Key
+
+    """
+    Fetch the first row based on the filters and ordering.
+    """
+    first: User_FirstRow
+  ): User_KeyOutput @fdc_generated(from: "User", purpose: DELETE_SINGLE)
+  """
+  ✨ Delete `Product` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  product_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Product_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Product", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `SearchHistory` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  searchHistory_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: SearchHistory_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "SearchHistory", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `Store` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  store_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: Store_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "Store", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `StoreProduct` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  storeProduct_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: StoreProduct_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "StoreProduct", purpose: DELETE_MULTIPLE)
+  """
+  ✨ Delete `User` objects matching `where` conditions (or `all`, if true). Returns the number of rows deleted.
+  """
+  user_deleteMany(
+    """
+    Filter condition to specify which rows to delete.
+    """
+    where: User_Filter
+
+    """
+    Set to true to delete all rows.
+    """
+    all: Boolean = false
+  ): Int! @fdc_generated(from: "User", purpose: DELETE_MULTIPLE)
+}

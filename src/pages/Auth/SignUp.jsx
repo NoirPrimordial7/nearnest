@@ -1,75 +1,69 @@
-// src/pages/SignUp.jsx
+// src/pages/Auth/SignUp.jsx
 import React, { useState } from "react";
-import { auth, db } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
-import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/firebaseConfig";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
+} from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
+import authStyles from "./auth.module.css";
+import styles from "./SignIn.module.css";
 
-const SignUp = () => {
+
+
+export default function SignUp() {
   const navigate = useNavigate();
 
-  // State for email/password form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
 
-  // State for phone form
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [phoneError, setPhoneError] = useState("");
 
-  // Initialize reCAPTCHA when sending OTP
   const setupRecaptcha = () => {
     if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
-        callback: (response) => {
-          // reCAPTCHA solved - will proceed with send OTP
-        },
+        callback: (response) => {}
       });
     }
   };
 
-  // Email/password sign-up handler
   const handleEmailSignUp = async (e) => {
     e.preventDefault();
     setEmailError("");
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      // Send verification email
       await sendEmailVerification(userCred.user);
-      // Create a placeholder Firestore doc (with verified false and default role)
       await setDoc(doc(db, "users", userCred.user.uid), {
-        email: email,
-        username: "",            // will be set after verification
-        phone: "",               // no phone initially
+        email,
+        username: "",
+        phone: "",
         emailVerified: false,
-        role: "user",            // default role
-        permissions: {},         // (optional) could leave empty or set defaults
+        role: "user",
+        permissions: {},
         createdAt: Date.now()
       });
-      // Prompt user to check email
-      alert("Verification email sent to " + email + ". Please verify your email before continuing.");
-      // Navigate to verification notice page
+      alert(`Verification email sent to ${email}.`);
       navigate("/verify-email");
     } catch (err) {
       setEmailError(err.message);
     }
   };
 
-  // Phone sign-up (OTP send)
   const sendOtpCode = async (e) => {
     e.preventDefault();
     setPhoneError("");
     try {
       setupRecaptcha();
       const appVerifier = window.recaptchaVerifier;
-      // Format phone with country code if not included, e.g., +1 or +91 etc.
-      const phoneNumber = phone;
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      // SMS sent
+      const confirmationResult = await signInWithPhoneNumber(auth, phone, appVerifier);
       setOtpSent(true);
       window.confirmationResult = confirmationResult;
     } catch (err) {
@@ -77,80 +71,62 @@ const SignUp = () => {
     }
   };
 
-  // Verify OTP code and finalize phone sign-up
   const verifyOtpCode = async (e) => {
     e.preventDefault();
     setPhoneError("");
     try {
       const confirmationResult = window.confirmationResult;
       const cred = await confirmationResult.confirm(otp);
-      // cred.user is now signed in with that phone number.
       const user = cred.user;
-      // Check if user doc already exists (perhaps from a previous email sign-up linking same phone)
       const userDocRef = doc(db, "users", user.uid);
-      const docSnap = await userDocRef.get(); // (We could use getDoc in modular API)
+      const docSnap = await getDoc(userDocRef);
+
       if (!docSnap.exists()) {
-        // New user, create user doc with default role
         await setDoc(userDocRef, {
           phone: user.phoneNumber,
-          email: user.email || "",  // user.email might be empty for phone-auth-only
+          email: user.email || "",
           username: "",
-          emailVerified: user.email ? user.emailVerified : false, // likely false or not applicable
+          emailVerified: user.email ? user.emailVerified : false,
           role: "user",
           permissions: {},
           createdAt: Date.now()
         });
       }
-      // Phone user doesn't need email verification, proceed to profile setup
+
       navigate("/profile-setup");
     } catch (err) {
-      setPhoneError("Invalid OTP. Please try again.");
+      setPhoneError("Invalid OTP. Try again.");
     }
   };
 
   return (
-    <div className="signup-page">
-      <h2>Sign Up</h2>
-      {/* Email/Password Sign Up Form */}
-      <form onSubmit={handleEmailSignUp}>
-        <h3>Email Registration</h3>
-        <input 
-          type="email" placeholder="Email" value={email} required
-          onChange={e => setEmail(e.target.value)} 
-        />
-        <input 
-          type="password" placeholder="Password" value={password} required
-          onChange={e => setPassword(e.target.value)} 
-        />
-        <button type="submit">Sign Up with Email</button>
-        {emailError && <p className="error">{emailError}</p>}
-      </form>
+    <div className={styles.authShell}>
+      <div className={styles.card}>
+        <h2 className={styles.title}>Sign Up</h2>
 
-      {/* Phone OTP Sign Up Form */}
-      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode}>
-        <h3>Phone Registration</h3>
-        {!otpSent ? (
-          <>
-            <input 
-              type="tel" placeholder="Phone number e.g. +1234567890" value={phone} required
-              onChange={e => setPhone(e.target.value)}
-            />
-            <div id="recaptcha-container"></div> {/* Recaptcha container */}
-            <button type="submit">Send OTP</button>
-          </>
-        ) : (
-          <>
-            <input 
-              type="text" placeholder="Enter OTP" value={otp} required
-              onChange={e => setOtp(e.target.value)}
-            />
-            <button type="submit">Verify OTP</button>
-          </>
-        )}
-        {phoneError && <p className="error">{phoneError}</p>}
-      </form>
+        <form onSubmit={handleEmailSignUp} className={styles.form}>
+          <input className={styles.input} type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          <input className={styles.input} type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+          <button className={styles.primary} type="submit">Sign Up with Email</button>
+          {emailError && <p className={styles.error}>{emailError}</p>}
+        </form>
+
+        <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode} className={styles.form}>
+          {!otpSent ? (
+            <>
+              <input className={styles.input} type="tel" placeholder="Phone (e.g. +919012345678)" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+              <div id="recaptcha-container"></div>
+              <button className={styles.primary} type="submit">Send OTP</button>
+            </>
+          ) : (
+            <>
+              <input className={styles.input} type="text" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} required />
+              <button className={styles.primary} type="submit">Verify OTP</button>
+            </>
+          )}
+          {phoneError && <p className={styles.error}>{phoneError}</p>}
+        </form>
+      </div>
     </div>
   );
-};
-
-export default SignUp;
+}
