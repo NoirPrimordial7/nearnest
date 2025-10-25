@@ -1,198 +1,192 @@
-/* eslint-env node */
-"use strict";
+// functions/index.js
+require('dotenv').config();
 
-// CommonJS is fine:
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { onCall, setGlobalOptions } = require('firebase-functions/v2/https');
+const logger = require('firebase-functions/logger');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
-// >>> New way: use Functions Secrets (no more functions.config())
-const { defineSecret } = require("firebase-functions/params");
-const EMAIL_USER = defineSecret("EMAIL_USER");
-const EMAIL_PASS = defineSecret("EMAIL_PASS");
+// Optional: support legacy functions.config() until March 2026
+let legacyConfig = {};
+try {
+  // eslint-disable-next-line global-require
+  const functionsV1 = require('firebase-functions');
+  legacyConfig = functionsV1.config ? functionsV1.config() : {};
+} catch (_) {
+  legacyConfig = {};
+}
 
-admin.initializeApp();
-const db = admin.firestore();
+// Read secrets from .env first (preferred), then legacy config
+const EMAIL_USER =
+  process.env.EMAIL_USER || legacyConfig.email?.user || '';
+const EMAIL_PASS =
+  process.env.EMAIL_PASS || legacyConfig.email?.pass || '';
 
-const APP_NAME = "NearNest";
+if (!EMAIL_USER || !EMAIL_PASS) {
+  logger.warn(
+    'Missing EMAIL_USER / EMAIL_PASS. Configure .env or functions:config:set.'
+  );
+}
 
-// util
-function makeCode() {
+initializeApp();
+
+// All functions default to us-central1 + sane limits
+setGlobalOptions({
+  region: 'us-central1',
+  timeoutSeconds: 60,
+  memory: '256MiB',
+});
+
+// Nodemailer (Gmail SMTP)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: EMAIL_USER,
+    pass: EMAIL_PASS,
+  },
+});
+
+/**
+ * Helper: 6-digit numeric code
+ */
+function createCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
-function sha(s) {
-  return crypto.createHash("sha256").update(s).digest("hex");
-}
 
-function makeTransport(user, pass) {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: { user, pass },
-  });
+/**
+ * Helper: sha256 hash of code (store hash, not the code)
+ */
+function hashCode(code) {
+  return crypto.createHash('sha256').update(code).digest('hex');
 }
 
 /**
- * On new auth user -> create Firestore profile + email code
+ * Callable: requestEmailCode
+ * data: { email: string }
+ * auth: must be signed-in
  */
-exports.onAuthCreate = functions
-  .runWith({ secrets: [EMAIL_USER, EMAIL_PASS] })
-  .auth.user()
-  .onCreate(async (user) => {
-    const uid = user.uid;
-    const profileRef = db.collection("users").doc(uid);
+exports.requestEmailCode = onCall(async (req) => {
+  const uid = req.auth?.uid;
+  const email = (req.data?.email || '').trim().toLowerCase();
 
-    await profileRef.set(
-      {
-        email: user.email || null,
-        phone: user.phoneNumber || null,
-        displayName: user.displayName || null,
-        status: "pending_email_verification",
-        roles: ["user"],
-        primaryRole: "user",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
-    );
+  if (!uid) {
+    logger.warn('Unauthenticated call to requestEmailCode');
+    throw new Error('UNAUTHENTICATED');
+  }
+  if (!email) {
+    throw new Error('INVALID_ARGUMENT: email required');
+  }
 
-    // create 6-digit code
-    const code = makeCode();
-    const hash = sha(code);
-    const expires = admin.firestore.Timestamp.fromDate(
-      new Date(Date.now() + 1000 * 60 * 15)
-    );
+  const db = getFirestore();
+  const userRef = db.collection('users').doc(uid);
+  const verRef = userRef.collection('verification').doc('email');
 
-    await profileRef.collection("verification").doc("email").set({
-      codeHash: hash,
-      expiresAt: expires,
+  // Ensure user doc exists (idempotent)
+  await userRef.set(
+    {
+      email,
+      roles: ['user'],
+      primaryRole: 'user',
+      status: 'pending_email_verification',
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  // Make new code + store its hash
+  const code = createCode();
+  const codeHash = hashCode(code);
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  await verRef.set(
+    {
+      codeHash,
+      expiresAt,
       attempts: 0,
-    });
+    },
+    { merge: true }
+  );
 
-    if (user.email) {
-      const transporter = makeTransport(EMAIL_USER.value(), EMAIL_PASS.value());
-      await transporter.sendMail({
-        from: `${APP_NAME} <${EMAIL_USER.value()}>`,
-        to: user.email,
-        subject: `${APP_NAME} – Verify your email`,
-        html: `
-          <div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto">
-            <h2>${APP_NAME}</h2>
-            <p>Your verification code is:</p>
-            <p style="font-size:22px;font-weight:800;letter-spacing:8px;">${code}</p>
-            <p>This code expires in 15 minutes.</p>
-          </div>`,
-      });
-    }
-  });
+  // Send email
+  if (!EMAIL_USER || !EMAIL_PASS) {
+    // Don’t try to send if secrets missing
+    logger.error('EMAIL credentials missing; cannot send email');
+    throw new Error('EMAIL_NOT_CONFIGURED');
+  }
 
-/**
- * Request a new email code
- */
-exports.requestEmailCode = functions
-  .runWith({ secrets: [EMAIL_USER, EMAIL_PASS] })
-  .https.onCall(async (data, context) => {
-    if (!context.auth)
-      throw new functions.https.HttpsError("unauthenticated", "Login required");
-    const uid = context.auth.uid;
+  const mail = {
+    from: `NearNest <${EMAIL_USER}>`,
+    to: email,
+    subject: 'Your NearNest verification code',
+    text: `Your code is ${code}. It expires in 10 minutes.`,
+    html: `
+      <div style="font-family:Inter,Arial,sans-serif;font-size:16px">
+        <p>Use this code to verify your email:</p>
+        <p style="font-size:28px;font-weight:700;letter-spacing:4px">${code}</p>
+        <p>This code expires in 10 minutes.</p>
+      </div>
+    `,
+  };
 
-    const profileRef = db.collection("users").doc(uid);
-    const u = await admin.auth().getUser(uid);
-    if (!u.email)
-      throw new functions.https.HttpsError(
-        "failed-precondition",
-        "No email on account."
-      );
+  await transporter.sendMail(mail);
 
-    const code = makeCode();
-    const hash = sha(code);
-    const expires = admin.firestore.Timestamp.fromDate(
-      new Date(Date.now() + 1000 * 60 * 15)
-    );
-
-    await profileRef.collection("verification").doc("email").set({
-      codeHash: hash,
-      expiresAt: expires,
-      attempts: 0,
-    });
-
-    const transporter = makeTransport(EMAIL_USER.value(), EMAIL_PASS.value());
-    await transporter.sendMail({
-      from: `${APP_NAME} <${EMAIL_USER.value()}>`,
-      to: u.email,
-      subject: `${APP_NAME} – New verification code`,
-      html: `<p>Your new code:</p>
-             <p style="font-size:22px;font-weight:800;letter-spacing:8px;">${code}</p>`,
-    });
-
-    return { ok: true };
-  });
-
-/**
- * Verify email code
- */
-exports.verifyEmailCode = functions.https.onCall(async (data, context) => {
-  const code = String(data?.code || "");
-  if (!context.auth)
-    throw new functions.https.HttpsError("unauthenticated", "Login required.");
-  if (!/^\d{6}$/.test(code))
-    throw new functions.https.HttpsError("invalid-argument", "Invalid code");
-
-  const uid = context.auth.uid;
-  const vRef = db.collection("users").doc(uid).collection("verification").doc("email");
-  const snap = await vRef.get();
-  if (!snap.exists)
-    throw new functions.https.HttpsError("failed-precondition", "No request.");
-  const v = snap.data();
-
-  const now = admin.firestore.Timestamp.now();
-  if (v.expiresAt.toMillis() < now.toMillis())
-    throw new functions.https.HttpsError("deadline-exceeded", "Code expired.");
-
-  if (v.attempts >= 6)
-    throw new functions.https.HttpsError("resource-exhausted", "Too many attempts.");
-
-  const match = sha(code) === v.codeHash;
-  await vRef.update({ attempts: v.attempts + 1 });
-
-  if (!match)
-    throw new functions.https.HttpsError("permission-denied", "Wrong code.");
-
-  await admin.auth().updateUser(uid, { emailVerified: true });
-  await db.collection("users").doc(uid).update({
-    status: "email_verified",
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
+  logger.info(`Verification code sent to ${email} for uid ${uid}`);
   return { ok: true };
 });
 
 /**
- * Admin: set user roles and mirror to custom claims
+ * Callable: verifyEmailCode
+ * data: { code: string }
  */
-exports.setUserRoles = functions.https.onCall(async (data, context) => {
-  const callerUid = context.auth?.uid;
-  if (!callerUid)
-    throw new functions.https.HttpsError("unauthenticated", "Login required.");
+exports.verifyEmailCode = onCall(async (req) => {
+  const uid = req.auth?.uid;
+  const code = (req.data?.code || '').trim();
 
-  const caller = await admin.auth().getUser(callerUid);
-  const claims = caller.customClaims || {};
-  if (!claims.admin)
-    throw new functions.https.HttpsError("permission-denied", "Admin only.");
+  if (!uid) throw new Error('UNAUTHENTICATED');
+  if (!/^\d{6}$/.test(code)) throw new Error('INVALID_ARGUMENT: 6-digit code required');
 
-  const { uid, roles } = data || {};
-  if (!uid || !Array.isArray(roles))
-    throw new functions.https.HttpsError("invalid-argument", "uid & roles required");
+  const db = getFirestore();
+  const userRef = db.collection('users').doc(uid);
+  const verRef = userRef.collection('verification').doc('email');
 
-  await db.collection("users").doc(uid).update({
-    roles,
-    primaryRole: roles[0] || "user",
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  const verSnap = await verRef.get();
+  if (!verSnap.exists) throw new Error('NOT_FOUND');
 
-  const roleMap = {};
-  roles.forEach((r) => (roleMap[r] = true));
-  await admin.auth().setCustomUserClaims(uid, { ...roleMap });
+  const ver = verSnap.data();
+  const now = Date.now();
+  const attemptCount = (ver.attempts || 0) + 1;
 
-  return { ok: true };
+  // rate-limit / max attempts
+  if (attemptCount > 5) {
+    await verRef.delete();
+    throw new Error('TOO_MANY_ATTEMPTS');
+  }
+
+  // expired?
+  if (typeof ver.expiresAt !== 'number' || ver.expiresAt < now) {
+    await verRef.delete();
+    throw new Error('EXPIRED');
+  }
+
+  const matches = hashCode(code) === ver.codeHash;
+  if (!matches) {
+    await verRef.update({ attempts: attemptCount });
+    throw new Error('CODE_MISMATCH');
+  }
+
+  // Success: set user active, clear verification doc
+  await userRef.set(
+    {
+      status: 'email_verified',
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+  await verRef.delete();
+
+  logger.info(`Email verified for uid ${uid}`);
+  return { ok: true, status: 'email_verified' };
 });
