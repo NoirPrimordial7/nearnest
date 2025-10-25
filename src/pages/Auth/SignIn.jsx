@@ -18,7 +18,7 @@ const Login = () => {
   // Phone login state
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
+  const [otpSent, setOtpSent] = useState(false); 
   const [phoneError, setPhoneError] = useState("");
 
   const setupRecaptcha = () => {
@@ -102,3 +102,4 @@ const Login = () => {
 };
 
 export default Login;
+  
