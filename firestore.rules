@@ -1,6 +1,4 @@
 // Only owners can read/update their own profile (limited fields).
-// Roles collection read-only for everyone; only admins modify.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -21,14 +19,15 @@ service cloud.firestore {
       allow update: if isOwner(uid) || isAdmin();
       allow delete: if false;
 
+      // Keep verification data server-only
       match /verification/{doc} {
-        // users can’t read code data; backend handles that
         allow read, write: if false;
       }
     }
 
+    // Everyone can read role definitions; only admins can change them.
     match /roles/{roleId} {
-      allow read: if true;                   // public read
+      allow read: if true;
       allow write: if isAdmin();
     }
   }
