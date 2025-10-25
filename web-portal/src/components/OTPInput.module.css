@@ -1,0 +1,6 @@
+.row{display:flex;gap:8px}
+.box{
+  width:42px;height:48px;border-radius:12px;border:1px solid #ececec;background:#fff;
+  text-align:center;font-weight:800;font-size:18px;outline:none;
+}
+.box:focus{border-color:#9aa2ff; box-shadow:0 0 0 3px rgba(99,102,241,.15)}

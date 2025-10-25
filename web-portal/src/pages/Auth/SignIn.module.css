@@ -188,3 +188,15 @@ html, body, #root {
   padding: 24px;
 }
 
+.login-page {
+  padding: 2rem;
+  max-width: 400px;
+  margin: auto;
+  background-color: white;
+  color: black;
+}
+input, button {
+  display: block;
+  width: 100%;
+  margin: 1rem 0;
+}

@@ -1,34 +1,76 @@
-// src/pages/VerifyEmail.jsx
 import React, { useState } from "react";
-import { auth } from "../firebaseConfig";
-import { sendEmailVerification } from "firebase/auth";
-import { useAuth } from "../contexts/AuthContext";
+import styles from "./auth.module.css";
+import OTPInput from "../../components/OTPInput.jsx";
+import { httpsCallable, getFunctions } from "firebase/functions";
+import { auth } from "../../lib/firebase.js";
+import { useNavigate, Link } from "react-router-dom";
 
-const VerifyEmail = () => {
-  const { firebaseUser } = useAuth();
-  const [message, setMessage] = useState("");
+export default function VerifyEmail() {
+  const nav = useNavigate();
+  const [code, setCode] = useState("");
+  const [msg, setMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const functions = getFunctions();
 
-  const handleResend = async () => {
-    if (firebaseUser) {
-      try {
-        await sendEmailVerification(firebaseUser);
-        setMessage("Verification email resent. Please check your inbox.");
-      } catch (err) {
-        setMessage("Error sending verification email: " + err.message);
-      }
+  const verify = async () => {
+    setMsg("");
+    setLoading(true);
+    try {
+      const fn = httpsCallable(functions, "verifyEmailCode");
+      await fn({ code });
+      setMsg("Email verified! Redirecting…");
+      setTimeout(() => nav("/complete-profile"), 600);
+    } catch (e) {
+      setMsg(e.message || "Verification failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const resend = async () => {
+    setMsg("");
+    try {
+      const fn = httpsCallable(functions, "requestEmailCode");
+      await fn();
+      setMsg("New code sent to your email.");
+    } catch (e) {
+      setMsg(e.message || "Failed to send code");
+    }
+  };
+
+  if (!auth.currentUser) {
+    return (
+      <div className={styles.shell}>
+        <div className={styles.card}>
+          <section className={styles.left}>
+            <h3>Session expired</h3>
+            <Link to="/signin" className={styles.link}>Sign in</Link>
+          </section>
+          <aside className={styles.right}/>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="verify-email-page">
-      <h2>Please Verify Your Email</h2>
-      <p>We've sent a verification link to your email address. Please click that link to verify your account.</p>
-      <p>After verification, you can continue to complete your profile.</p>
-      <button onClick={handleResend}>Resend Verification Email</button>
-      {message && <p>{message}</p>}
-      <p><em>Once verified, please refresh or log in again to continue.</em></p>
+    <div className={styles.shell}>
+      <div className={styles.card}>
+        <section className={styles.left}>
+          <h2>Verify your email</h2>
+          <p className={styles.hint}>
+            We sent a 6-digit code to <b>{auth.currentUser.email}</b>.
+          </p>
+          <OTPInput value={code} onChange={setCode} />
+          {msg && <div className={msg.includes("verified") ? styles.success : styles.err}>{msg}</div>}
+          <div className={styles.row}>
+            <button className={styles.btn} onClick={verify} disabled={code.length !== 6 || loading}>
+              {loading ? "Verifying…" : "Verify"}
+            </button>
+            <button className={styles.ghost} onClick={resend}>Resend code</button>
+          </div>
+        </section>
+        <aside className={styles.right}/>
+      </div>
     </div>
   );
-};
-
-export default VerifyEmail;
+}

@@ -1,118 +1,117 @@
-// src/pages/Login.jsx
-import React, { useState } from "react";
-import { auth } from "../firebaseConfig";
-import { signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styles from "./auth.module.css";
+import {
+  auth,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+} from "../../lib/firebase.js";
 
-const Login = () => {
-  const navigate = useNavigate();
-
-  // Email login state
+export default function SignIn() {
+  const nav = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
-
-  // Phone login state
+  const [pass, setPass] = useState("");
+  const [msg, setMsg] = useState("");
+  const [showPhone, setShowPhone] = useState(false);
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [phoneError, setPhoneError] = useState("");
+  const recaptcha = useRef(null);
 
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container-login", {
+  useEffect(() => {
+    if (!showPhone) return;
+    if (!recaptcha.current) {
+      recaptcha.current = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
-        callback: () => {}
       });
     }
-  };
+  }, [showPhone]);
 
-  const handleEmailLogin = async (e) => {
+  const signInEmail = async (e) => {
     e.preventDefault();
-    setEmailError("");
+    setMsg("");
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // If successful, onAuthStateChanged will handle navigation in our App or context.
-      // We can optionally navigate to dashboard:
-      navigate("/");
-    } catch (err) {
-      setEmailError(err.message);
+      await signInWithEmailAndPassword(auth, email, pass);
+      nav("/admin");
+    } catch (e) {
+      setMsg(e.message || "Sign in failed");
     }
   };
 
-  const sendOtpCode = async (e) => {
-    e.preventDefault();
-    setPhoneError("");
+  const requestOtp = async () => {
+    setMsg("");
     try {
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier;
-      const phoneNumber = phone;
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      setOtpSent(true);
-      window.confirmationResult = confirmationResult;
-    } catch (err) {
-      setPhoneError(err.message);
+      const confirm = await signInWithPhoneNumber(auth, phone, recaptcha.current);
+      window._confirmPhone = confirm;
+      setMsg("OTP sent to phone.");
+    } catch (e) {
+      setMsg(e.message || "Failed to send OTP");
     }
   };
 
-  const verifyOtpCode = async (e) => {
-    e.preventDefault();
-    setPhoneError("");
+  const confirmOtp = async () => {
     try {
-      const confirmationResult = window.confirmationResult;
-      await confirmationResult.confirm(otp);
-      // User is now signed in (if phone was registered). If phone was not yet registered,
-      // this will create a new user - but in login context, it means it's a first-time use of phone.
-      // You might want to prevent that or handle it as sign-up.
-      navigate("/");
-    } catch (err) {
-      setPhoneError("Failed to verify code. Please try again.");
+      await window._confirmPhone.confirm(otp);
+      nav("/admin");
+    } catch (e) {
+      setMsg(e.message || "Invalid code");
+    }
+  };
+
+  const forgot = async () => {
+    if (!email) return setMsg("Enter email first");
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMsg("Password reset email sent.");
+    } catch (e) {
+      setMsg(e.message || "Failed to send reset");
     }
   };
 
   return (
-    <div className="login-page">
-      <h2>Login</h2>
-      {/* Email Login Form */}
-      <form onSubmit={handleEmailLogin}>
-        <h3>Email Login</h3>
-        <input 
-          type="email" placeholder="Email" value={email} required 
-          onChange={e => setEmail(e.target.value)} 
-        />
-        <input 
-          type="password" placeholder="Password" value={password} required 
-          onChange={e => setPassword(e.target.value)} 
-        />
-        <button type="submit">Login</button>
-        {emailError && <p className="error">{emailError}</p>}
-      </form>
+    <div className={styles.shell}>
+      <div className={styles.card}>
+        <section className={styles.left}>
+          <div className={styles.brand}>nearnest</div>
+          <h2>Welcome back</h2>
 
-      {/* Phone Login Form */}
-      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode}>
-        <h3>Phone Login</h3>
-        {!otpSent ? (
-          <>
-            <input 
-              type="tel" placeholder="Phone number e.g. +1234567890" value={phone} required
-              onChange={e => setPhone(e.target.value)}
-            />
-            <div id="recaptcha-container-login"></div>
-            <button type="submit">Send OTP</button>
-          </>
-        ) : (
-          <>
-            <input 
-              type="text" placeholder="Enter OTP" value={otp} required
-              onChange={e => setOtp(e.target.value)}
-            />
-            <button type="submit">Verify & Login</button>
-          </>
-        )}
-        {phoneError && <p className="error">{phoneError}</p>}
-      </form>
+          {!showPhone ? (
+            <form onSubmit={signInEmail} className={styles.grid}>
+              <input className={styles.input} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className={styles.input} placeholder="Password" type="password" value={pass} onChange={(e) => setPass(e.target.value)} />
+              {msg && <div className={styles.err}>{msg}</div>}
+              <button className={styles.btn}>Sign in</button>
+              <div className={styles.row}>
+                <button type="button" className={styles.ghost} onClick={forgot}>Forgot password</button>
+                <button type="button" className={styles.ghost} onClick={() => setShowPhone(true)}>Use phone</button>
+              </div>
+              <div className={styles.note}>
+                New here? <Link className={styles.link} to="/signup">Create account</Link>
+              </div>
+            </form>
+          ) : (
+            <div className={styles.grid}>
+              <div id="recaptcha-container" />
+              <input className={styles.input} placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <div className={styles.row}>
+                <button className={styles.btn} onClick={requestOtp}>Send OTP</button>
+                <button className={styles.ghost} onClick={() => setShowPhone(false)}>Use email</button>
+              </div>
+              <input className={styles.input} placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
+              <button className={styles.btn} onClick={confirmOtp}>Verify</button>
+              {msg && <div className={styles.err}>{msg}</div>}
+            </div>
+          )}
+        </section>
+
+        <aside className={styles.right}>
+          <div>
+            <h3>Secure portal</h3>
+            <p className={styles.hint}>2 login methods. Email is recommended for admins and staff.</p>
+          </div>
+        </aside>
+      </div>
     </div>
   );
-};
-
-export default Login;
+}
