@@ -1,27 +1,37 @@
-import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase"; // adjust path if your config is elsewhere
+import React from "react";
 import { Navigate } from "react-router-dom";
+import { auth } from "../lib/firebase.js";
 
-export default function ProtectedRoute({ children }) {
-  const [authChecked, setAuthChecked] = useState(false);
-  const [user, setUser] = useState(null);
+export default function ProtectedRoute({ children, requireRole }) {
+  const user = auth.currentUser;
+  if (!user) return <Navigate to="/signin" replace />;
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setAuthChecked(true);
-    });
-    return () => unsubscribe();
-  }, []);
+  // if no role requirement, allow
+  if (!requireRole) return children;
 
-  if (!authChecked) {
-    return <div>Loading...</div>; // Optional: replace with a spinner or skeleton
-  }
+  // read custom claims
+  return (
+    <ClaimsGate requireRole={requireRole}>
+      {children}
+    </ClaimsGate>
+  );
+}
 
-  if (!user) {
-    return <Navigate to="/signin" replace />;
-  }
+function ClaimsGate({ children, requireRole }) {
+  const [ok, setOk] = React.useState(null);
 
+  React.useEffect(() => {
+    let mounted = true;
+    auth.currentUser.getIdToken(true).then(() =>
+      auth.currentUser.getIdTokenResult().then((res) => {
+        const claims = res.claims || {};
+        if (mounted) setOk(!!claims[requireRole] || !!claims.admin);
+      })
+    );
+    return () => (mounted = false);
+  }, [requireRole]);
+
+  if (ok === null) return null;
+  if (!ok) return <Navigate to="/admin" replace />;
   return children;
 }

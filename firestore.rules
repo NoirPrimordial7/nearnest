@@ -1,10 +1,35 @@
-rules_version = '2';
+// Only owners can read/update their own profile (limited fields).
+// Roles collection read-only for everyone; only admins modify.
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow authenticated users to access their own store data
-    match /stores/{storeId} {
-      allow read, write: if request.auth != null && request.auth.uid == storeId;
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid) || isAdmin();
+      allow delete: if false;
+
+      match /verification/{doc} {
+        // users can’t read code data; backend handles that
+        allow read, write: if false;
+      }
+    }
+
+    match /roles/{roleId} {
+      allow read: if true;                   // public read
+      allow write: if isAdmin();
     }
   }
 }
