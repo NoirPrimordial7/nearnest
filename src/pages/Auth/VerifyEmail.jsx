@@ -1,67 +1,67 @@
-import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+// src/pages/Auth/VerifyEmail.jsx
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import styles from "./auth.module.css";
 import { auth } from "../../firebase";
-import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
+import { onAuthStateChanged, sendEmailVerification, reload } from "firebase/auth";
 
 const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 
 export default function VerifyEmail() {
-  const nav = useNavigate();
-  const [params] = useSearchParams();
-  const [email] = useState(params.get("email") || "");
-  const [user, setUser] = useState(null);
-  const [msg, setMsg] = useState("");
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [ok, setOk] = useState("");
   const [err, setErr] = useState("");
-  const [loading, setLoading] = useState(false);
 
+  // Get the current user’s email for display
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u));
-    return () => unsub();
+    const unsub = onAuthStateChanged(auth, (user) => {
+      setEmail(user?.email || "");
+    });
+    return unsub;
   }, []);
 
-  async function resend() {
-    if (!user) { setErr("Please sign in again."); return nav("/signin"); }
-    setErr(""); setMsg(""); setLoading(true);
+  const resend = async () => {
+    setOk("");
+    setErr("");
+    setSending(true);
     try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("You are signed out. Please sign in again.");
+      // refresh token before sending email
       await reload(user);
       await sendEmailVerification(user, {
         url: `${APP_URL}/signin`,
         handleCodeInApp: true,
       });
-      setMsg("Verification email sent. Check your inbox.");
+      setOk("Verification email sent.");
     } catch (e) {
-      const code = e?.code || "";
-      if (code === "auth/too-many-requests") setErr("Too many attempts. Please try again later.");
-      else if (code === "auth/user-disabled") setErr("This account is disabled.");
-      else setErr(e?.message || "Could not resend email.");
+      setErr(e?.message || "Could not send verification email.");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
-  }
+  };
 
   return (
-    <div className={styles.wrap}>
-      <section className={styles.card} style={{maxWidth: 720, gridTemplateColumns: "1fr"}}>
-        <div className={styles.left}>
-          <h1>Verify your email</h1>
-          <div className={styles.sub}>
-            We sent a verification link to <b>{email}</b>. Open it to continue.
-          </div>
+    <div className={styles.centerWrap}>
+      <div className={styles.card}>
+        <h1>Verify your email</h1>
+        <p>
+          We sent a verification link to <b>{email}</b>. Open it to continue.
+        </p>
 
-          {msg && <div className={styles.note}>{msg}</div>}
-          {err && <div className={styles.err}>{err}</div>}
+        {ok && <div className={styles.ok}>{ok}</div>}
+        {err && <div className={styles.err}>{err}</div>}
 
-          <div className={styles.row}>
-            <button onClick={resend} disabled={loading} className={styles.primary}>
-              {loading ? "Sending…" : "Resend email"}
-            </button>
-            <Link to="/signin" className={`${styles.ghost}`} style={{textDecoration:'none', display:'inline-flex', alignItems:'center'}}>
-              Back to sign in
-            </Link>
-          </div>
+        <div className={styles.row}>
+          <button onClick={resend} disabled={sending} className={styles.primaryBtn}>
+            {sending ? "Sending…" : "Resend email"}
+          </button>
+          <Link to="/signin" className={styles.ghostLink}>
+            Back to sign in
+          </Link>
         </div>
-      </section>
+      </div>
     </div>
   );
 }
