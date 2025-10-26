@@ -1,16 +1,15 @@
-// src/pages/Auth/SignUp.jsx
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+// Example (SignUp.jsx)
 import styles from "./auth.module.css";
 import SocialAuthButtons from "../../components/SocialAuthButtons";
 import {
   auth,
   googleProvider,
-  signInWithPopup,
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   updateProfile,
-} from "../../lib/firebase.js";
+  sendEmailVerification,
+  signInWithPopup,
+} from "../../lib/firebase";
+
 
 export default function SignUp() {
   const nav = useNavigate();

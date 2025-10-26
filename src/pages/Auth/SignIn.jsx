@@ -1,6 +1,4 @@
-// src/pages/Auth/SignIn.jsx
-import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+// Example (SignIn.jsx)
 import styles from "./auth.module.css";
 import SocialAuthButtons from "../../components/SocialAuthButtons";
 import {
@@ -9,7 +7,8 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   sendPasswordResetEmail,
-} from "../../lib/firebase.js";
+} from "../../lib/firebase";
+
 
 export default function SignIn() {
   const nav = useNavigate();

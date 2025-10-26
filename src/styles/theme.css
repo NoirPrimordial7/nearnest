@@ -1,24 +1,36 @@
+/* src/styles/theme.css */
 :root{
-  --bg: #0b0b0c;
-  --panel: #121214;
-  --elev: #18181b;
-  --text: #eaeaec;
-  --muted: #a3a3ad;
-  --line: #24242a;
-  --accent: #5effa3; /* subtle neon green */
-  --danger: #ff5353;
-  --radius: 16px;
-  --shadow: 0 8px 30px rgba(0,0,0,.30);
+  --card:#fff;
+  --border:#ececec;
+  --muted:#6b7280;
+  --text:#111;
+  --mint:#10b981;
+  --indigo:#6366f1;
+  --sky:#0ea5e9;
+  --amber:#f59e0b;
+  --rose:#ef4444;
+  --slate:#64748b;
+  --bg:#f7f7fb;
 }
 
-*{ box-sizing: border-box; }
-html, body, #root { height:100%; }
+* { box-sizing:border-box; }
+html,body,#root { height:100%; }
 body{
   margin:0;
-  background: radial-gradient(1200px 1200px at 80% -20%, #1a1a1d 0%, #0b0b0c 60%);
-  color: var(--text);
-  font: 500 15px/1.4 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+  color:var(--text);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,.7), rgba(255,255,255,0) 60%),
+    linear-gradient(135deg, #fafafa 0%, #f3f4f6 50%, #eef2ff 100%);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
 }
 
-a{ color: var(--accent); text-decoration: none; }
-a:hover{ opacity:.9; }
+a{
+  color:inherit;
+  text-decoration:none;
+}
+
+button,input,select,textarea{
+  font:inherit;
+}
+
+::selection{ background:rgba(16,185,129,.25); }
