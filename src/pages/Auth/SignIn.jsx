@@ -1,6 +1,6 @@
-// Example (SignIn.jsx)
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
-import SocialAuthButtons from "../../components/SocialAuthButtons";
 import {
   auth,
   googleProvider,
@@ -9,117 +9,116 @@ import {
   sendPasswordResetEmail,
 } from "../../lib/firebase";
 
+function EyeIcon({ on }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      {on ? (
+        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" strokeWidth="2"/>
+      ) : (
+        <path d="M3 3l18 18M10.6 10.6A4 4 0 0 0 12 16a4 4 0 0 0 4-4c0-1-.4-1.9-1-2.6M21 12s-4-7-9-7c-1.5 0-2.9.4-4.1 1" stroke="currentColor" strokeWidth="2" />
+      )}
+    </svg>
+  );
+}
 
 export default function SignIn() {
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState(null);
+  const [show, setShow] = useState(false);
+  const [msg, setMsg] = useState({ t: "", ok: false });
 
-  useEffect(() => {
-    setMsg(null);
-  }, [email, pass]);
-
-  const onEmailLogin = async (e) => {
+  const handleEmail = async (e) => {
     e.preventDefault();
+    setMsg({ t: "", ok: false });
     try {
-      setLoading(true);
       await signInWithEmailAndPassword(auth, email.trim(), pass);
-      nav("/admin", { replace: true });
+      setMsg({ t: "Welcome back!", ok: true });
+      setTimeout(() => nav("/admin"), 500);
     } catch (err) {
-      setMsg(err.message || "Failed to sign in.");
-    } finally {
-      setLoading(false);
+      const map = {
+        "auth/invalid-credential": "Invalid email or password.",
+        "auth/user-not-found": "No user found with this email.",
+        "auth/wrong-password": "Incorrect password.",
+      };
+      setMsg({ t: map[err.code] || err.message, ok: false });
     }
   };
 
-  const onGoogle = async () => {
+  const handleGoogle = async () => {
+    setMsg({ t: "", ok: false });
     try {
-      setLoading(true);
       await signInWithPopup(auth, googleProvider);
-      nav("/admin", { replace: true });
+      setMsg({ t: "Signed in with Google!", ok: true });
+      setTimeout(() => nav("/admin"), 400);
     } catch (err) {
-      setMsg(err.message || "Google sign-in failed.");
-    } finally {
-      setLoading(false);
+      setMsg({ t: err.message, ok: false });
     }
   };
 
-  const onReset = async () => {
-    if (!email) return setMsg("Enter your email to reset the password.");
+  const forgot = async () => {
+    if (!email) return setMsg({ t: "Enter your email first.", ok: false });
     try {
-      setLoading(true);
       await sendPasswordResetEmail(auth, email.trim());
-      setMsg("Reset link sent to your email.");
+      setMsg({ t: "Password reset email sent.", ok: true });
     } catch (err) {
-      setMsg(err.message || "Could not send reset email.");
-    } finally {
-      setLoading(false);
+      setMsg({ t: err.message, ok: false });
     }
   };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.card}>
-        <div className={styles.brandSide}>
-          <div className={styles.logoDot}>nearnest</div>
-          <h1>Welcome back 👋</h1>
-          <p className={styles.muted}>
-            Sign in to manage stores, verifications, and support — all in one dashboard.
-          </p>
-        </div>
+    <div className={styles.page}>
+      <div className={styles.shell}>
+        {/* Brand / copy */}
+        <section className={styles.brandCard}>
+          <div className={styles.brandPill}>nearnest</div>
+          <div className={styles.kicker}>Admin Console</div>
+          <div className={styles.hero}>Sign in to continue</div>
+          <ul className={styles.points}>
+            <li>Review store applications</li>
+            <li>Verify documents & manage tickets</li>
+            <li>Role-based access built-in</li>
+          </ul>
+        </section>
 
-        <div className={styles.formSide}>
-          <h2>Sign in</h2>
+        {/* Form */}
+        <section className={styles.formCard}>
+          <div className={styles.title}>Welcome back</div>
+          <div className={styles.sub}>Use your admin credentials.</div>
 
-          {msg && <div className={styles.alert}>{msg}</div>}
+          <form className={styles.form} onSubmit={handleEmail}>
+            <div className={styles.row}>
+              <label>Email</label>
+              <input className={styles.input} type="email" value={email} onChange={(e)=>setEmail(e.target.value)} required placeholder="you@company.com"/>
+            </div>
 
-          <form className={styles.form} onSubmit={onEmailLogin}>
-            <label>
-              <span>Email</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                required
-              />
-            </label>
+            <div className={`${styles.row} ${styles.passWrap}`}>
+              <label>Password</label>
+              <input className={styles.input} type={show ? "text":"password"} value={pass} onChange={(e)=>setPass(e.target.value)} required placeholder="••••••••"/>
+              <button className={styles.eye} type="button" onClick={()=>setShow(s=>!s)}><EyeIcon on={show}/></button>
+            </div>
 
-            <label>
-              <span>Password</span>
-              <input
-                type="password"
-                autoComplete="current-password"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                placeholder="Your password"
-                required
-              />
-            </label>
-
-            <button className={styles.primary} type="submit" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in"}
-            </button>
+            <div className={styles.actions}>
+              <span className={styles.hint}><button onClick={forgot} type="button" className={styles.link}>Forgot password?</button></span>
+              <button className={styles.btn} type="submit">Sign In</button>
+            </div>
           </form>
 
-          <div className={styles.row}>
-            <button className={styles.linkBtn} onClick={onReset} disabled={loading}>
-              Forgot password?
-            </button>
-            <div className={styles.spacer} />
-            <Link to="/signup" className={styles.linkBtn}>
-              Create account
-            </Link>
+          <div className={styles.divider}>or continue with</div>
+          <button className={styles.btnGoogle} onClick={handleGoogle}>
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 10h10v4H12z"/><path fill="#4285F4" d="M12 2a10 10 0 1 1-9.45 13.4l3.9-1.6A6 6 0 1 0 12 6"/></svg>
+            Google
+          </button>
+
+          <div className={styles.hint} style={{marginTop:12}}>
+            Don’t have an account? <Link to="/signup" className={styles.link}>Create one</Link>
           </div>
 
-          <div className={styles.divider}><span>or continue with</span></div>
-
-          <SocialAuthButtons onGoogle={onGoogle} loading={loading} />
-        </div>
+          {msg.t && <div className={msg.ok ? styles.good : styles.bad}>{msg.t}</div>}
+        </section>
       </div>
+
+      {msg.ok && <div className={styles.toast}>{msg.t}</div>}
     </div>
   );
 }

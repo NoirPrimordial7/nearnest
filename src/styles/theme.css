@@ -1,36 +1,128 @@
-/* src/styles/theme.css */
+/* ----- theme tokens (match your admin UI) ------------------------------ */
 :root{
-  --card:#fff;
-  --border:#ececec;
-  --muted:#6b7280;
-  --text:#111;
-  --mint:#10b981;
-  --indigo:#6366f1;
-  --sky:#0ea5e9;
-  --amber:#f59e0b;
-  --rose:#ef4444;
-  --slate:#64748b;
-  --bg:#f7f7fb;
+  --card:#fff; --border:#ececec; --muted:#6b7280; --text:#111;
+  --mint:#10b981; --indigo:#6366f1; --sky:#0ea5e9; --amber:#f59e0b; --rose:#ef4444; --slate:#64748b;
+
+  --shadow-1: 0 16px 38px rgba(17,17,17,.08);
+  --shadow-2: 0 8px 18px rgba(17,17,17,.06);
 }
 
-* { box-sizing:border-box; }
-html,body,#root { height:100%; }
-body{
-  margin:0;
-  color:var(--text);
-  background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,.7), rgba(255,255,255,0) 60%),
-    linear-gradient(135deg, #fafafa 0%, #f3f4f6 50%, #eef2ff 100%);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+/* ----- common components ----------------------------------------------- */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:20px;
+  box-shadow:var(--shadow-1), inset 0 1px 0 rgba(255,255,255,.9);
 }
 
-a{
-  color:inherit;
-  text-decoration:none;
+.section{
+  padding:18px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  box-shadow:var(--shadow-2);
 }
 
-button,input,select,textarea{
-  font:inherit;
+/* buttons */
+.btn{
+  height:40px; padding:0 14px;
+  display:inline-grid; place-items:center;
+  border-radius:12px; border:1px solid var(--border);
+  background:#111; color:#fff; font-weight:800; letter-spacing:.2px;
+  cursor:pointer;
+}
+.btn:disabled{ opacity:.6; cursor:not-allowed; }
+.btn-ghost{ background:#fff; color:#111; }
+.btn-rose { background:#fff; color:var(--rose); border-color:rgba(239,68,68,.35); }
+.btn-mint { background:#fff; color:var(--mint); border-color:rgba(16,185,129,.3); }
+.btn-slate{ background:#fff; color:var(--slate); border-color:rgba(100,116,139,.3); }
+
+/* input / select */
+.input, .select, .textarea{
+  height:40px; width:100%;
+  padding:0 12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fff; color:var(--text);
+  outline:none;
+}
+.textarea{ min-height:110px; padding:10px 12px; resize:vertical; }
+.input:focus, .select:focus, .textarea:focus{
+  border-color:#d7d7d7; box-shadow:0 0 0 4px rgba(99,102,241,.06);
 }
 
-::selection{ background:rgba(16,185,129,.25); }
+/* page title */
+.pageTitle{
+  font-weight:900; letter-spacing:.2px; margin:0 0 12px;
+}
+
+/* status chips */
+.pill{
+  font-size:12px; padding:6px 10px; border-radius:999px;
+  border:1px solid var(--border); background:#fff; font-weight:700;
+  text-transform:capitalize; display:inline-grid; place-items:center;
+}
+.pill-active   { color:var(--mint);   border-color:rgba(16,185,129,.25); }
+.pill-pending  { color:#0f766e;       border-color:rgba(15,118,110,.25); background:linear-gradient(180deg,rgba(16,185,129,.08),transparent 60%),#fff; }
+.pill-rejected { color:var(--rose);   border-color:rgba(239,68,68,.25); }
+.pill-suspended{ color:var(--slate);  border-color:rgba(100,116,139,.25); }
+.pill-progress { color:#d97706;       border-color:rgba(217,119,6,.25); }
+.pill-open     { color:#111;          border-color:#e5e7eb; }
+
+/* tables (sticky header) */
+.tableWrap{ overflow:auto; border-radius:20px; }
+.table{ width:100%; border-collapse:separate; border-spacing:0; }
+.table thead th{
+  position:sticky; top:0; z-index:2;
+  background:#fff; border-bottom:1px solid var(--border);
+  text-align:left; padding:14px 16px; font-weight:800;
+  box-shadow:0 6px 12px rgba(17,17,17,.04);
+}
+.table thead th:first-child{ border-top-left-radius:16px; }
+.table thead th:last-child { border-top-right-radius:16px; }
+.table tbody td{
+  padding:14px 16px; border-bottom:1px solid #f3f4f6; vertical-align:middle;
+}
+.tr-hover:hover{
+  background:linear-gradient(#fff,#fff) padding-box,
+             linear-gradient(180deg, rgba(17,17,17,.08), transparent) border-box;
+}
+
+/* search bar */
+.searchBar{
+  display:flex; gap:8px; align-items:center;
+  padding:8px 12px; border:1px solid var(--border); border-radius:12px; background:#fff;
+}
+.searchBar input{
+  border:0; outline:none; flex:1; height:28px; background:transparent; color:inherit;
+}
+
+/* tabs */
+.tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+.tab{
+  height:34px; padding:0 12px; border-radius:999px; border:1px solid var(--border);
+  background:#fff; font-weight:700; cursor:pointer;
+}
+.tab.isActive{ background:#111; color:#fff; }
+
+/* modal / drawer layers consistent across app */
+.backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.12);
+  backdrop-filter: blur(1px); z-index:90;
+}
+.modal{
+  position:fixed; inset:0; display:grid; place-items:center; z-index:100;
+}
+.modalCard{
+  width:min(1000px, 92vw); max-height:84vh; overflow:auto;
+  background:#fff; border:1px solid var(--border); border-radius:22px; box-shadow:var(--shadow-1);
+}
+.modalHead{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:16px; border-bottom:1px solid var(--border);
+}
+.modalBody{ padding:16px; }
+
+/* page spacing used by AdminLayout */
+.mainPad{ padding:24px; }
+@media (max-width: 900px){ .mainPad{ padding:16px; } }
