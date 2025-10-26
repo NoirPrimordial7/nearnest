@@ -1,91 +1,144 @@
-import { useState } from "react";
+// src/pages/Auth/SignIn.jsx
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../../firebase";
-import SocialAuthButtons from "../../components/SocialAuthButtons";
 import styles from "./auth.module.css";
+import { auth, googleProvider } from "../../firebase";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
 
 export default function SignIn() {
   const nav = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [ok, setOk] = useState("");
+
+  const onChange = (e) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
+    setErr("");
+    setOk("");
+    setLoading(true);
     try {
-      setBusy(true);
+      const methods = await fetchSignInMethodsForEmail(auth, form.email);
+      if (!methods?.length) {
+        throw new Error("No account found for this email.");
+      }
       await signInWithEmailAndPassword(auth, form.email, form.password);
-      if (auth.currentUser?.emailVerified) nav("/admin");
-      else nav("/verify-email");
-    } catch (err) {
-      setMsg(err.message.replace("Firebase: ", ""));
+      nav("/admin");
+    } catch (e) {
+      setErr(e?.message || "Sign in failed.");
     } finally {
-      setBusy(false);
+      setLoading(false);
     }
   };
 
-  const reset = async () => {
-    if (!form.email) return setMsg("Enter your email to receive a reset link.");
+  const google = async () => {
+    setErr("");
+    setOk("");
+    setLoading(true);
     try {
-      setBusy(true);
-      await sendPasswordResetEmail(auth, form.email);
-      setMsg("Password reset email sent.");
-    } catch (err) {
-      setMsg(err.message.replace("Firebase: ", ""));
+      await signInWithPopup(auth, googleProvider);
+      nav("/admin");
+    } catch (e) {
+      setErr(e?.message || "Google sign-in failed.");
     } finally {
-      setBusy(false);
+      setLoading(false);
+    }
+  };
+
+  const forgot = async () => {
+    setErr("");
+    setOk("");
+    if (!form.email) {
+      setErr("Enter your email first.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, form.email);
+      setOk("Reset link sent. Check your inbox.");
+    } catch (e) {
+      setErr(e?.message || "Couldn't send reset email.");
     }
   };
 
   return (
     <div className={styles.shell}>
-      <div className={styles.card}>
-        <h1 className={styles.brand}>nearnest</h1>
-        <h2 className={styles.title}>Welcome back</h2>
+      <div className={styles.panel}>
+        <div className={styles.brand}>
+          <span className={styles.logoDot} />
+          NearNest
+        </div>
+        <h1 className={styles.title}>Welcome back</h1>
+        <p className={styles.subtitle}>Sign in to continue</p>
 
-        <form onSubmit={onSubmit} className={styles.form}>
-          <label>
-            <span>Email</span>
+        {ok && <div className={styles.ok} role="status">{ok}</div>}
+        {err && <div className={styles.err} role="alert">{err}</div>}
+
+        <form className={styles.form} onSubmit={onSubmit}>
+          <label className={styles.label}>
+            Email
             <input
+              className={styles.input}
+              name="email"
               type="email"
+              placeholder="you@example.com"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@company.com"
+              onChange={onChange}
               required
             />
           </label>
 
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              required
-            />
+          <label className={styles.label}>
+            Password
+            <div className={styles.pwdWrap}>
+              <input
+                className={styles.input}
+                name="password"
+                type={showPwd ? "text" : "password"}
+                placeholder="••••••••"
+                value={form.password}
+                onChange={onChange}
+                required
+              />
+              <button
+                type="button"
+                className={styles.pwdToggle}
+                onClick={() => setShowPwd((s) => !s)}
+              >
+                {showPwd ? "Hide" : "Show"}
+              </button>
+            </div>
           </label>
 
-          {msg && <div className={styles.note}>{msg}</div>}
+          <div className={styles.rowBetween}>
+            <span />
+            <button type="button" className={styles.link} onClick={forgot}>
+              Forgot password?
+            </button>
+          </div>
 
-          <button className={styles.primary} disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
+          <button className={styles.primaryBtn} disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
           </button>
+
+          <div className={styles.divider}>or</div>
+
+          <button type="button" onClick={google} className={styles.googleBtn}>
+            Continue with Google
+          </button>
+
+          <p className={styles.meta}>
+            Don’t have an account? <Link to="/signup" className={styles.link}>Create one</Link>
+          </p>
         </form>
-
-        <button className={styles.linkBtn} onClick={reset} disabled={busy}>
-          Forgot password?
-        </button>
-
-        <div className={styles.divider}><span>or</span></div>
-
-        <SocialAuthButtons onBusy={setBusy} />
-
-        <p className={styles.meta}>
-          New here? <Link to="/signup">Create an account</Link>
-        </p>
       </div>
     </div>
   );
