@@ -1,46 +1,59 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
-import { sendEmailVerification } from "firebase/auth";
+// src/pages/Auth/VerifyEmail.jsx
+import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import styles from "./auth.module.css";
+import { auth } from "../../firebase";
+import { onAuthStateChanged, reload, sendEmailVerification } from "firebase/auth";
+
+const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 
 export default function VerifyEmail() {
-  const nav = useNavigate();
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [params] = useSearchParams();
+  const [user, setUser] = useState(null);
+  const [sending, setSending] = useState(false);
+  const email = params.get("email") || auth.currentUser?.email;
 
   useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (u) => {
-      if (u?.emailVerified) nav("/admin", { replace: true });
-    });
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u || null));
     return () => unsub();
-  }, [nav]);
+  }, []);
 
   const resend = async () => {
+    if (!user) return;
+    setSending(true);
     try {
-      setBusy(true);
-      if (auth.currentUser) {
-        await sendEmailVerification(auth.currentUser);
-        setMsg("Verification email sent again.");
-      }
+      await reload(user); // refresh token so sendOobCode has a valid idToken
+      await sendEmailVerification(user, {
+        url: `${APP_URL}/signin`,
+        handleCodeInApp: true,
+      });
+      alert("Verification email sent.");
+    } catch (e) {
+      alert(e.message || "Failed to send email.");
     } finally {
-      setBusy(false);
+      setSending(false);
     }
   };
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.centerWrap}>
       <div className={styles.card}>
-        <h2 className={styles.title}>Verify your email</h2>
-        <p className={styles.meta}>
-          We sent a verification link to <b>{auth.currentUser?.email}</b>. Open it to continue.
+        <h1>Verify your email</h1>
+        <p>
+          We sent a verification link to <b>{email || "your email"}</b>. Open it to
+          continue.
         </p>
-        {msg && <div className={styles.note}>{msg}</div>}
         <div className={styles.actionsRow}>
-          <button className={styles.primary} onClick={resend} disabled={busy}>
-            {busy ? "Sending…" : "Resend email"}
+          <button
+            disabled={!user || sending}
+            onClick={resend}
+            className={styles.primaryBtn}
+          >
+            {sending ? "Sending…" : "Resend email"}
           </button>
-          <Link to="/signin" className={styles.linkBtn}>Back to sign in</Link>
+          <Link className={styles.ghostBtn} to="/signin">
+            Back to sign in
+          </Link>
         </div>
       </div>
     </div>

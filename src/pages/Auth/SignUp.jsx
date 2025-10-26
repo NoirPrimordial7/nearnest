@@ -1,105 +1,111 @@
-import { useState } from "react";
+// src/pages/Auth/SignUp.jsx
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import styles from "./auth.module.css";
+import { auth, googleProvider } from "../../firebase";
 import {
   createUserWithEmailAndPassword,
-  sendEmailVerification,
   updateProfile,
+  sendEmailVerification,
+  signInWithPopup,
+  reload,
 } from "firebase/auth";
-import { auth } from "../../firebase";
-import SocialAuthButtons from "../../components/SocialAuthButtons";
-import styles from "./auth.module.css";
+
+const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 
 export default function SignUp() {
   const nav = useNavigate();
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+
+  const onChange = (e) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
+  const actionCodeSettings = {
+    url: `${APP_URL}/signin`,   // user is returned here after clicking the email link
+    handleCodeInApp: true,      // ok for SPA
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setMsg("");
-    if (form.password !== form.confirm) {
-      setMsg("Passwords do not match.");
-      return;
-    }
+    setErr("");
+    setLoading(true);
     try {
-      setBusy(true);
-      const cred = await createUserWithEmailAndPassword(auth, form.email, form.password);
-      if (form.name) await updateProfile(cred.user, { displayName: form.name });
-      await sendEmailVerification(cred.user);
-      nav("/verify-email");
-    } catch (err) {
-      setMsg(err.message.replace("Firebase: ", ""));
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+
+      if (form.name.trim()) {
+        await updateProfile(cred.user, { displayName: form.name.trim() });
+      }
+
+      // Ensure the user's token is fresh before sending OOB email
+      await reload(cred.user);
+
+      await sendEmailVerification(cred.user, actionCodeSettings);
+
+      nav(`/verify-email?email=${encodeURIComponent(form.email)}`);
+    } catch (e) {
+      setErr(e.message || "Something went wrong.");
     } finally {
-      setBusy(false);
+      setLoading(false);
+    }
+  };
+
+  const google = async () => {
+    setErr("");
+    setLoading(true);
+    try {
+      const res = await signInWithPopup(auth, googleProvider);
+      if (!res.user.emailVerified) {
+        await reload(res.user);
+        await sendEmailVerification(res.user, actionCodeSettings);
+        nav(`/verify-email?email=${encodeURIComponent(res.user.email || "")}`);
+      } else {
+        nav("/admin");
+      }
+    } catch (e) {
+      setErr(e.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.card}>
-        <h1 className={styles.brand}>nearnest</h1>
-        <h2 className={styles.title}>Create your account</h2>
-
-        <form onSubmit={onSubmit} className={styles.form}>
-          <label>
-            <span>Full name</span>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Dinesh Kumar"
-            />
-          </label>
-
-          <label>
-            <span>Email</span>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              placeholder="you@company.com"
-              required
-            />
-          </label>
-
-          <label>
-            <span>Password</span>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
-          </label>
-
-          <label>
-            <span>Confirm password</span>
-            <input
-              type="password"
-              value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-              placeholder="••••••••"
-              required
-              minLength={6}
-            />
-          </label>
-
-          {msg && <div className={styles.note}>{msg}</div>}
-
-          <button className={styles.primary} disabled={busy}>
-            {busy ? "Creating…" : "Create account"}
-          </button>
-        </form>
-
-        <div className={styles.divider}><span>or</span></div>
-        <SocialAuthButtons onBusy={setBusy} />
-
+    <div className={styles.centerWrap}>
+      <form className={styles.card} onSubmit={onSubmit}>
+        <h1>Create your account</h1>
+        {err && <div className={styles.err}>{err}</div>}
+        <label>
+          Full name
+          <input name="name" value={form.name} onChange={onChange} />
+        </label>
+        <label>
+          Email
+          <input name="email" type="email" value={form.email} onChange={onChange} />
+        </label>
+        <label>
+          Password
+          <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={onChange}
+          />
+        </label>
+        <button disabled={loading} className={styles.primaryBtn}>
+          {loading ? "Creating…" : "Create account"}
+        </button>
+        <button type="button" onClick={google} className={styles.ghostBtn}>
+          Continue with Google
+        </button>
         <p className={styles.meta}>
           Already have an account? <Link to="/signin">Sign in</Link>
         </p>
-      </div>
+      </form>
     </div>
   );
 }
