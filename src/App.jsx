@@ -20,7 +20,7 @@ export default function App() {
       <Route path="/" element={<Navigate to="/signin" replace />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
       {/* Admin (gated) */}
       <Route
