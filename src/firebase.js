@@ -1,26 +1,19 @@
-// firebase.js
+// Minimal Firebase init focused on Auth (no Analytics to avoid API-key noise)
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-import { initializeApp, getApps } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-
-// Your Firebase config
+// IMPORTANT: put your real keys in .env.local (see bottom of this message)
 const firebaseConfig = {
-  apiKey: "AIzaSyDHJBcjD8WNH8w40TqOy2gupSMpmhR6KMc",
-  authDomain: "nearnest-platform.firebaseapp.com",
-  databaseURL: "https://nearnest-platform-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "nearnest-platform",
-  storageBucket: "nearnest-platform.appspot.com", // ❗fix typo from .firebasestorage.app
-  messagingSenderId: "548114014175",
-  appId: "1:548114014175:web:09233010d591a27a612e6a",
-  measurementId: "G-PB1NW3J8GM"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-// 🛡 Only initialize once
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const app = initializeApp(firebaseConfig);
 
-// Export services
+// Export ready-to-use auth + google provider
 export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+export const googleProvider = new GoogleAuthProvider();
