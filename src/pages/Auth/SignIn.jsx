@@ -1,105 +1,126 @@
-// src/pages/Auth/Login.jsx
-import React, { useState } from "react";
-import { auth } from "../../firebase/firebaseConfig";
-import { signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import authStyles from "./auth.module.css";
-import styles from "./SignIn.module.css"; // keep the main one as styles
+// src/pages/Auth/SignIn.jsx
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import styles from "./auth.module.css";
+import SocialAuthButtons from "../../components/SocialAuthButtons";
+import {
+  auth,
+  googleProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  sendPasswordResetEmail,
+} from "../../lib/firebase.js";
 
-
-const Login = () => {
-  const navigate = useNavigate();
-
-  // Email login state
+export default function SignIn() {
+  const nav = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [pass, setPass] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState(null);
 
-  // Phone login state
-  const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
-  const [otpSent, setOtpSent] = useState(false); 
-  const [phoneError, setPhoneError] = useState("");
+  useEffect(() => {
+    setMsg(null);
+  }, [email, pass]);
 
-  const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container-login", {
-        size: "invisible",
-        callback: () => {}
-      });
+  const onEmailLogin = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      await signInWithEmailAndPassword(auth, email.trim(), pass);
+      nav("/admin", { replace: true });
+    } catch (err) {
+      setMsg(err.message || "Failed to sign in.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEmailLogin = async (e) => {
-    e.preventDefault();
-    setEmailError("");
+  const onGoogle = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/"); // redirect to homepage or dashboard
+      setLoading(true);
+      await signInWithPopup(auth, googleProvider);
+      nav("/admin", { replace: true });
     } catch (err) {
-      setEmailError(err.message);
+      setMsg(err.message || "Google sign-in failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const sendOtpCode = async (e) => {
-    e.preventDefault();
-    setPhoneError("");
+  const onReset = async () => {
+    if (!email) return setMsg("Enter your email to reset the password.");
     try {
-      setupRecaptcha();
-      const appVerifier = window.recaptchaVerifier;
-      const confirmationResult = await signInWithPhoneNumber(auth, phone, appVerifier);
-      setOtpSent(true);
-      window.confirmationResult = confirmationResult;
+      setLoading(true);
+      await sendPasswordResetEmail(auth, email.trim());
+      setMsg("Reset link sent to your email.");
     } catch (err) {
-      setPhoneError(err.message);
-    }
-  };
-
-  const verifyOtpCode = async (e) => {
-    e.preventDefault();
-    setPhoneError("");
-    try {
-      const confirmationResult = window.confirmationResult;
-      await confirmationResult.confirm(otp);
-      navigate("/");
-    } catch (err) {
-      setPhoneError("Failed to verify code. Please try again.");
+      setMsg(err.message || "Could not send reset email.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className={styles.authContainer}>
-      <h2>Login</h2>
+    <div className={styles.shell}>
+      <div className={styles.card}>
+        <div className={styles.brandSide}>
+          <div className={styles.logoDot}>nearnest</div>
+          <h1>Welcome back 👋</h1>
+          <p className={styles.muted}>
+            Sign in to manage stores, verifications, and support — all in one dashboard.
+          </p>
+        </div>
 
-      {/* Email Login Form */}
-      <form onSubmit={handleEmailLogin} className={styles.authForm}>
-        <h3>Email Login</h3>
-        <input type="email" placeholder="Email" value={email} required onChange={e => setEmail(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} required onChange={e => setPassword(e.target.value)} />
-        <button type="submit">Login</button>
-        {emailError && <p className={styles.error}>{emailError}</p>}
-      </form>
+        <div className={styles.formSide}>
+          <h2>Sign in</h2>
 
-      {/* Phone Login Form */}
-      <form onSubmit={otpSent ? verifyOtpCode : sendOtpCode} className={styles.authForm}>
-        <h3>Phone Login</h3>
-        {!otpSent ? (
-          <>
-            <input type="tel" placeholder="Phone number e.g. +919123456789" value={phone} required onChange={e => setPhone(e.target.value)} />
-            <div id="recaptcha-container-login"></div>
-            <button type="submit">Send OTP</button>
-          </>
-        ) : (
-          <>
-            <input type="text" placeholder="Enter OTP" value={otp} required onChange={e => setOtp(e.target.value)} />
-            <button type="submit">Verify & Login</button>
-          </>
-        )}
-        {phoneError && <p className={styles.error}>{phoneError}</p>}
-      </form>
+          {msg && <div className={styles.alert}>{msg}</div>}
+
+          <form className={styles.form} onSubmit={onEmailLogin}>
+            <label>
+              <span>Email</span>
+              <input
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@company.com"
+                required
+              />
+            </label>
+
+            <label>
+              <span>Password</span>
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                placeholder="Your password"
+                required
+              />
+            </label>
+
+            <button className={styles.primary} type="submit" disabled={loading}>
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+          </form>
+
+          <div className={styles.row}>
+            <button className={styles.linkBtn} onClick={onReset} disabled={loading}>
+              Forgot password?
+            </button>
+            <div className={styles.spacer} />
+            <Link to="/signup" className={styles.linkBtn}>
+              Create account
+            </Link>
+          </div>
+
+          <div className={styles.divider}><span>or continue with</span></div>
+
+          <SocialAuthButtons onGoogle={onGoogle} loading={loading} />
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Login;
-  
+}
