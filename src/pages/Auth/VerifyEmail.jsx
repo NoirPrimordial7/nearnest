@@ -14,11 +14,8 @@ export default function VerifyEmail() {
   const [sending, setSending] = useState(false);
   const [ok, setOk] = useState("");
   const [err, setErr] = useState("");
-
-  // resend cooldown (seconds)
   const [cooldown, setCooldown] = useState(0);
 
-  // show current signed-in user's email
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       setEmail(user?.email || "");
@@ -26,7 +23,6 @@ export default function VerifyEmail() {
     return unsub;
   }, []);
 
-  // tick down cooldown every second
   useEffect(() => {
     if (!cooldown) return;
     const t = setInterval(() => setCooldown((s) => Math.max(0, s - 1)), 1000);
@@ -34,24 +30,18 @@ export default function VerifyEmail() {
   }, [cooldown]);
 
   const resend = async () => {
-    if (cooldown) return; // guard
-    setOk("");
-    setErr("");
-    setSending(true);
+    if (cooldown) return;
+    setOk(""); setErr(""); setSending(true);
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("You are signed out. Please sign in again.");
-
-      // refresh token before sending email
       await reload(user);
-
       await sendEmailVerification(user, {
-        url: `${APP_URL}/signin`, // user returns here after verifying
+        url: `${APP_URL}/signin`,
         handleCodeInApp: true,
       });
-
       setOk("Verification email sent.");
-      setCooldown(60); // prevent spamming for 60s
+      setCooldown(60);
     } catch (e) {
       setErr(e?.message || "Could not send verification email.");
     } finally {
@@ -60,15 +50,13 @@ export default function VerifyEmail() {
   };
 
   const iveVerified = async () => {
-    setOk("");
-    setErr("");
+    setOk(""); setErr("");
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("You are signed out. Please sign in again.");
       await reload(user);
       if (user.emailVerified) {
-        // go wherever you want next:
-        nav("/admin"); // or "/profile-setup"
+        nav("/admin");
       } else {
         setErr("Not verified yet. Open the link in your email and try again.");
       }
@@ -78,10 +66,14 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className={styles.centerWrap}>
-      <div className={styles.card}>
-        <h1>Verify your email</h1>
-        <p>
+    <div className={styles.shell}>
+      <div className={styles.panel}>
+        <div className={styles.brand}>
+          <span className={styles.logoDot} />
+          NearNest
+        </div>
+        <h1 className={styles.title}>Verify your email</h1>
+        <p className={styles.subtitle}>
           We sent a verification link to <b>{email}</b>. Open it to continue.
         </p>
 
@@ -94,14 +86,14 @@ export default function VerifyEmail() {
             disabled={sending || cooldown > 0}
             className={styles.primaryBtn}
           >
-            {cooldown > 0 ? `Resend in ${cooldown}s` : sending ? "Sending…" : "Resend email"}
+            {cooldown > 0 ? `Resend in ${cooldown}s` : (sending ? "Sending…" : "Resend email")}
           </button>
 
-          <button onClick={iveVerified} className={styles.ghostLink}>
+          <button onClick={iveVerified} className={styles.ghostBtn}>
             I’ve verified
           </button>
 
-          <Link to="/signin" className={styles.ghostLink}>
+          <Link to="/signin" className={styles.ghostBtn}>
             Back to sign in
           </Link>
         </div>
