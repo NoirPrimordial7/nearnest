@@ -1,27 +1,25 @@
 import { useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase"; // adjust path if your config is elsewhere
 import { Navigate } from "react-router-dom";
+import { auth } from "../firebase";
 
 export default function ProtectedRoute({ children }) {
-  const [authChecked, setAuthChecked] = useState(false);
-  const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setAuthChecked(true);
+    const unsub = auth.onAuthStateChanged(async (user) => {
+      setAuthed(!!user);
+      setVerified(!!user?.emailVerified);
+      setReady(true);
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
-  if (!authChecked) {
-    return <div>Loading...</div>; // Optional: replace with a spinner or skeleton
-  }
+  if (!ready) return null; // or a spinner
 
-  if (!user) {
-    return <Navigate to="/signin" replace />;
-  }
+  if (!authed) return <Navigate to="/signin" replace />;
+  if (!verified) return <Navigate to="/verify-email" replace />;
 
   return children;
 }

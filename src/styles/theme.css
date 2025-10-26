@@ -1,11 +1,10 @@
-/* ----- theme tokens (match your admin UI) ------------------------------ */
 :root{
   --card:#fff; --border:#ececec; --muted:#6b7280; --text:#111;
   --mint:#10b981; --indigo:#6366f1; --sky:#0ea5e9; --amber:#f59e0b; --rose:#ef4444; --slate:#64748b;
-
-  --shadow-1: 0 16px 38px rgba(17,17,17,.08);
-  --shadow-2: 0 8px 18px rgba(17,17,17,.06);
+  --shadow: 0 16px 40px rgba(17,17,17,.08), inset 0 1px 0 rgba(255,255,255,.9);
+  --radius: 18px;
 }
+
 
 /* ----- common components ----------------------------------------------- */
 .card{
