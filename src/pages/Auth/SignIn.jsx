@@ -7,34 +7,50 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   sendPasswordResetEmail,
-  fetchSignInMethodsForEmail,
 } from "firebase/auth";
 
 export default function SignIn() {
   const nav = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "", remember: false });
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [ok, setOk] = useState("");
 
   const onChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+    setForm((f) => ({
+      ...f,
+      [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    }));
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
     setOk("");
     setLoading(true);
+
     try {
-      const methods = await fetchSignInMethodsForEmail(auth, form.email);
-      if (!methods?.length) {
-        throw new Error("No account found for this email.");
+      const userCred = await signInWithEmailAndPassword(
+        auth,
+        form.email.trim(),
+        form.password
+      );
+      const user = userCred.user;
+
+      if (!user.emailVerified) {
+        setOk("Email not verified. Redirecting...");
+        setTimeout(() => nav("/verify-email"), 1500);
+        return;
       }
-      await signInWithEmailAndPassword(auth, form.email, form.password);
+
+      // ✅ If "Remember Me" checked, store session
+      if (form.remember) localStorage.setItem("rememberEmail", form.email);
+      else localStorage.removeItem("rememberEmail");
+
       nav("/admin");
     } catch (e) {
-      setErr(e?.message || "Sign in failed.");
+      setErr("Invalid email or password.");
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -70,21 +86,16 @@ export default function SignIn() {
   };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.panel}>
-        <div className={styles.brand}>
-          <span className={styles.logoDot} />
-          NearNest
-        </div>
-        <h1 className={styles.title}>Welcome back</h1>
-        <p className={styles.subtitle}>Sign in to continue</p>
+    <div className={styles.authShell}>
+      <div className={styles.authCard}>
+        <h1 className={styles.authTitle}>Login</h1>
 
-        {ok && <div className={styles.ok} role="status">{ok}</div>}
-        {err && <div className={styles.err} role="alert">{err}</div>}
+        {ok && <div className={styles.ok}>{ok}</div>}
+        {err && <div className={styles.err}>{err}</div>}
 
-        <form className={styles.form} onSubmit={onSubmit}>
+        <form className={styles.authForm} onSubmit={onSubmit}>
           <label className={styles.label}>
-            Email
+            Email Address
             <input
               className={styles.input}
               name="email"
@@ -119,14 +130,22 @@ export default function SignIn() {
           </label>
 
           <div className={styles.rowBetween}>
-            <span />
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                name="remember"
+                checked={form.remember}
+                onChange={onChange}
+              />
+              Remember Me
+            </label>
             <button type="button" className={styles.link} onClick={forgot}>
-              Forgot password?
+              Forgot Password?
             </button>
           </div>
 
           <button className={styles.primaryBtn} disabled={loading}>
-            {loading ? "Signing in…" : "Sign in"}
+            {loading ? "Signing in…" : "Login"}
           </button>
 
           <div className={styles.divider}>or</div>
@@ -136,7 +155,10 @@ export default function SignIn() {
           </button>
 
           <p className={styles.meta}>
-            Don’t have an account? <Link to="/signup" className={styles.link}>Create one</Link>
+            Don’t have an account?{" "}
+            <Link to="/signup" className={styles.link}>
+              Sign Up
+            </Link>
           </p>
         </form>
       </div>

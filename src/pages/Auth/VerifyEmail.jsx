@@ -9,7 +9,6 @@ const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 
 export default function VerifyEmail() {
   const nav = useNavigate();
-
   const [email, setEmail] = useState("");
   const [sending, setSending] = useState(false);
   const [ok, setOk] = useState("");
@@ -31,7 +30,9 @@ export default function VerifyEmail() {
 
   const resend = async () => {
     if (cooldown) return;
-    setOk(""); setErr(""); setSending(true);
+    setOk("");
+    setErr("");
+    setSending(true);
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("You are signed out. Please sign in again.");
@@ -50,51 +51,50 @@ export default function VerifyEmail() {
   };
 
   const iveVerified = async () => {
-    setOk(""); setErr("");
+    setOk("");
+    setErr("");
     try {
       const user = auth.currentUser;
       if (!user) throw new Error("You are signed out. Please sign in again.");
       await reload(user);
-      if (user.emailVerified) {
-        nav("/admin");
-      } else {
-        setErr("Not verified yet. Open the link in your email and try again.");
-      }
+      if (user.emailVerified) nav("/admin");
+      else setErr("Not verified yet. Check your inbox and try again.");
     } catch (e) {
       setErr(e?.message || "Could not refresh verification status.");
     }
   };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.panel}>
-        <div className={styles.brand}>
-          <span className={styles.logoDot} />
-          NearNest
-        </div>
-        <h1 className={styles.title}>Verify your email</h1>
+    <div className={styles.authShell}>
+      <div className={styles.authCard}>
+        <h1 className={styles.authTitle}>Verify Email</h1>
         <p className={styles.subtitle}>
-          We sent a verification link to <b>{email}</b>. Open it to continue.
+          We sent a verification link to <b>{email}</b>. Please open it to
+          continue.
         </p>
 
         {ok && <div className={styles.ok}>{ok}</div>}
         {err && <div className={styles.err}>{err}</div>}
 
-        <div className={styles.row}>
+        <div className={styles.verifyActions}>
           <button
             onClick={resend}
             disabled={sending || cooldown > 0}
             className={styles.primaryBtn}
           >
-            {cooldown > 0 ? `Resend in ${cooldown}s` : (sending ? "Sending…" : "Resend email")}
+            {cooldown > 0
+              ? `Resend in ${cooldown}s`
+              : sending
+              ? "Sending…"
+              : "Resend Email"}
           </button>
 
-          <button onClick={iveVerified} className={styles.ghostBtn}>
-            I’ve verified
+          <button onClick={iveVerified} className={styles.secondaryBtn}>
+            I’ve Verified
           </button>
 
-          <Link to="/signin" className={styles.ghostBtn}>
-            Back to sign in
+          <Link to="/signin" className={styles.ghostLink}>
+            Back to Sign In
           </Link>
         </div>
       </div>

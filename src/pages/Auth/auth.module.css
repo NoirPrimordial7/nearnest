@@ -135,3 +135,165 @@
 
 /* Footer/meta */
 .meta { margin-top: var(--space-3); color: var(--muted); text-align: center; }
+
+/* ==== AUTH LAYOUT REWORK ==== */
+
+.authShell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 2rem;
+}
+
+.authCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  transition: all 0.3s ease;
+}
+
+.authCard:hover {
+  transform: translateY(-2px);
+}
+
+.authTitle {
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: 800;
+  margin-bottom: 2rem;
+}
+
+.authForm {
+  display: grid;
+  gap: 1.4rem;
+}
+
+/* Checkbox and label */
+.checkboxLabel {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+}
+
+/* Improve input spacing */
+.input {
+  height: 48px;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 15px;
+}
+
+/* Adjust button spacing */
+.primaryBtn {
+  height: 48px;
+  margin-top: 0.5rem;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .authCard {
+    padding: 2.2rem 1.6rem;
+    max-width: 90%;
+  }
+  .authTitle {
+    font-size: 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .authCard {
+    padding: 2rem 1.2rem;
+  }
+  .input {
+    font-size: 14px;
+  }
+  .primaryBtn {
+    font-size: 15px;
+  }
+}
+/* ==== UNIFIED AUTH FORM LAYOUT ==== */
+.authShell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #f9f9f9);
+  padding: 2rem;
+}
+
+.authCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  transition: all 0.3s ease;
+}
+
+.authCard:hover {
+  transform: translateY(-2px);
+}
+
+.authTitle {
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: #777;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+.authForm {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.verifyActions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Secondary / ghost button styling */
+.secondaryBtn {
+  background: transparent;
+  border: 1px solid #000;
+  color: #000;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+.secondaryBtn:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .authCard {
+    padding: 2rem 1.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .authCard {
+    padding: 1.8rem 1.2rem;
+  }
+  .authTitle {
+    font-size: 1.5rem;
+  }
+}
