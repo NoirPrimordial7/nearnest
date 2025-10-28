@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
 import { auth, googleProvider } from "../../firebase";
+import { computeLandingRoute } from "../../services/routing";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -20,9 +21,13 @@ export default function SignIn() {
   const onChange = (e) =>
     setForm((f) => ({
       ...f,
-      [e.target.name]: e.target.type === "checkbox" ? e.target.checked : e.target.value,
+      [e.target.name]:
+        e.target.type === "checkbox" ? e.target.checked : e.target.value,
     }));
 
+  // -------------------------------
+  // SIGN IN HANDLER
+  // -------------------------------
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -43,11 +48,13 @@ export default function SignIn() {
         return;
       }
 
-      // ✅ If "Remember Me" checked, store session
+      // ✅ Remember Me toggle
       if (form.remember) localStorage.setItem("rememberEmail", form.email);
       else localStorage.removeItem("rememberEmail");
 
-      nav("/admin");
+      // ✅ Role-based redirect (user/admin/store-owner)
+      const target = await computeLandingRoute();
+      nav(target);
     } catch (e) {
       setErr("Invalid email or password.");
       console.error(e);
@@ -56,13 +63,17 @@ export default function SignIn() {
     }
   };
 
+  // -------------------------------
+  // GOOGLE LOGIN
+  // -------------------------------
   const google = async () => {
     setErr("");
     setOk("");
     setLoading(true);
     try {
       await signInWithPopup(auth, googleProvider);
-      nav("/admin");
+      const target = await computeLandingRoute();
+      nav(target);
     } catch (e) {
       setErr(e?.message || "Google sign-in failed.");
     } finally {
@@ -70,6 +81,9 @@ export default function SignIn() {
     }
   };
 
+  // -------------------------------
+  // FORGOT PASSWORD
+  // -------------------------------
   const forgot = async () => {
     setErr("");
     setOk("");
@@ -85,6 +99,9 @@ export default function SignIn() {
     }
   };
 
+  // -------------------------------
+  // UI
+  // -------------------------------
   return (
     <div className={styles.authShell}>
       <div className={styles.authCard}>

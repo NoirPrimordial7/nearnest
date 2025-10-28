@@ -1,15 +1,7 @@
-// src/main.jsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { ensureUserDoc } from "./services/userBootstrap";
 
-import "./styles/theme.css";  // <— load tokens first
-import "./index.css";
-
-import App from "./App";
-
-createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
-);
+onAuthStateChanged(auth, async (user) => {
+  if (user) await ensureUserDoc(user);
+});
