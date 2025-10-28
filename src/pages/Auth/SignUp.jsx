@@ -36,14 +36,19 @@ export default function SignUp() {
     setLoading(true);
     try {
       const cred = await createUserWithEmailAndPassword(
-        auth, form.email, form.password
+        auth,
+        form.email,
+        form.password
       );
+
       if (form.name.trim()) {
         await updateProfile(cred.user, { displayName: form.name.trim() });
       }
+
       await reload(cred.user);
       await sendEmailVerification(cred.user, actionCodeSettings);
-      nav(`/verify-email`);
+      setOk("Verification email sent.");
+      nav("/verify-email");
     } catch (e) {
       setErr(e?.message || "Sign up failed.");
     } finally {
@@ -60,7 +65,7 @@ export default function SignUp() {
       if (!res.user.emailVerified) {
         await reload(res.user);
         await sendEmailVerification(res.user, actionCodeSettings);
-        nav(`/verify-email`);
+        nav("/verify-email");
       } else {
         nav("/admin");
       }
@@ -72,21 +77,17 @@ export default function SignUp() {
   };
 
   return (
-    <div className={styles.shell}>
-      <div className={styles.panel}>
-        <div className={styles.brand}>
-          <span className={styles.logoDot} />
-          NearNest
-        </div>
-        <h1 className={styles.title}>Create your account</h1>
+    <div className={styles.authShell}>
+      <div className={styles.authCard}>
+        <h1 className={styles.authTitle}>Create Account</h1>
         <p className={styles.subtitle}>It’s quick and free</p>
 
-        {ok && <div className={styles.ok} role="status">{ok}</div>}
-        {err && <div className={styles.err} role="alert">{err}</div>}
+        {ok && <div className={styles.ok}>{ok}</div>}
+        {err && <div className={styles.err}>{err}</div>}
 
-        <form className={styles.form} onSubmit={onSubmit}>
+        <form className={styles.authForm} onSubmit={onSubmit}>
           <label className={styles.label}>
-            Full name
+            Full Name
             <input
               className={styles.input}
               name="name"
@@ -98,7 +99,7 @@ export default function SignUp() {
           </label>
 
           <label className={styles.label}>
-            Email
+            Email Address
             <input
               className={styles.input}
               name="email"
@@ -133,7 +134,7 @@ export default function SignUp() {
           </label>
 
           <button className={styles.primaryBtn} disabled={loading}>
-            {loading ? "Creating…" : "Create account"}
+            {loading ? "Creating…" : "Create Account"}
           </button>
 
           <div className={styles.divider}>or</div>
@@ -143,7 +144,10 @@ export default function SignUp() {
           </button>
 
           <p className={styles.meta}>
-            Already have an account? <Link to="/signin" className={styles.link}>Sign in</Link>
+            Already have an account?{" "}
+            <Link to="/signin" className={styles.link}>
+              Sign In
+            </Link>
           </p>
         </form>
       </div>
