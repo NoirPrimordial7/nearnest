@@ -5,58 +5,28 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function uid() { return request.auth.uid; }
 
-    // --- USERS ---
+    // Users
     match /users/{userId} {
-      allow read: if isSignedIn() && (userId == uid() || get(/databases/$(database)/documents/users/$(uid())).data.admin == true);
-      allow create: if isSignedIn() && userId == uid();   // created by the user on first sign-in
+      allow read: if isSignedIn() && (userId == uid());
+      allow create: if isSignedIn() && userId == uid();
       allow update: if isSignedIn() && userId == uid();
     }
 
-    // --- ADMINS ONLY HELPER ---
-    function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(uid())).data.admin == true;
-    }
-
-    // --- STORES ROOT ---
+    // Stores
     match /stores/{storeId} {
-      allow read: if isSignedIn(); // let logged-in users read basic store info
-      allow create: if isAdmin();
-      allow update, delete: if isAdmin();
-
-      // ROLES in a store (managed by store owner/admins)
-      match /roles/{roleId} {
-        allow read: if isSignedIn();
-        allow create, update, delete:
-          if isAdmin() || hasStorePerm(storeId, "role.manage");
-      }
-
-      // MEMBERS of a store
-      match /members/{memberUid} {
-        allow read: if isSignedIn() && (uid() == memberUid || hasStorePerm(storeId, "role.manage") || isAdmin());
-        // Only admins or store managers (role.manage) can edit memberships
-        allow create, update, delete:
-          if isAdmin() || hasStorePerm(storeId, "role.manage");
-      }
-    }
-
-    // --- STORE APPLICATIONS ---
-    match /storeApplications/{appId} {
-      allow create: if isSignedIn();                // anyone can submit
-      allow read: if isAdmin() || resource.data.applicantUid == uid();
-      allow update: if isAdmin();                   // approve / reject
-      allow delete: if isAdmin();
-    }
-
-    // --- ROLE TEMPLATES (admin only) ---
-    match /roleTemplates/{templateId} {
       allow read: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create, update, delete: if isSignedIn();
     }
 
-    // Utility: check permissions by scanning member doc
-    function hasStorePerm(storeId, permKey) {
-      return isSignedIn() &&
-        get(/databases/$(database)/documents/stores/$(storeId)/members/$(uid())).data.permissions[permKey] == true;
+    // Store Applications
+    match /storeApplications/{appId} {
+      allow read, create, update: if isSignedIn();
+    }
+
+    // Role Templates
+    match /roleTemplates/{id} {
+      allow read: if true;
+      allow write: if false;
     }
   }
 }
