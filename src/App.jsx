@@ -14,7 +14,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 
 import StoreAdminHome from "./pages/StoreAdmin/Home";
 import StoreStaffHome from "./pages/StoreStaff/Home";
-
+import ErrorBoundary from "./components/ErrorBoundary";
 const Loader = () => (
   <div style={{ display: "grid", placeItems: "center", height: "100vh" }}>
     <div>Loading…</div>
@@ -59,6 +59,7 @@ function AdminIndexRedirect() {
 export default function App() {
   return (
     <AuthProvider>
+      <ErrorBoundary>
       <BrowserRouter>
         <Routes>
           {/* Public */}
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
+      </ErrorBoundary>
     </AuthProvider>
   );
 }

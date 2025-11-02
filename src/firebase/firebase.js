@@ -1,26 +1,24 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+// src/firebase/firebase.js
+import { initializeApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
-const cfg = {
-  apiKey:             import.meta.env.VITE_FB_API_KEY,
-  authDomain:         import.meta.env.VITE_FB_AUTH_DOMAIN,
-  projectId:          import.meta.env.VITE_FB_PROJECT_ID,
-  storageBucket:      import.meta.env.VITE_FB_STORAGE_BUCKET,
-  messagingSenderId:  import.meta.env.VITE_FB_MSG_SENDER_ID,
-  appId:              import.meta.env.VITE_FB_APP_ID,
-  measurementId:      import.meta.env.VITE_FB_MEASUREMENT_ID,
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const app  = getApps().length ? getApp() : initializeApp(cfg);
-export const auth = getAuth(app);
-export const db   = getFirestore(app);
+const app = initializeApp(firebaseConfig);
 
-// Optional: analytics (no blocking)
-let analytics;
-if (typeof window !== "undefined" && cfg.measurementId) {
-  import("firebase/analytics").then(async ({ getAnalytics, isSupported }) => {
-    if (await isSupported()) analytics = getAnalytics(app);
-  }).catch(() => {});
-}
-export { analytics };
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+const googleProvider = new GoogleAuthProvider();
+
+export { app, auth, db, storage, googleProvider };
+export default app;
