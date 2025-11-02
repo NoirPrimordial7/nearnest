@@ -35,3 +35,6 @@ build/
 functions/node_modules/
 extensions/*/node_modules/
 public/*.map
+
+serviceAccountKey.json
+**/serviceAccountKey.json
