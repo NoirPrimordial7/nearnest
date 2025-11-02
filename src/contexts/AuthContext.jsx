@@ -1,50 +1,53 @@
 // src/contexts/AuthContext.jsx
-import React, { useState, useEffect, useContext } from "react";
-import { auth, db } from "../firebaseConfig";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/firebase";
 
-// Create Context
-const AuthContext = React.createContext(null);
+const isAdmin = (roles) => Array.isArray(roles) && roles.includes("admin");
+const isStoreAdmin = (roles) =>
+  Array.isArray(roles) && (roles.includes("storeAdmin") || roles.some((r) => r.includes(":Owner")));
+const isStoreStaff = (roles) =>
+  Array.isArray(roles) && roles.some((r) => r.includes(":")) && !isStoreAdmin(roles);
 
-// Custom hook for easy context consumption
+export const resolveHomePath = (roles) => {
+  if (isAdmin(roles)) return "/admin/dashboard";
+  if (isStoreAdmin(roles)) return "/store-admin/home";
+  if (isStoreStaff(roles)) return "/store-staff/home";
+  return "/";
+};
+
+const AuthContext = createContext({ user: null, roles: null, loading: true });
 export const useAuth = () => useContext(AuthContext);
 
-export const AuthProvider = ({ children }) => {
-  const [firebaseUser, setFirebaseUser] = useState(null);    // raw Firebase Auth user object
-  const [userData, setUserData] = useState(null);            // profile data from Firestore
-  const [loading, setLoading] = useState(true);
+async function fetchUserRoles(uid) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, "users", uid));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return Array.isArray(data?.roles) ? data.roles : null;
+}
+
+export function AuthProvider({ children }) {
+  const [state, setState] = useState({ user: null, roles: null, loading: true });
 
   useEffect(() => {
-    // Listen to Firebase Auth state changes
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setFirebaseUser(user);
-      if (user) {
-        // User is logged in, fetch their profile from Firestore
-        const userDocRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(userDocRef);
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
-        } else {
-          setUserData(null);
-        }
-      } else {
-        // Not logged in
-        setUserData(null);
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) {
+        setState({ user: null, roles: null, loading: false });
+        return;
       }
-      setLoading(false);
+      try {
+        const roles = await fetchUserRoles(u.uid);
+        setState({ user: u, roles, loading: false });
+      } catch (err) {
+        console.error("Role fetch failed:", err);
+        setState({ user: u, roles: null, loading: false });
+      }
     });
-    // Cleanup subscription on unmount
-    return unsubscribe;
+    return () => unsub();
   }, []);
 
-  // Helper: Check if current user has a certain role or permission
-  const hasRole = (role) => userData?.role === role;
-  const hasPermission = (permKey) => {
-    if (!userData?.role || !userData?.permissions) return false;
-    return userData.permissions[permKey] === true;
-  };
-
-  const value = { firebaseUser, userData, loading, hasRole, hasPermission };
+  const value = useMemo(() => state, [state.user, state.roles, state.loading]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}

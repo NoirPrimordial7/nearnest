@@ -12,7 +12,7 @@ import {
 import { auth, googleProvider, db } from "../../firebase/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-// --- keep logic consistent with App.jsx ---
+// --- same role helpers used in App/Context ---
 const isAdmin = (roles) => Array.isArray(roles) && roles.includes("admin");
 const isStoreAdmin = (roles) =>
   Array.isArray(roles) && (roles.includes("storeAdmin") || roles.some((r) => r.includes(":Owner")));
@@ -44,7 +44,6 @@ export default function SignIn() {
         e.target.type === "checkbox" ? e.target.checked : e.target.value,
     }));
 
-  // ===== ROLE-BASED REDIRECT =====
   const handleRedirectByRole = async (user) => {
     try {
       const userDocSnap = await getDoc(doc(db, "users", user.uid));
@@ -53,15 +52,13 @@ export default function SignIn() {
       const data = userDocSnap.data();
       const roles = Array.isArray(data?.roles) ? data.roles : [];
 
-      const target = resolveHomePath(roles);
-      return nav(target, { replace: true });
+      return nav(resolveHomePath(roles), { replace: true });
     } catch (e) {
       console.error("Error in handleRedirectByRole:", e);
       nav("/signin", { replace: true });
     }
   };
 
-  // ===== EMAIL/PASSWORD LOGIN =====
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -96,7 +93,6 @@ export default function SignIn() {
     }
   };
 
-  // ===== GOOGLE LOGIN =====
   const google = async () => {
     setErr("");
     setOk("");
@@ -112,7 +108,7 @@ export default function SignIn() {
         await setDoc(userRef, {
           name: user.displayName || "New User",
           email: user.email,
-          roles: ["user"], // default
+          roles: ["user"],
           createdAt: Date.now(),
         });
       }
@@ -126,7 +122,6 @@ export default function SignIn() {
     }
   };
 
-  // ===== FORGOT PASSWORD =====
   const forgot = async () => {
     setErr("");
     setOk("");
@@ -140,7 +135,6 @@ export default function SignIn() {
     }
   };
 
-  // ===== RENDER (unchanged design) =====
   return (
     <div className={styles.authShell}>
       <div className={styles.authCard}>
