@@ -297,3 +297,164 @@
     font-size: 1.5rem;
   }
 }
+/* src/pages/Auth/auth.module.css */
+
+/* ---------- tokens ---------- */
+:root{
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --ink:#111827;          /* slate-900 */
+  --muted:#6b7280;        /* gray-500 */
+  --line:#e5e7eb;         /* gray-200 */
+  --cta-grad:linear-gradient(180deg,#000,#1a1a1a);
+  --cta-ink:#fff;
+
+  --ok-bg:#ecfdf5; --ok-ink:#065f46;
+  --err-bg:#fef2f2; --err-ink:#991b1b;
+
+  --r-md:10px;
+  --r-lg:16px;
+  --shadow:0 12px 32px rgba(16,24,40,.08);
+}
+
+/* ---------- full-page shell ---------- */
+.authShell{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:2.5rem;
+  background:var(--bg);
+}
+
+/* ---------- card ---------- */
+.authCard{
+  width:100%;
+  max-width:480px;              /* slightly wider to match screenshot */
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--r-lg);
+  box-shadow:var(--shadow);
+  padding:2.25rem 2rem;
+}
+
+/* ---------- headings ---------- */
+.authTitle{
+  font-size:1.85rem;
+  font-weight:800;
+  text-align:center;
+  letter-spacing:-.2px;
+  margin:0 0 .35rem;
+}
+.subtitle{
+  text-align:center;
+  color:var(--muted);
+  font-size:.95rem;
+  margin:0 0 1.4rem;
+}
+
+/* ---------- form ---------- */
+.authForm{ display:grid; gap:1.15rem; }
+
+/* label + input */
+.label{ display:grid; gap:.5rem; font-size:.82rem; color:var(--muted); }
+.input{
+  height:46px;
+  width:100%;
+  border-radius:10px;
+  border:1px solid var(--line);
+  /* filled look from screenshot */
+  background:#e9eef7;
+  color:var(--ink);
+  padding:0 14px;
+  font-size:15px;
+  transition:box-shadow .15s, border-color .15s, background-color .15s;
+}
+.input::placeholder{ color:#9aa3af; }
+.input:focus{
+  outline:0;
+  background:#eef2ff;
+  border-color:#c7d2fe;
+  box-shadow:0 0 0 4px rgba(99,102,241,.15);
+}
+
+/* password toggle (right “Show”) */
+.pwdWrap{ position:relative; display:grid; }
+.pwdToggle{
+  position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  border:0; background:transparent; color:#6b7280; font-size:12px; padding:4px 8px; border-radius:8px;
+}
+.pwdToggle:hover{ color:#111827; }
+
+/* ---------- buttons ---------- */
+.primaryBtn, .googleBtn{
+  height:46px; border-radius:10px; border:1px solid transparent;
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  font-weight:800; letter-spacing:.2px; cursor:pointer;
+}
+.primaryBtn{
+  width:100%;
+  background:var(--cta-grad);
+  color:var(--cta-ink);
+  box-shadow:0 10px 20px rgba(0,0,0,.15);
+}
+.primaryBtn:hover{ filter:brightness(1.05); }
+.primaryBtn:active{ transform:translateY(1px); }
+.primaryBtn:disabled{ opacity:.8; cursor:not-allowed; }
+
+/* Google button (white, bordered, pill-ish) */
+.googleBtn{
+  width:100%;
+  background:#fff;
+  border:1px solid var(--line);
+}
+.googleBtn:hover{ box-shadow:var(--shadow); }
+.googleIcon{ width:18px; height:18px; display:block; }
+
+/* row utilities */
+.rowBetween{ display:flex; align-items:center; justify-content:space-between; }
+.checkboxLabel{
+  display:inline-flex; align-items:center; gap:.5rem;
+  color:var(--muted); font-size:.92rem;
+}
+
+/* divider */
+.divider{
+  display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center;
+  color:var(--muted); font-size:.75rem; margin:1.15rem 0 .6rem;
+}
+.divider::before, .divider::after{ content:""; height:1px; background:var(--line); }
+
+/* links + messages */
+.link{ color:#111827; font-weight:700; background:transparent; border:0; padding:0; }
+.link:hover{ opacity:.75; }
+.ok,.err{ border-radius:10px; padding:10px 12px; font-size:13px; }
+.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+.err{ background:var(--err-bg); color:var(--err-ink); }
+
+.meta{ margin-top:.75rem; color:var(--muted); text-align:center; }
+
+/* ---------- responsive ---------- */
+@media (max-width:768px){
+  .authCard{ max-width:92%; padding:2rem 1.5rem; }
+  .authTitle{ font-size:1.65rem; }
+}
+@media (max-width:480px){
+  .authCard{ padding:1.6rem 1.1rem; }
+  .authTitle{ font-size:1.5rem; }
+  .input{ font-size:14px; }
+  .primaryBtn{ font-size:15px; }
+}
+
+/* ---------- dark mode polish ---------- */
+/* Force light look even if system is dark */
+@media (prefers-color-scheme: dark) {
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
+    --cta-grad:linear-gradient(180deg,#000,#1a1a1a); --cta-ink:#fff;
+    --shadow:0 12px 32px rgba(16,24,40,.08);
+  }
+  .input{ background:#e9eef7; border-color:var(--line); color:var(--ink); }
+  .googleBtn{ background:#fff; border-color:var(--line); color:var(--ink); }
+  .link{ color:#111827; }
+}
+
