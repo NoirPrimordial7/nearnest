@@ -41,3 +41,19 @@ serviceAccountKey.json
 
 serviceAccountKey.json
 **/serviceAccountKey.json
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Never commit admin creds
+serviceAccountKey.json
+**/serviceAccountKey.json
+# Local env files
+.env
+.env.*
+!.env.example
+
+# Never commit admin creds
+serviceAccountKey.json
+**/serviceAccountKey.json

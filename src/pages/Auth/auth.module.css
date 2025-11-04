@@ -297,164 +297,233 @@
     font-size: 1.5rem;
   }
 }
-/* src/pages/Auth/auth.module.css */
+/* ===== Nearnest Auth (denqid-inspired) =====
+   Polished light look, glass card, gradient border,
+   soft depth, and crisp black CTAs.
+   This file styles SignIn, SignUp, VerifyEmail.
+*/
 
-/* ---------- tokens ---------- */
+/* ---------- Tokens ---------- */
 :root{
-  --bg:#f6f7fb;
+  --bg:#f7f8fb;
+  --ink:#0a0f1a;
+  --muted:#6b7280;
+  --line:#e8ebf0;
+
   --card:#ffffff;
-  --ink:#111827;          /* slate-900 */
-  --muted:#6b7280;        /* gray-500 */
-  --line:#e5e7eb;         /* gray-200 */
-  --cta-grad:linear-gradient(180deg,#000,#1a1a1a);
-  --cta-ink:#fff;
+  --glass:rgba(255,255,255,.60);
+  --shadow-lg: 0 30px 80px rgba(16, 24, 40, .12);
+  --shadow-sm: 0 8px 24px rgba(16,24,40,.08);
 
-  --ok-bg:#ecfdf5; --ok-ink:#065f46;
-  --err-bg:#fef2f2; --err-ink:#991b1b;
+  --accent:#111;         /* primary CTA (black) */
+  --accent-ink:#fff;
 
-  --r-md:10px;
-  --r-lg:16px;
-  --shadow:0 12px 32px rgba(16,24,40,.08);
+  --ok-bg:#ecfdf5;  --ok-ink:#047857;
+  --err-bg:#fef2f2; --err-ink:#b91c1c;
+
+  --r-md:12px; --r-lg:18px; --r-xl:22px;
+  --space-2:8px; --space-3:12px; --space-4:16px; --space-5:20px;
 }
 
-/* ---------- full-page shell ---------- */
+/* ---------- Page shell ---------- */
 .authShell{
   min-height:100vh;
+  width:100%;
   display:grid;
   place-items:center;
-  padding:2.5rem;
-  background:var(--bg);
+  padding:clamp(16px, 3vw, 36px);
+  background:
+    radial-gradient(1000px 600px at 10% -5%, rgba(17,17,17,.05), transparent 60%),
+    radial-gradient(900px 500px at 110% 110%, rgba(17,17,17,.04), transparent 65%),
+    var(--bg);
+  /* subtle grid like denqid */
+  position:relative;
+  isolation:isolate;
+}
+.authShell::after{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.035) 1px, transparent 1px) 0 0/36px 36px,
+    linear-gradient(0deg,  rgba(0,0,0,.03) 1px, transparent 1px) 0 0/36px 36px;
+  pointer-events:none;
+  opacity:.25;
+  z-index:-1;
 }
 
-/* ---------- card ---------- */
+/* ---------- Card ---------- */
 .authCard{
-  width:100%;
-  max-width:480px;              /* slightly wider to match screenshot */
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:var(--r-lg);
-  box-shadow:var(--shadow);
-  padding:2.25rem 2rem;
+  width:min(440px, 92vw);
+  background: var(--glass);
+  backdrop-filter: blur(18px);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 28px;
+  position:relative;
+  border:1px solid transparent;
+
+  /* gradient stroke like denqid */
+  background-image:
+    linear-gradient(#fff,#fff),
+    linear-gradient(135deg,#e9eefc 0%, #ffeef6 40%, #e9fef4 100%);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
 }
 
-/* ---------- headings ---------- */
+/* halo behind card */
+.authCard::before{
+  content:"";
+  position:absolute; inset:-1px;
+  border-radius:inherit;
+  background: radial-gradient(600px 220px at 50% -20%,
+    rgba(104,117,245,.25), transparent 60%);
+  filter: blur(14px);
+  z-index:-1;
+}
+
+/* ---------- Titles ---------- */
 .authTitle{
-  font-size:1.85rem;
-  font-weight:800;
-  text-align:center;
-  letter-spacing:-.2px;
-  margin:0 0 .35rem;
+  font-size:28px; line-height:1.1; letter-spacing:-.2px;
+  font-weight:800; color:var(--ink);
+  text-align:center; margin:0 0 6px;
 }
 .subtitle{
-  text-align:center;
-  color:var(--muted);
-  font-size:.95rem;
-  margin:0 0 1.4rem;
+  color:var(--muted); font-size:14px; text-align:center;
+  margin:0 0 18px;
 }
 
-/* ---------- form ---------- */
-.authForm{ display:grid; gap:1.15rem; }
+/* ---------- Form ---------- */
+.authForm{ display:grid; gap:14px; }
+.label{ display:grid; gap:8px; font-size:13px; color:var(--muted); }
 
-/* label + input */
-.label{ display:grid; gap:.5rem; font-size:.82rem; color:var(--muted); }
+/* denqid-ish inputs: soft fill + focus ring */
 .input{
-  height:46px;
-  width:100%;
-  border-radius:10px;
+  height:48px;
   border:1px solid var(--line);
-  /* filled look from screenshot */
-  background:#e9eef7;
-  color:var(--ink);
+  border-radius: var(--r-md);
+  background: #f6f8ff;
+  color: var(--ink);
   padding:0 14px;
-  font-size:15px;
-  transition:box-shadow .15s, border-color .15s, background-color .15s;
+  transition:border-color .18s, box-shadow .18s, background .18s, transform .06s;
 }
-.input::placeholder{ color:#9aa3af; }
+.input::placeholder{ color:#97a0ad; }
 .input:focus{
-  outline:0;
-  background:#eef2ff;
-  border-color:#c7d2fe;
-  box-shadow:0 0 0 4px rgba(99,102,241,.15);
+  outline:none;
+  background:#fff;
+  border-color:#b9c3ff;
+  box-shadow:0 0 0 5px rgba(98,105,255,.12);
 }
 
-/* password toggle (right “Show”) */
+/* password eye */
 .pwdWrap{ position:relative; display:grid; }
 .pwdToggle{
-  position:absolute; right:10px; top:50%; transform:translateY(-50%);
-  border:0; background:transparent; color:#6b7280; font-size:12px; padding:4px 8px; border-radius:8px;
+  position:absolute; top:50%; right:8px; transform:translateY(-50%);
+  background:transparent; border:0; color:var(--muted);
+  font-size:12px; padding:6px 8px; border-radius:8px; cursor:pointer;
 }
-.pwdToggle:hover{ color:#111827; }
+.pwdToggle:hover{ color:var(--ink); }
 
-/* ---------- buttons ---------- */
-.primaryBtn, .googleBtn{
-  height:46px; border-radius:10px; border:1px solid transparent;
-  display:inline-flex; align-items:center; justify-content:center; gap:10px;
-  font-weight:800; letter-spacing:.2px; cursor:pointer;
+/* ---------- Buttons ---------- */
+.primaryBtn, .googleBtn, .secondaryBtn{
+  height:48px; border-radius:var(--r-md);
+  border:1px solid transparent;
+  display:inline-flex; align-items:center; justify-content:center;
+  gap:10px; font-weight:800; letter-spacing:.2px;
+  transition: transform .06s ease, filter .18s ease, box-shadow .18s ease;
 }
+
+/* main CTA: glossy black */
 .primaryBtn{
   width:100%;
-  background:var(--cta-grad);
-  color:var(--cta-ink);
-  box-shadow:0 10px 20px rgba(0,0,0,.15);
+  background: linear-gradient(180deg,#171717 0%, #0f0f0f 100%);
+  color: var(--accent-ink);
+  box-shadow: 0 14px 30px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.12);
 }
-.primaryBtn:hover{ filter:brightness(1.05); }
+.primaryBtn:hover{ filter:brightness(1.04); }
 .primaryBtn:active{ transform:translateY(1px); }
-.primaryBtn:disabled{ opacity:.8; cursor:not-allowed; }
 
-/* Google button (white, bordered, pill-ish) */
-.googleBtn{
+/* outline/ghost */
+.secondaryBtn{
   width:100%;
-  background:#fff;
+  background: #fff;
   border:1px solid var(--line);
+  color:var(--ink);
 }
-.googleBtn:hover{ box-shadow:var(--shadow); }
-.googleIcon{ width:18px; height:18px; display:block; }
+.secondaryBtn:hover{ box-shadow: var(--shadow-sm); }
 
-/* row utilities */
-.rowBetween{ display:flex; align-items:center; justify-content:space-between; }
-.checkboxLabel{
-  display:inline-flex; align-items:center; gap:.5rem;
-  color:var(--muted); font-size:.92rem;
+/* Google button (kept) */
+.rowBetween{ display:flex; align-items:center; justify-content:center; }
+.googleBtn{
+  width:100%; background:#fff; border:1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+}
+.googleBtn:hover{ box-shadow: 0 16px 30px rgba(0,0,0,.08); }
+.googleIcon{
+  width:18px !important; height:18px !important; flex:0 0 18px !important;
+  object-fit:contain !important; display:inline-block !important;
 }
 
-/* divider */
+/* ---------- Divider ---------- */
 .divider{
-  display:grid; grid-template-columns:1fr auto 1fr; gap:12px; align-items:center;
-  color:var(--muted); font-size:.75rem; margin:1.15rem 0 .6rem;
+  display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center;
+  color:var(--muted); font-size:12px; margin:14px 0 6px;
 }
 .divider::before, .divider::after{ content:""; height:1px; background:var(--line); }
 
-/* links + messages */
-.link{ color:#111827; font-weight:700; background:transparent; border:0; padding:0; }
-.link:hover{ opacity:.75; }
-.ok,.err{ border-radius:10px; padding:10px 12px; font-size:13px; }
-.ok{ background:var(--ok-bg); color:var(--ok-ink); }
+/* ---------- Links & small text ---------- */
+.checkboxLabel{
+  font-size:13px; display:inline-flex; align-items:center; gap:8px; color:var(--muted);
+}
+.link{
+  color:var(--ink); font-weight:700; background:transparent; border:0; padding:0; cursor:pointer;
+}
+.link:hover{ opacity:.8; }
+.meta{ margin-top:10px; color:var(--muted); text-align:center; }
+
+/* ---------- Alerts ---------- */
+.ok,.err{ border-radius:12px; padding:10px 12px; font-size:13px; margin:6px 0 2px; }
+.ok{  background:var(--ok-bg);  color:var(--ok-ink); }
 .err{ background:var(--err-bg); color:var(--err-ink); }
 
-.meta{ margin-top:.75rem; color:var(--muted); text-align:center; }
-
-/* ---------- responsive ---------- */
-@media (max-width:768px){
-  .authCard{ max-width:92%; padding:2rem 1.5rem; }
-  .authTitle{ font-size:1.65rem; }
+/* ---------- SignUp specific helpers (no JSX changes required) ---------- */
+.twoCol{
+  display:grid; gap:12px;
+  grid-template-columns:1fr 1fr;
 }
+@media (max-width: 520px){ .twoCol{ grid-template-columns:1fr; } }
+
+/* ---------- Verify Email / Code entry ---------- */
+.verifyActions{ display:grid; gap:12px; margin-top:16px; }
+.codeGrid{
+  display:grid; grid-template-columns: repeat(6, 1fr); gap:10px; margin:8px 0 2px;
+}
+.codeCell{
+  height:52px; text-align:center; font-size:18px; font-weight:700;
+  border-radius:12px; border:1px solid var(--line); background:#fff;
+  transition: box-shadow .18s, border-color .18s;
+}
+.codeCell:focus{
+  outline:none; border-color:#b9c3ff; box-shadow:0 0 0 5px rgba(98,105,255,.12);
+}
+
+/* ---------- Small pills/tabs for auth variants ---------- */
+.pills{ display:flex; gap:8px; justify-content:center; margin-bottom:12px; }
+.pill{
+  padding:6px 10px; border-radius:999px; border:1px solid var(--line);
+  background:#fff; color:var(--ink); font-weight:700; font-size:12px;
+}
+.pillActive{
+  background: linear-gradient(135deg,#eef2ff 0%, #fdf2f8 100%);
+  border-color: transparent;
+}
+
+/* ---------- Subtle motion on load ---------- */
+@keyframes liftIn{ from{ transform:translateY(6px); opacity:.0 } to{ transform:translateY(0); opacity:1 } }
+.authCard{ animation: liftIn .28s ease both; }
+
+/* ---------- Responsive ---------- */
 @media (max-width:480px){
-  .authCard{ padding:1.6rem 1.1rem; }
-  .authTitle{ font-size:1.5rem; }
-  .input{ font-size:14px; }
-  .primaryBtn{ font-size:15px; }
+  .authCard{ padding:22px 18px; border-radius:16px; }
+  .authTitle{ font-size:24px; }
+  .input, .primaryBtn, .googleBtn, .secondaryBtn{ height:46px; }
 }
-
-/* ---------- dark mode polish ---------- */
-/* Force light look even if system is dark */
-@media (prefers-color-scheme: dark) {
-  :root{
-    --bg:#f6f7fb; --card:#ffffff; --ink:#111827; --muted:#6b7280; --line:#e5e7eb;
-    --cta-grad:linear-gradient(180deg,#000,#1a1a1a); --cta-ink:#fff;
-    --shadow:0 12px 32px rgba(16,24,40,.08);
-  }
-  .input{ background:#e9eef7; border-color:var(--line); color:var(--ink); }
-  .googleBtn{ background:#fff; border-color:var(--line); color:var(--ink); }
-  .link{ color:#111827; }
-}
-
