@@ -92,3 +92,5 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthCtx) ?? { user: null, role: null, loading: true };
 }
+
+export default AuthProvider;
