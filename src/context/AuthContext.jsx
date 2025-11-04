@@ -1,5 +1,5 @@
 // src/context/AuthContext.jsx
-import { createContext, useContext, useEffect, useState } from "react";
+/*import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
@@ -51,4 +51,46 @@ export default function AuthProvider({ children }) {
   }, []);
 
   return <Ctx.Provider value={state}>{children}</Ctx.Provider>;
+} */
+// src/context/AuthContext.jsx
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { getAuth, onAuthStateChanged, signOut as fbSignOut } from "firebase/auth";
+// Make sure your Firebase app is initialized once in src/firebase/firebase.js
+// and imported somewhere early (e.g., in main.jsx). This file does NOT initialize.
+
+const AuthCtx = createContext(null);
+
+export function AuthProvider({ children }) {
+  const auth = getAuth(); // uses the default app
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      // DEV role logic — replace with Firestore lookup later
+      const r = u?.email?.startsWith("admin") ? "admin" : "user";
+      setRole(r);
+      setLoading(false);
+    });
+  }, [auth]);
+
+  const value = useMemo(
+    () => ({
+      user,
+      role,
+      loading,
+      signOut: () => fbSignOut(auth),
+    }),
+    [user, role, loading, auth]
+  );
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
+
+export function useAuth() {
+  return useContext(AuthCtx) ?? { user: null, role: null, loading: true };
+}
+
+export default AuthProvider;

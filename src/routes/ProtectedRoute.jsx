@@ -1,36 +1,31 @@
 // src/routes/ProtectedRoute.jsx
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-//import { useAuth } from "../contexts/AuthContext";
-import { useAuth } from "../context/AuthContext.jsx"; // ✅ singular
+import { useAuth } from "../context/AuthContext";
 
-// Role selector helpers
-function hasAccess(userRoles, allowed) {
-  // Admin can access everything
-  if (userRoles.includes("admin")) return true;
+// roles is OPTIONAL. When omitted, any authenticated user can pass.
+export default function ProtectedRoute({ roles = null }) {
+  const { user, role, loading } = useAuth(); // role can be string/array/undefined
+  const location = useLocation();
 
-  // Normalize allowed into array
-  const allowList = Array.isArray(allowed) ? allowed : [allowed];
+  if (loading) {
+    return <div style={{ padding: 24 }}>Loading…</div>;
+  }
 
-  return allowList.some((rule) => {
-    if (rule === "any") return true;
-    if (rule === "store:any") return userRoles.some((r) => r.includes(":"));
-    if (rule.startsWith("store:")) {
-      // store:Owner, store:Manager, store:Staff -> check suffix
-      const wanted = rule.split(":")[1];
-      return userRoles.some((r) => r.endsWith(`:${wanted}`));
-    }
-    // Plain role ("storeAdmin", "support", etc.)
-    return userRoles.includes(rule);
-  });
-}
+  // Not signed in → go to sign-in
+  if (!user) {
+    return <Navigate to="/signin" replace state={{ from: location }} />;
+  }
 
-export default function ProtectedRoute({ allow = "any", redirectTo = "/signin" }) {
-  const { user, roles, loading } = useAuth();
-  const loc = useLocation();
+  // Normalize role value from context
+  const userRole = Array.isArray(role) ? role[0] : role || "user";
 
-  if (loading) return <div style={{ padding: 24 }}>Loading…</div>;
-  if (!user) return <Navigate to={redirectTo} state={{ from: loc }} replace />;
+  // Only check when roles was provided
+  const allowed = Array.isArray(roles) ? roles.includes(userRole) : true;
+  if (!allowed) {
+    // Signed in but not allowed → send to /home
+    return <Navigate to="/home" replace />;
+  }
 
-  return hasAccess(roles, allow) ? <Outlet /> : <Navigate to={redirectTo} replace />;
+  return <Outlet />;
 }
