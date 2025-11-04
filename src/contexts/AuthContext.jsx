@@ -4,50 +4,78 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
 
-const isAdmin = (roles) => Array.isArray(roles) && roles.includes("admin");
-const isStoreAdmin = (roles) =>
-  Array.isArray(roles) && (roles.includes("storeAdmin") || roles.some((r) => r.includes(":Owner")));
-const isStoreStaff = (roles) =>
-  Array.isArray(roles) && roles.some((r) => r.includes(":")) && !isStoreAdmin(roles);
-
-export const resolveHomePath = (roles) => {
-  if (isAdmin(roles)) return "/admin/dashboard";
-  if (isStoreAdmin(roles)) return "/store-admin/home";
-  if (isStoreStaff(roles)) return "/store-staff/home";
-  return "/";
+// Optional dev bypass via env OR localStorage.
+// Env: VITE_AUTH_BYPASS=true and VITE_BYPASS_ROLE=admin|storeAdmin|staff
+// You can also use localStorage.setItem("DEV_IMPERSONATE", JSON.stringify({ roles:["admin"], storeId:null }))
+const readDevImpersonation = () => {
+  try {
+    if (import.meta.env.VITE_AUTH_BYPASS === "true") {
+      const r = (import.meta.env.VITE_BYPASS_ROLE || "admin").trim();
+      // Map simple aliases to the roles array we use everywhere:
+      if (r === "admin") return { uid: "DEV", email: "dev@nearnest.com", roles: ["admin"], storeId: null, dev: true };
+      if (r === "storeAdmin") return { uid: "DEV", email: "dev@nearnest.com", roles: ["storeAdmin", "demoStore:Owner"], storeId: "demoStore", dev: true };
+      if (r === "staff") return { uid: "DEV", email: "dev@nearnest.com", roles: ["demoStore:Staff"], storeId: "demoStore", dev: true };
+    }
+    const fromLS = localStorage.getItem("DEV_IMPERSONATE");
+    if (fromLS) {
+      const parsed = JSON.parse(fromLS);
+      return { uid: "DEV", email: "dev@nearnest.com", roles: parsed.roles || ["user"], storeId: parsed.storeId || null, dev: true };
+    }
+  } catch {}
+  return null;
 };
 
-const AuthContext = createContext({ user: null, roles: null, loading: true });
-export const useAuth = () => useContext(AuthContext);
-
-async function fetchUserRoles(uid) {
-  if (!uid) return null;
-  const snap = await getDoc(doc(db, "users", uid));
-  if (!snap.exists()) return null;
-  const data = snap.data();
-  return Array.isArray(data?.roles) ? data.roles : null;
-}
+const AuthCtx = createContext(null);
+export const useAuth = () => useContext(AuthCtx);
 
 export function AuthProvider({ children }) {
-  const [state, setState] = useState({ user: null, roles: null, loading: true });
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [profile, setProfile] = useState(null); // {roles:[], storeId}
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const dev = readDevImpersonation();
+    if (dev) {
+      setFirebaseUser({ uid: dev.uid, email: dev.email });
+      setProfile({ roles: dev.roles, storeId: dev.storeId, dev: true });
+      setLoading(false);
+      return () => {};
+    }
+
     const unsub = onAuthStateChanged(auth, async (u) => {
+      setFirebaseUser(u);
       if (!u) {
-        setState({ user: null, roles: null, loading: false });
+        setProfile(null);
+        setLoading(false);
         return;
       }
       try {
-        const roles = await fetchUserRoles(u.uid);
-        setState({ user: u, roles, loading: false });
-      } catch (err) {
-        console.error("Role fetch failed:", err);
-        setState({ user: u, roles: null, loading: false });
+        const snap = await getDoc(doc(db, "users", u.uid));
+        const data = snap.exists() ? snap.data() : {};
+        setProfile({ roles: data.roles || ["user"], storeId: data.storeId || data.store || null, dev: false });
+      } catch (e) {
+        console.error("Failed to load user profile/roles:", e);
+        setProfile({ roles: ["user"], storeId: null, dev: false });
+      } finally {
+        setLoading(false);
       }
     });
+
     return () => unsub();
   }, []);
 
-  const value = useMemo(() => state, [state.user, state.roles, state.loading]);
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  const value = useMemo(
+    () => ({
+      user: firebaseUser,
+      roles: profile?.roles || [],
+      storeId: profile?.storeId || null,
+      loading,
+      isDevImpersonating: !!profile?.dev,
+      // Quick helpers:
+      isAdmin: (profile?.roles || []).includes("admin"),
+    }),
+    [firebaseUser, profile, loading]
+  );
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
