@@ -1,97 +1,54 @@
-// src/contexts/AuthContext.jsx
-import { createContext, useState, useEffect, useContext } from "react";
-import {
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  sendEmailVerification,
-} from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  setDoc,
-  serverTimestamp,
-} from "firebase/firestore";
-import { auth, db } from "../firebase";
+// src/context/AuthContext.jsx
+import { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
-export const AuthContext = createContext({});
+const Ctx = createContext({ user: null, roles: [], storeId: null, loading: true });
+export const useAuth = () => useContext(Ctx);
 
-export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+export default function AuthProvider({ children }) {
+  const [state, setState] = useState({ user: null, roles: [], storeId: null, loading: true });
+
+  // 🔧 env-driven dev bypass
+  const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS === "true";
+  const DEV_ROLE   = import.meta.env.VITE_DEV_ROLE || "admin";
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        try {
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setRole(docSnap.data().roles || null);
+    const stop = onAuthStateChanged(auth, async (user) => {
+      try {
+        if (!user) {
+          if (DEV_BYPASS) {
+            setState({
+              user: { uid: "dev-user", email: "dev@local" },
+              roles: [DEV_ROLE],
+              storeId: "demoStore",
+              loading: false,
+            });
           } else {
-            setRole(null);
+            setState({ user: null, roles: [], storeId: null, loading: false });
           }
-        } catch (error) {
-          console.error("Failed to fetch role:", error);
-          setRole(null);
+          return;
         }
-      } else {
-        setRole(null);
-      }
-      setLoading(false);
-    });
 
-    return () => unsubscribe();
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists() ? snap.data() : {};
+        const rolesFromDb = Array.isArray(data.roles) ? data.roles : [];
+
+        setState({
+          user,
+          roles: DEV_BYPASS ? [DEV_ROLE] : rolesFromDb,
+          storeId: data.storeId || data.storeIdRef || null,
+          loading: false,
+        });
+      } catch (e) {
+        console.error("Auth bootstrap failed:", e);
+        setState((s) => ({ ...s, loading: false }));
+      }
+    });
+    return () => stop();
   }, []);
 
-  const signup = async (email, password, extra = {}) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    await setDoc(doc(db, "users", user.uid), {
-      email: user.email,
-      createdAt: serverTimestamp(),
-      roles: ["user"],
-      ...extra,
-    });
-
-    await sendEmailVerification(user);
-    await signOut(auth);
-    return userCredential;
-  };
-
-  const login = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  const logout = () => signOut(auth);
-
-  const resendVerification = () => {
-    if (auth.currentUser) {
-      return sendEmailVerification(auth.currentUser);
-    }
-    return Promise.reject(new Error("No user is signed in."));
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        currentUser,
-        role,
-        signup,
-        login,
-        logout,
-        resendVerification,
-        loading,
-      }}
-    >
-
-      {children}
-    </AuthContext.Provider>
-  );
+  return <Ctx.Provider value={state}>{children}</Ctx.Provider>;
 }
-
-export const useAuth = () => useContext(AuthContext);
