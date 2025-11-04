@@ -12,19 +12,6 @@ import {
 import { auth, googleProvider, db } from "../../firebase/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-// --- same role helpers used in App/Context ---
-const isAdmin = (roles) => Array.isArray(roles) && roles.includes("admin");
-const isStoreAdmin = (roles) =>
-  Array.isArray(roles) && (roles.includes("storeAdmin") || roles.some((r) => r.includes(":Owner")));
-const isStoreStaff = (roles) =>
-  Array.isArray(roles) && roles.some((r) => r.includes(":")) && !isStoreAdmin(roles);
-const resolveHomePath = (roles) => {
-  if (isAdmin(roles)) return "/admin/dashboard";
-  if (isStoreAdmin(roles)) return "/store-admin/home";
-  if (isStoreStaff(roles)) return "/store-staff/home";
-  return "/";
-};
-
 export default function SignIn() {
   const nav = useNavigate();
   const [form, setForm] = useState({
@@ -44,21 +31,33 @@ export default function SignIn() {
         e.target.type === "checkbox" ? e.target.checked : e.target.value,
     }));
 
+  // Centralized role redirect
   const handleRedirectByRole = async (user) => {
     try {
-      const userDocSnap = await getDoc(doc(db, "users", user.uid));
-      if (!userDocSnap.exists()) return nav("/signin", { replace: true });
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (!snap.exists()) return nav("/signin", { replace: true });
 
-      const data = userDocSnap.data();
-      const roles = Array.isArray(data?.roles) ? data.roles : [];
+      const { roles = [] } = snap.data() || {};
+      // Admin first (has full access)
+      if (roles.includes("admin")) return nav("/admin/dashboard", { replace: true });
 
-      return nav(resolveHomePath(roles), { replace: true });
+      // Store admin (either global 'storeAdmin' or :Owner)
+      if (roles.includes("storeAdmin") || roles.some((r) => r.endsWith(":Owner")))
+        return nav("/store-admin/home", { replace: true });
+
+      // Any store-scoped role goes to staff home
+      if (roles.some((r) => r.includes(":")))
+        return nav("/store-staff/home", { replace: true });
+
+      // Fallback
+      return nav("/", { replace: true });
     } catch (e) {
-      console.error("Error in handleRedirectByRole:", e);
+      console.error("Redirect by role failed:", e);
       nav("/signin", { replace: true });
     }
   };
 
+  // EMAIL/PASSWORD LOGIN
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -66,25 +65,19 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const userCred = await signInWithEmailAndPassword(
-        auth,
-        form.email.trim(),
-        form.password
-      );
-      const user = userCred.user;
+      const cred = await signInWithEmailAndPassword(auth, form.email.trim(), form.password);
+      const user = cred.user;
 
-      if (user && user.emailVerified === false) {
-        setOk("Email not verified. Redirecting...");
-        setTimeout(() => nav("/verify-email"), 1200);
+      if (!user.emailVerified) {
+        setOk("Email not verified. Redirecting…");
+        setTimeout(() => nav("/verify-email", { replace: true }), 1000);
         return;
       }
 
-      form.remember
-        ? localStorage.setItem("rememberEmail", form.email)
-        : localStorage.removeItem("rememberEmail");
+      if (form.remember) localStorage.setItem("rememberEmail", form.email);
+      else localStorage.removeItem("rememberEmail");
 
       await handleRedirectByRole(user);
-      return;
     } catch (e) {
       console.error("Login failed:", e);
       setErr("Invalid email or password.");
@@ -93,14 +86,14 @@ export default function SignIn() {
     }
   };
 
+  // GOOGLE LOGIN
   const google = async () => {
     setErr("");
     setOk("");
     setLoading(true);
-
     try {
-      const userCred = await signInWithPopup(auth, googleProvider);
-      const user = userCred.user;
+      const cred = await signInWithPopup(auth, googleProvider);
+      const user = cred.user;
 
       const userRef = doc(db, "users", user.uid);
       const snap = await getDoc(userRef);
@@ -108,14 +101,15 @@ export default function SignIn() {
         await setDoc(userRef, {
           name: user.displayName || "New User",
           email: user.email,
-          roles: ["user"],
+          roles: ["user"],           // default
           createdAt: Date.now(),
         });
       }
 
+      // Google accounts are often already verified
       await handleRedirectByRole(user);
     } catch (e) {
-      console.error("Google login failed:", e);
+      console.error("Google sign-in failed:", e);
       setErr("Google sign-in failed.");
     } finally {
       setLoading(false);
@@ -135,6 +129,7 @@ export default function SignIn() {
     }
   };
 
+  // ==== RENDER (unchanged design) ====
   return (
     <div className={styles.authShell}>
       <div className={styles.authCard}>
@@ -147,11 +142,7 @@ export default function SignIn() {
         <form className={styles.authForm} onSubmit={onSubmit}>
           <div className={styles.rowBetween}>
             <button type="button" className={styles.googleBtn} onClick={google}>
-              <img
-                src="/google-icon.png"
-                alt="Google"
-                className={styles.googleIcon}
-              />
+              <img src="/google-icon.png" alt="Google" className={styles.googleIcon} />
               Continue with Google
             </button>
           </div>
