@@ -62,9 +62,7 @@ img, svg, video { display: block; max-width: 100%; }
   input, button { outline: none; }
 }
 
-/* ---- Layout + scrollbar stability (global) ---- */
-html, body { height: 100%; }
-html { overflow-y: scroll; }              /* reserve vertical scrollbar so width doesn't jump */
-body { margin: 0; overflow-x: hidden; }   /* kill horizontal scroll */
+html, body { height:100%; }
+html { overflow-y: scroll; }  /* reserves the vertical scrollbar so width doesn’t jump */
+body { margin:0; }
 *, *::before, *::after { box-sizing: border-box; }
-#root { min-height: 100svh; }
