@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { auth, db } from '../../../firebase';
+// replace any old firebase imports with this:
+import { db, auth, storage } from "../../firebase/firebase";
+
 import { setDoc, doc } from 'firebase/firestore';
 
 export default function StoreForm() {
