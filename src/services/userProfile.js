@@ -1,4 +1,4 @@
-// src/services/userProfile.js
+/*// src/services/userProfile.js
 import { db, storage, auth } from "../firebase/firebase";
 import {
   doc, getDoc, setDoc, serverTimestamp,
@@ -28,7 +28,7 @@ export async function uploadAvatar(uid, file) {
  * - Uploads avatar if provided
  * - Stores profile in /users/{uid}
  * - Mirrors displayName/photoURL to Firebase Auth user
- */
+ *//*
 export async function saveProfile(uid, data, avatarFile) {
   const snap = await getDoc(userDocRef(uid));
   let existing = snap.exists() ? snap.data() : {};
@@ -95,4 +95,58 @@ export function useProfileComplete(uid) {
   }, [uid]);
 
   return { loading, complete, profile };
+} */
+
+  // src/services/userProfile.js
+import { db, storage } from "../firebase/firebase";
+import {
+  doc, getDoc, setDoc, serverTimestamp,
+  onSnapshot,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useEffect, useState } from "react";
+
+export async function getProfile(uid) {
+  const d = await getDoc(doc(db, "users", uid));
+  return d.exists() ? d.data() : null;
+}
+
+export async function saveUserProfile(uid, values, file) {
+  let photoURL = values.photoURL || null;
+
+  if (file) {
+    const r = ref(storage, `users/${uid}/avatar_${Date.now()}`);
+    const snap = await uploadBytes(r, file);
+    photoURL = await getDownloadURL(snap.ref);
+  }
+
+  const body = {
+    fullName: values.fullName || "",
+    age: values.age || "",
+    phone: values.phone || "",
+    gender: values.gender || "",
+    photoURL: photoURL || null,
+    profileComplete: Boolean(values.fullName && values.age),
+    updatedAt: serverTimestamp(),
+    createdAt: serverTimestamp(), // first write only; Firestore keeps last one
+  };
+
+  await setDoc(doc(db, "users", uid), body, { merge: true });
+  return body;
+}
+
+/** small hook to gate pages on profile completion */
+export function useProfileComplete(uid) {
+  const [state, setState] = useState({ loading: true, complete: false });
+
+  useEffect(() => {
+    if (!uid) { setState({ loading: false, complete: false }); return; }
+    const unsub = onSnapshot(doc(db, "users", uid), (d) => {
+      const data = d.exists() ? d.data() : null;
+      setState({ loading: false, complete: !!(data && data.profileComplete) });
+    });
+    return unsub;
+  }, [uid]);
+
+  return state; // {loading, complete}
 }
