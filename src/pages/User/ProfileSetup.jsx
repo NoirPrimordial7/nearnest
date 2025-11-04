@@ -1,67 +1,87 @@
 // src/pages/User/ProfileSetup.jsx
-import React, { useEffect, useState } from "react";
-import styles from "./home.module.css";
-import { useAuth } from "../../context/AuthContext";
-// src/pages/User/ProfileSetup.jsx
-import { upsertProfile } from "../../services/userProfile";
-
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { getUserProfile, saveUserProfile } from "../../services/userProfile";
+import styles from "./home.module.css";
 
 export default function ProfileSetup() {
-  const { currentUser } = useAuth();
-  const nav = useNavigate();
-  const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [age, setAge] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!currentUser) return;
+  const [form, setForm] = React.useState({
+    fullName: "",
+    age: "",
+    phone: "",
+    gender: "",
+    photoURL: "",
+  });
+  const [loading, setLoading] = React.useState(true);
+  const [err, setErr] = React.useState("");
+
+  React.useEffect(() => {
+    let alive = true;
     (async () => {
-      const p = await getUserProfile(currentUser.uid);
-      if (p?.fullName && p?.userId) {
-        nav("/home", { replace: true });
-      } else {
-        setLoading(false);
+      try {
+        if (user) {
+          const data = await getUserProfile(user.uid);
+          if (alive && data) setForm((f) => ({ ...f, ...data }));
+        }
+      } catch (_) {
+        // ignore for dev; show empty form
+      } finally {
+        if (alive) setLoading(false);
       }
     })();
-  }, [currentUser, nav]);
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
-  async function onSubmit(e) {
+  if (!user) return <div className={styles.centerNote}>Please sign in again.</div>;
+  if (loading) return <div className={styles.centerNote}>Loading…</div>;
+
+  const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const onSubmit = async (e) => {
     e.preventDefault();
-    if (!currentUser) return;
-    setSaving(true);
-    await upsertUserProfile(currentUser.uid, {
-      fullName: fullName.trim(),
-      phone: phone.trim(),
-      age: age ? Number(age) : null,
-      email: currentUser.email || "",
-    });
-    setSaving(false);
-    nav("/home", { replace: true });
-  }
-
-  if (loading) return <div className={styles.shell}><div className={styles.authCard}>Loading…</div></div>;
+    try {
+      await saveUserProfile(user.uid, { ...form, email: user.email });
+      navigate("/home", { replace: true });
+    } catch (e2) {
+      setErr(e2?.message || "Failed to save profile");
+    }
+  };
 
   return (
     <div className={styles.shell}>
-      <div className={styles.authCard}>
-        <h1 className={styles.authTitle}>Complete your profile</h1>
-        <p className={styles.subtitle}>This helps with roles, hiring and store access. A unique User ID will be issued.</p>
-        <form className={styles.authForm} onSubmit={onSubmit}>
-          <label className={styles.label}>Full name
-            <input className={styles.input} value={fullName} onChange={e=>setFullName(e.target.value)} required />
+      <div className={styles.cardWide}>
+        <h2 className={styles.title}>Set up your profile</h2>
+        <p className={styles.subtitle}>Tell us a bit about you. You can edit this later.</p>
+        {err && <div className={styles.err}>{err}</div>}
+
+        <form className={styles.form} onSubmit={onSubmit}>
+          <label className={styles.label}>
+            Full name
+            <input className={styles.input} name="fullName" value={form.fullName} onChange={update} />
           </label>
-          <label className={styles.label}>Phone
-            <input className={styles.input} value={phone} onChange={e=>setPhone(e.target.value)} />
+
+          <div className={styles.twoCol}>
+            <label className={styles.label}>
+              Age
+              <input className={styles.input} name="age" value={form.age} onChange={update} />
+            </label>
+            <label className={styles.label}>
+              Phone
+              <input className={styles.input} name="phone" value={form.phone} onChange={update} />
+            </label>
+          </div>
+
+          <label className={styles.label}>
+            Gender
+            <input className={styles.input} name="gender" value={form.gender} onChange={update} />
           </label>
-          <label className={styles.label}>Age
-            <input className={styles.input} type="number" min="0" value={age} onChange={e=>setAge(e.target.value)} />
-          </label>
-          <button className={styles.primaryBtn} disabled={saving}>
-            {saving ? "Saving…" : "Save & Continue"}
-          </button>
+
+          <button className={styles.primaryBtn} type="submit">Save & continue</button>
         </form>
       </div>
     </div>
