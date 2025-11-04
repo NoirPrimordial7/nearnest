@@ -4,10 +4,11 @@ import NavBar from "../../components/NavBar";
 import Sidebar from "../../components/Sidebar";
 import MainContent from "../../components/MainContent";
 import "./Dashboard.module.css";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function AdminDashboard() {
   const [activePage, setActivePage] = useState("dashboard");
-
+  const { user, roles } = useAuth();
   return (
     <div className="dashboard-container">
       <NavBar />
@@ -18,3 +19,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

@@ -1,8 +1,7 @@
-// src/pages/Auth/SignUp.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
-import { auth, googleProvider } from "../../firebase";
+import { auth, googleProvider, db } from "../../firebase/firebase";
 import {
   createUserWithEmailAndPassword,
   updateProfile,
@@ -10,6 +9,7 @@ import {
   signInWithPopup,
   reload,
 } from "firebase/auth";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 
@@ -45,6 +45,14 @@ export default function SignUp() {
         await updateProfile(cred.user, { displayName: form.name.trim() });
       }
 
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid: cred.user.uid,
+        email: form.email,
+        name: form.name.trim(),
+        roles: ["user"], // ✅ unified format
+        createdAt: Date.now(),
+      });
+
       await reload(cred.user);
       await sendEmailVerification(cred.user, actionCodeSettings);
       setOk("Verification email sent.");
@@ -62,12 +70,25 @@ export default function SignUp() {
     setLoading(true);
     try {
       const res = await signInWithPopup(auth, googleProvider);
-      if (!res.user.emailVerified) {
-        await reload(res.user);
-        await sendEmailVerification(res.user, actionCodeSettings);
+      const { user } = res;
+
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (!userDoc.exists()) {
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          email: user.email,
+          name: user.displayName || "",
+          roles: ["user"], // ✅ fixed field name
+          createdAt: Date.now(),
+        });
+      }
+
+      if (!user.emailVerified) {
+        await reload(user);
+        await sendEmailVerification(user, actionCodeSettings);
         nav("/verify-email");
       } else {
-        nav("/admin");
+        nav("/home");
       }
     } catch (e) {
       setErr(e?.message || "Google sign-in failed.");
@@ -91,7 +112,7 @@ export default function SignUp() {
             <input
               className={styles.input}
               name="name"
-              placeholder="Alex Doe"
+              placeholder="Name"
               value={form.name}
               onChange={onChange}
               required
@@ -140,7 +161,12 @@ export default function SignUp() {
           <div className={styles.divider}>or</div>
 
           <button type="button" onClick={google} className={styles.googleBtn}>
-            Continue with Google
+            <img
+              src="/google-icon.png"
+              alt="Google"
+              className={styles.googleIcon}
+            />
+            <span>Continue with Google</span>
           </button>
 
           <p className={styles.meta}>

@@ -1,25 +1,35 @@
-import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { auth } from "../firebase";
+// src/routes/ProtectedRoute.jsx
+import React from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function ProtectedRoute({ children }) {
-  const [ready, setReady] = useState(false);
-  const [authed, setAuthed] = useState(false);
-  const [verified, setVerified] = useState(false);
+// Role selector helpers
+function hasAccess(userRoles, allowed) {
+  // Admin can access everything
+  if (userRoles.includes("admin")) return true;
 
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged(async (user) => {
-      setAuthed(!!user);
-      setVerified(!!user?.emailVerified);
-      setReady(true);
-    });
-    return () => unsub();
-  }, []);
+  // Normalize allowed into array
+  const allowList = Array.isArray(allowed) ? allowed : [allowed];
 
-  if (!ready) return null; // or a spinner
+  return allowList.some((rule) => {
+    if (rule === "any") return true;
+    if (rule === "store:any") return userRoles.some((r) => r.includes(":"));
+    if (rule.startsWith("store:")) {
+      // store:Owner, store:Manager, store:Staff -> check suffix
+      const wanted = rule.split(":")[1];
+      return userRoles.some((r) => r.endsWith(`:${wanted}`));
+    }
+    // Plain role ("storeAdmin", "support", etc.)
+    return userRoles.includes(rule);
+  });
+}
 
-  if (!authed) return <Navigate to="/signin" replace />;
-  if (!verified) return <Navigate to="/verify-email" replace />;
+export default function ProtectedRoute({ allow = "any", redirectTo = "/signin" }) {
+  const { user, roles, loading } = useAuth();
+  const loc = useLocation();
 
-  return children;
+  if (loading) return <div style={{ padding: 24 }}>Loading…</div>;
+  if (!user) return <Navigate to={redirectTo} state={{ from: loc }} replace />;
+
+  return hasAccess(roles, allow) ? <Outlet /> : <Navigate to={redirectTo} replace />;
 }
