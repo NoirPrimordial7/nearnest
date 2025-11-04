@@ -1,25 +1,24 @@
-/* Global font & reset */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+/* ---- Global baseline ---- */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-:root{
-  --bg-0: #f7f8fb;
-  --text-0: #0b0f19;
-  --text-1: #667085;
-  --card: #ffffff;
-  --ring: 0 0 0 4px rgba(0,0,0,.05);
-}
-
-* { box-sizing: border-box; }
+* { box-sizing: border-box; min-width: 0; } /* prevent grid overflow */
 html, body, #root { height: 100%; }
 html { scroll-behavior: smooth; }
 body{
   margin: 0;
-  color: var(--text-0);
-  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-  background:
-    radial-gradient(circle at 25px 25px, rgba(0,0,0,.03) 1px, transparent 1px) 0 0/24px 24px,
-    linear-gradient(#fafafa, #f3f4f7);
-  /* ✅ prevent stray horizontal scrollbar */
-  overflow-x: hidden;
+  font-family: "Manrope", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  color: #0b0f19;
+  background: linear-gradient(#fafafa, #f4f6f8);
+  /* ✅ kill the tiny bottom scrollbar on all browsers */
+  overflow-x: clip; /* better than hidden; avoids layout jank */
 }
-button, input, textarea, select { font: inherit; }
+
+/* optional: super subtle grid like denqid (won't cause overflow) */
+body::before{
+  content:"";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16px 16px, rgba(0,0,0,.03) 1px, transparent 1px) 0 0/32px 32px;
+  mask-image: linear-gradient(to bottom, rgba(0,0,0,.12), transparent 60%);
+}
