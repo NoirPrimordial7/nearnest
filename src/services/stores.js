@@ -1,4 +1,4 @@
-// src/services/stores.js
+/*// src/services/stores.js
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
@@ -30,4 +30,37 @@ export async function listStoresForUser(uid) {
     },
   ];
   return rows;
+} */
+// src/services/stores.js
+import { db } from "../firebase/firebase";
+import {
+  collection, onSnapshot, query, where,
+} from "firebase/firestore";
+
+/**
+ * Live list of stores the user owns OR works at.
+ * Calls `cb(storesArray)` whenever anything changes.
+ * Returns an unsubscribe function.
+ */
+export function listenStoresForUser(uid, cb) {
+  const map = new Map(); // merge q1 + q2 by id
+  const colRef = collection(db, "stores");
+
+  const qOwner = query(colRef, where("ownerId", "==", uid));
+  const qStaff = query(colRef, where("staffIds", "array-contains", uid));
+
+  const apply = (snap) => {
+    snap.docChanges().forEach((chg) => {
+      if (chg.type === "removed") {
+        map.delete(chg.doc.id);
+      } else {
+        map.set(chg.doc.id, { id: chg.doc.id, ...chg.doc.data() });
+      }
+    });
+    cb(Array.from(map.values()));
+  };
+
+  const u1 = onSnapshot(qOwner, apply);
+  const u2 = onSnapshot(qStaff, apply);
+  return () => { u1(); u2(); };
 }
