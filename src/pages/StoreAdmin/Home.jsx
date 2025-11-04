@@ -1,6 +1,6 @@
 // src/pages/StoreAdmin/Home.jsx
 import React from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 export default function StoreAdminHome() {
   const { user, roles, storeId } = useAuth();
   return (

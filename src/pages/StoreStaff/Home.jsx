@@ -1,6 +1,6 @@
 // src/pages/StoreStaff/Home.jsx
 import React from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 export default function StoreStaffHome() {
   const { user, roles, storeId } = useAuth();
   return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider } from "./contexts/AuthContext";
+import AuthProvider from "./context/AuthContext.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 // Auth screens (your existing components / design)

@@ -4,7 +4,7 @@ import NavBar from "../../components/NavBar";
 import Sidebar from "../../components/Sidebar";
 import MainContent from "../../components/MainContent";
 import "./Dashboard.module.css";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function AdminDashboard() {
   const [activePage, setActivePage] = useState("dashboard");
