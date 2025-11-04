@@ -1,88 +1,46 @@
+// src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
-import ProtectedRoute from "./routes/ProtectedRoute";
-
-// AUTH screens you already have
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 
-// ADMIN
-import AdminLayout from "./pages/Admin/AdminLayout"; // you said: redirect to layout, not dashboard
-
-// USER
 import UserHome from "./pages/User/UserHome";
 import ProfileSetup from "./pages/User/ProfileSetup";
-import ConfirmStart from "./pages/RegisterStore/ConfirmStart";
+
+import AdminLayout from "./pages/Admin/AdminLayout";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+
+import ProtectedRoute from "./routes/ProtectedRoute";
 import RequireProfile from "./components/RequireProfile";
-
-function PostLoginRedirect() {
-  const { user, role } = useAuth();
-
-  if (!user) return <Navigate to="/signin" replace />;
-
-  if (role === "admin") return <Navigate to="/admin" replace />;
-  return <Navigate to="/home" replace />;
-}
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* entry */}
-          <Route path="/" element={<PostLoginRedirect />} />
-          <Route path="/Home" element={<Navigate to="/home" replace />} /> {/* case alias */}
+    <Routes>
+      <Route path="/" element={<Navigate to="/home" replace />} />
 
-          {/* auth */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
+      {/* Auth */}
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/verify" element={<VerifyEmail />} />
 
-          {/* admin area */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          />
+      {/* User area (any authenticated user) */}
+      <Route element={<ProtectedRoute />}>
+        <Route element={<RequireProfile />}>
+          <Route path="/home" element={<UserHome />} />
+        </Route>
+        <Route path="/setup-profile" element={<ProfileSetup />} />
+      </Route>
 
-          {/* user area */}
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute>
-                <RequireProfile>
-                  <UserHome />
-                </RequireProfile>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/setup-profile"
-            element={
-              <ProtectedRoute>
-                <ProfileSetup />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/register/confirm"
-            element={
-              <ProtectedRoute>
-                <ConfirmStart />
-              </ProtectedRoute>
-            }
-          />
+      {/* Admin area (role-gated) */}
+      <Route element={<ProtectedRoute roles={['admin']} />}>
+        <Route path="/admin/*" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+        </Route>
+      </Route>
 
-          {/* fallback */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      <Route path="*" element={<div style={{ padding: 24 }}>404 • Not found</div>} />
+    </Routes>
   );
 }
