@@ -60,7 +60,7 @@ export default function App() {
         <Route
           path="/home"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={["admin", "user", "storeAdmin", "storeStaff"]}>
               <RequireProfile>
                 <UserHome />
               </RequireProfile>
