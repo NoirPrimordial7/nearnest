@@ -2,45 +2,107 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import SignIn from "./pages/Auth/SignIn";
-import SignUp from "./pages/Auth/SignUp";
-import VerifyEmail from "./pages/Auth/VerifyEmail";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 
-import UserHome from "./pages/User/UserHome";
-import ProfileSetup from "./pages/User/ProfileSetup";
-
-import AdminLayout from "./pages/Admin/AdminLayout";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-
+// Guards
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RequireProfile from "./components/RequireProfile";
 
+// Auth
+import SignIn from "./pages/Auth/SignIn";
+import SignUp from "./pages/Auth/SignUp";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import VerifyEmail from "./pages/Auth/VerifyEmail";
+
+// User
+import ProfileSetup from "./pages/User/ProfileSetup";
+import UserHome from "./pages/User/UserHome";
+
+// Store register
+import ConfirmStart from "./pages/RegisterStore/ConfirmStart";
+import StoreForm from "./pages/RegisterStore/StoreForm";
+
+// Admin
+import AdminLayout from "./pages/Admin/AdminLayout";
+
+// smart landing
+function IndexRedirect() {
+  const { user, role } = useAuth?.() || {};
+  if (!user) return <Navigate to="/signin" replace />;
+  if (role === "admin") return <Navigate to="/admin" replace />;
+  return <Navigate to="/home" replace />;
+}
+
 export default function App() {
+  // NOTE: <BrowserRouter> must be ONLY in src/main.jsx
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<IndexRedirect />} />
 
-      {/* Auth */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
-      <Route path="/verify" element={<VerifyEmail />} />
+        {/* auth */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
-      {/* User area (any authenticated user) */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<RequireProfile />}>
-          <Route path="/home" element={<UserHome />} />
-        </Route>
-        <Route path="/setup-profile" element={<ProfileSetup />} />
-      </Route>
+        {/* profile */}
+        <Route
+          path="/setup-profile"
+          element={
+            <ProtectedRoute>
+              <ProfileSetup />
+            </ProtectedRoute>
+          }
+        />
 
-      {/* Admin area (role-gated) */}
-      <Route element={<ProtectedRoute roles={['admin']} />}>
-        <Route path="/admin/*" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-        </Route>
-      </Route>
+        {/* user home */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <RequireProfile>
+                <UserHome />
+              </RequireProfile>
+            </ProtectedRoute>
+          }
+        />
 
-      <Route path="*" element={<div style={{ padding: 24 }}>404 • Not found</div>} />
-    </Routes>
+        {/* store registration */}
+        <Route
+          path="/register-store/start"
+          element={
+            <ProtectedRoute>
+              <RequireProfile>
+                <ConfirmStart />
+              </RequireProfile>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/register-store"
+          element={
+            <ProtectedRoute>
+              <RequireProfile>
+                <StoreForm />
+              </RequireProfile>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* admin */}
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }
