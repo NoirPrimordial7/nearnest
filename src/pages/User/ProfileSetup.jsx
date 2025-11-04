@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from "react";
 import styles from "./home.module.css";
 import { useAuth } from "../../context/AuthContext";
-import { upsertUserProfile, getUserProfile } from "../../services/userProfile";
+// src/pages/User/ProfileSetup.jsx
+import { upsertProfile } from "../../services/userProfile";
+
 import { useNavigate } from "react-router-dom";
 
 export default function ProfileSetup() {

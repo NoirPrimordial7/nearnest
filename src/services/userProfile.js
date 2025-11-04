@@ -1,15 +1,9 @@
 import { useEffect, useState } from "react";
 
-// Quick in-memory cache so dev is smooth even without Firestore
 const cache = new Map();
-/*
- Shape we expect:
- { fullName: string, age: number, phone?: string, photoURL?: string }
-*/
 
 export function useProfileComplete(uid) {
   const [state, setState] = useState({ loading: true, complete: false });
-
   useEffect(() => {
     let mounted = true;
     async function run() {
@@ -21,7 +15,6 @@ export function useProfileComplete(uid) {
     run();
     return () => { mounted = false; };
   }, [uid]);
-
   return state;
 }
 
@@ -32,3 +25,6 @@ export async function upsertProfile(uid, data) {
   const current = cache.get(uid) || {};
   cache.set(uid, { ...current, ...data });
 }
+
+// ✅ Alias for older imports
+export const getUserProfile = getProfile;
