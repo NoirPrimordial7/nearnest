@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getUserProfile, saveUserProfile } from "../../services/userProfile";
+
 import styles from "./home.module.css";
 
 export default function ProfileSetup() {

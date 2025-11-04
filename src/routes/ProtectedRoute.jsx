@@ -16,7 +16,10 @@ export default function ProtectedRoute({ roles = null }) {
   if (!user) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
-
+  const hasAccess = (userRoles, allowed) => {
+   const roles = Array.isArray(userRoles) ? userRoles : [];
+   return allowed.some(r => roles.includes(r));
+ };
   // Normalize role value from context
   const userRole = Array.isArray(role) ? role[0] : role || "user";
 
