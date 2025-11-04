@@ -1,88 +1,146 @@
 // src/pages/User/ProfileSetup.jsx
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import styles from "./profile.module.css";
 import { useAuth } from "../../context/AuthContext";
-import { getUserProfile, saveUserProfile } from "../../services/userProfile";
-
-import styles from "./home.module.css";
+import { saveProfile } from "../../services/userProfile";
 
 export default function ProfileSetup() {
-  const { user } = useAuth();
   const navigate = useNavigate();
-
-  const [form, setForm] = React.useState({
+  const { user } = useAuth(); // expects { user } from your context
+  const [form, setForm] = useState({
     fullName: "",
     age: "",
     phone: "",
     gender: "",
-    photoURL: "",
   });
-  const [loading, setLoading] = React.useState(true);
-  const [err, setErr] = React.useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  React.useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        if (user) {
-          const data = await getUserProfile(user.uid);
-          if (alive && data) setForm((f) => ({ ...f, ...data }));
-        }
-      } catch (_) {
-        // ignore for dev; show empty form
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [user]);
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
-  if (!user) return <div className={styles.centerNote}>Please sign in again.</div>;
-  if (loading) return <div className={styles.centerNote}>Loading…</div>;
-
-  const update = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const onSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    if (!form.fullName || !form.age) {
+      setError("Full name and age are required.");
+      return;
+    }
+    if (!user?.uid) {
+      setError("You must be signed in.");
+      return;
+    }
     try {
-      await saveUserProfile(user.uid, { ...form, email: user.email });
-      navigate("/home", { replace: true });
-    } catch (e2) {
-      setErr(e2?.message || "Failed to save profile");
+      setSubmitting(true);
+      await saveProfile(user.uid, {
+        fullName: form.fullName.trim(),
+        age: Number(form.age),
+        phone: form.phone.trim(),
+        gender: form.gender,
+      });
+      navigate("/home");
+    } catch (err) {
+      console.error(err);
+      setError("Could not save your profile. Try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className={styles.shell}>
-      <div className={styles.cardWide}>
-        <h2 className={styles.title}>Set up your profile</h2>
-        <p className={styles.subtitle}>Tell us a bit about you. You can edit this later.</p>
-        {err && <div className={styles.err}>{err}</div>}
+      <div className={styles.card}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Set up your profile</h1>
+          <p className={styles.subtitle}>
+            Tell us a bit about you. You can edit this later.
+          </p>
+        </header>
+
+        {error ? <div className={styles.err}>{error}</div> : null}
 
         <form className={styles.form} onSubmit={onSubmit}>
-          <label className={styles.label}>
-            Full name
-            <input className={styles.input} name="fullName" value={form.fullName} onChange={update} />
-          </label>
-
-          <div className={styles.twoCol}>
-            <label className={styles.label}>
-              Age
-              <input className={styles.input} name="age" value={form.age} onChange={update} />
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="fullName">
+              Full name <span className={styles.req}>*</span>
             </label>
-            <label className={styles.label}>
-              Phone
-              <input className={styles.input} name="phone" value={form.phone} onChange={update} />
-            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              className={styles.input}
+              placeholder="e.g., Aditya Gholap"
+              value={form.fullName}
+              onChange={onChange}
+              autoComplete="name"
+            />
           </div>
 
-          <label className={styles.label}>
-            Gender
-            <input className={styles.input} name="gender" value={form.gender} onChange={update} />
-          </label>
+          <div className={styles.row2}>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="age">
+                Age <span className={styles.req}>*</span>
+              </label>
+              <input
+                id="age"
+                name="age"
+                type="number"
+                className={styles.input}
+                placeholder="e.g., 22"
+                value={form.age}
+                onChange={onChange}
+                min={1}
+                max={120}
+              />
+            </div>
 
-          <button className={styles.primaryBtn} type="submit">Save & continue</button>
+            <div className={styles.field}>
+              <label className={styles.label} htmlFor="phone">
+                Phone
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                className={styles.input}
+                placeholder="+91 98xxxxxx"
+                value={form.phone}
+                onChange={onChange}
+                autoComplete="tel"
+              />
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="gender">
+              Gender
+            </label>
+            <select
+              id="gender"
+              name="gender"
+              className={styles.select}
+              value={form.gender}
+              onChange={onChange}
+            >
+              <option value="">Select</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="prefer_not">Prefer not to say</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div className={styles.actions}>
+            <button
+              type="submit"
+              className={styles.primaryBtn}
+              disabled={submitting}
+              aria-busy={submitting ? "true" : "false"}
+            >
+              {submitting ? "Saving…" : "Save & continue"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
