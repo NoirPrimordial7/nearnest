@@ -98,55 +98,80 @@ export function useProfileComplete(uid) {
 } */
 
   // src/services/userProfile.js
-import { db, storage } from "../firebase/firebase";
+import { useEffect, useState } from "react";
+import { db, storage } from "../firebase";
+ // works via the barrel src/firebase/index.js
 import {
-  doc, getDoc, setDoc, serverTimestamp,
+  doc,
+  getDoc,
   onSnapshot,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { useEffect, useState } from "react";
 
+// --- helpers ---
+const userDoc = (uid) => doc(db, "users", uid);
+
+// ---- reads ----
 export async function getProfile(uid) {
-  const d = await getDoc(doc(db, "users", uid));
-  return d.exists() ? d.data() : null;
+  if (!uid) return null;
+  const snap = await getDoc(userDoc(uid));
+  return snap.exists() ? snap.data() : null;
 }
 
-export async function saveUserProfile(uid, values, file) {
-  let photoURL = values.photoURL || null;
-
-  if (file) {
-    const r = ref(storage, `users/${uid}/avatar_${Date.now()}`);
-    const snap = await uploadBytes(r, file);
-    photoURL = await getDownloadURL(snap.ref);
-  }
-
-  const body = {
-    fullName: values.fullName || "",
-    age: values.age || "",
-    phone: values.phone || "",
-    gender: values.gender || "",
-    photoURL: photoURL || null,
-    profileComplete: Boolean(values.fullName && values.age),
-    updatedAt: serverTimestamp(),
-    createdAt: serverTimestamp(), // first write only; Firestore keeps last one
-  };
-
-  await setDoc(doc(db, "users", uid), body, { merge: true });
-  return body;
+export function subscribeProfile(uid, cb) {
+  if (!uid) return () => {};
+  return onSnapshot(userDoc(uid), (snap) => cb(snap.exists() ? snap.data() : null));
 }
 
-/** small hook to gate pages on profile completion */
-export function useProfileComplete(uid) {
-  const [state, setState] = useState({ loading: true, complete: false });
+export function useProfile(uid) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(!!uid);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!uid) { setState({ loading: false, complete: false }); return; }
-    const unsub = onSnapshot(doc(db, "users", uid), (d) => {
-      const data = d.exists() ? d.data() : null;
-      setState({ loading: false, complete: !!(data && data.profileComplete) });
-    });
+    if (!uid) { setData(null); setLoading(false); return; }
+    const unsub = onSnapshot(
+      userDoc(uid),
+      (snap) => { setData(snap.exists() ? snap.data() : null); setLoading(false); },
+      (err) => { setError(err); setLoading(false); }
+    );
     return unsub;
   }, [uid]);
 
-  return state; // {loading, complete}
+  return { data, loading, error };
+}
+
+export function useProfileComplete(uid) {
+  const { data, loading } = useProfile(uid);
+  return { complete: !!(data && data.profileComplete), loading };
+}
+
+// ---- writes ----
+export async function saveProfile(uid, payload, file /* File | undefined */) {
+  if (!uid) throw new Error("saveProfile: missing uid");
+
+  // optional photo upload
+  let photoURL = payload?.photoURL || null;
+  if (file) {
+    const r = ref(storage, `users/${uid}/avatar`);
+    await uploadBytes(r, file);
+    photoURL = await getDownloadURL(r);
+  }
+
+  const now = serverTimestamp();
+  await setDoc(
+    userDoc(uid),
+    {
+      ...payload,
+      ...(photoURL ? { photoURL } : {}),
+      profileComplete: true,
+      updatedAt: now,
+      createdAt: now, // won't overwrite existing because merge:true
+    },
+    { merge: true }
+  );
+
+  return { photoURL };
 }
