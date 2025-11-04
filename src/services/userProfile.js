@@ -99,7 +99,8 @@ export function useProfileComplete(uid) {
 
   // src/services/userProfile.js
 import { useEffect, useState } from "react";
-import { db, storage } from "../firebase"; // works via the barrel src/firebase/index.js
+import { db, storage } from "../firebase";
+ // works via the barrel src/firebase/index.js
 import {
   doc,
   getDoc,
