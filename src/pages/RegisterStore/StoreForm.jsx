@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { auth, db } from '../../firebase';
+import { auth, db } from '../../../firebase';
 import { setDoc, doc } from 'firebase/firestore';
 
 export default function StoreForm() {
