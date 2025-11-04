@@ -1,47 +1,88 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import AuthProvider from "./context/AuthContext.jsx";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
-// Auth screens (your existing components / design)
+// AUTH screens you already have
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import VerifyEmail from "./pages/Auth/VerifyEmail";
 
-// Minimal role landing pages
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import StoreAdminHome from "./pages/StoreAdmin/Home";
-import StoreStaffHome from "./pages/StoreStaff/Home";
+// ADMIN
+import AdminLayout from "./pages/Admin/AdminLayout"; // you said: redirect to layout, not dashboard
+
+// USER
+import UserHome from "./pages/User/UserHome";
+import ProfileSetup from "./pages/User/ProfileSetup";
+import ConfirmStart from "./pages/RegisterStore/ConfirmStart";
+import RequireProfile from "./components/RequireProfile";
+
+function PostLoginRedirect() {
+  const { user, role } = useAuth();
+
+  if (!user) return <Navigate to="/signin" replace />;
+
+  if (role === "admin") return <Navigate to="/admin" replace />;
+  return <Navigate to="/home" replace />;
+}
 
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        {/* Public */}
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
+      <BrowserRouter>
+        <Routes>
+          {/* entry */}
+          <Route path="/" element={<PostLoginRedirect />} />
+          <Route path="/Home" element={<Navigate to="/home" replace />} /> {/* case alias */}
 
-        {/* Admin: full access */}
-        <Route element={<ProtectedRoute allow={["admin"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        </Route>
+          {/* auth */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
-        {/* Store Admin (global storeAdmin OR any :Owner) */}
-        <Route element={<ProtectedRoute allow={["storeAdmin", "store:Owner"]} />}>
-          <Route path="/store-admin/home" element={<StoreAdminHome />} />
-        </Route>
+          {/* admin area */}
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Store Staff (any store-scoped role) */}
-        <Route element={<ProtectedRoute allow={["store:any"]} />}>
-          <Route path="/store-staff/home" element={<StoreStaffHome />} />
-        </Route>
+          {/* user area */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <RequireProfile>
+                  <UserHome />
+                </RequireProfile>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/setup-profile"
+            element={
+              <ProtectedRoute>
+                <ProfileSetup />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/register/confirm"
+            element={
+              <ProtectedRoute>
+                <ConfirmStart />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Default / 404 */}
-        <Route path="/" element={<Navigate to="/signin" replace />} />
-        <Route path="*" element={<Navigate to="/signin" replace />} />
-      </Routes>
+          {/* fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
