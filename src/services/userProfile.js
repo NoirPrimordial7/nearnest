@@ -1,74 +1,98 @@
 // src/services/userProfile.js
+import { db, storage, auth } from "../firebase/firebase";
+import {
+  doc, getDoc, setDoc, serverTimestamp,
+} from "firebase/firestore";
+import {
+  ref, uploadBytes, getDownloadURL,
+} from "firebase/storage";
 import { useEffect, useState } from "react";
-import { db } from "../firebase/firebase";
-import { doc, getDoc, setDoc, updateDoc, onSnapshot } from "firebase/firestore";
+import { updateProfile as updateAuthProfile } from "firebase/auth";
 
-// We'll store profile on the same /users/{uid} doc
-const COLL = "users";
+const userDocRef = (uid) => doc(db, "users", uid);
+const genUserId = () =>
+  "NRN-" + Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
 
-/** Read full profile */
+export async function uploadAvatar(uid, file) {
+  const ext = (file.name?.split(".").pop() || "jpg").toLowerCase();
+  const path = `users/${uid}/avatar.${ext}`;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, file, { contentType: file.type });
+  const url = await getDownloadURL(storageRef);
+  return { url, path };
+}
+
+/**
+ * saveProfile(uid, data, avatarFile?)
+ * - Ensures stable userId is set once
+ * - Uploads avatar if provided
+ * - Stores profile in /users/{uid}
+ * - Mirrors displayName/photoURL to Firebase Auth user
+ */
+export async function saveProfile(uid, data, avatarFile) {
+  const snap = await getDoc(userDocRef(uid));
+  let existing = snap.exists() ? snap.data() : {};
+  let userId = existing.userId || genUserId();
+  let photoURL = existing.photoURL || null;
+
+  if (avatarFile) {
+    const uploaded = await uploadAvatar(uid, avatarFile);
+    photoURL = uploaded.url;
+  }
+
+  const payload = {
+    ...existing,
+    ...data,
+    userId,
+    photoURL,
+    updatedAt: serverTimestamp(),
+    createdAt: existing.createdAt || serverTimestamp(),
+  };
+
+  await setDoc(userDocRef(uid), payload, { merge: true });
+
+  // Mirror to Firebase Auth profile
+  if (auth.currentUser) {
+    try {
+      await updateAuthProfile(auth.currentUser, {
+        displayName: data.fullName || auth.currentUser.displayName || "",
+        photoURL: photoURL || auth.currentUser.photoURL || null,
+      });
+    } catch (e) {
+      // don't block on this
+      console.warn("Auth profile update skipped:", e?.message);
+    }
+  }
+
+  return payload;
+}
+
 export async function getProfile(uid) {
-  if (!uid) return null;
-  const snap = await getDoc(doc(db, COLL, uid));
+  const snap = await getDoc(userDocRef(uid));
   return snap.exists() ? snap.data() : null;
 }
 
-/** Minimal completeness check — tune required fields as you like */
-export function isProfileComplete(profile) {
-  const required = ["fullName", "age"]; // add more: "phone", "gender", etc.
-  return required.every((k) => profile?.[k]);
-}
-
-/** Upsert profile fields */
-export async function saveProfile(uid, data) {
-  if (!uid) throw new Error("saveProfile: missing uid");
-  const ref = doc(db, COLL, uid);
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    await updateDoc(ref, { ...data });
-  } else {
-    await setDoc(ref, { ...data, createdAt: Date.now() });
-  }
-  return true;
-}
-
-// Aliases (for older imports you might have used earlier)
-export const getUserProfile = getProfile;
-export const saveUserProfile = saveProfile;
-
-/** React hook: live completeness status + profile */
 export function useProfileComplete(uid) {
-  const [state, setState] = useState({
-    loading: true,
-    complete: false,
-    profile: null,
-    exists: false,
-  });
+  const [loading, setLoading] = useState(true);
+  const [complete, setComplete] = useState(false);
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    if (!uid) {
-      setState({ loading: false, complete: false, profile: null, exists: false });
-      return;
-    }
-    const ref = doc(db, COLL, uid);
-    const unsub = onSnapshot(
-      ref,
-      (snap) => {
-        const data = snap.data() || null;
-        setState({
-          loading: false,
-          complete: isProfileComplete(data),
-          profile: data,
-          exists: snap.exists(),
-        });
-      },
-      (err) => {
-        console.error("useProfileComplete onSnapshot error:", err);
-        setState((s) => ({ ...s, loading: false }));
+    let cancelled = false;
+    (async () => {
+      if (!uid) {
+        setLoading(false);
+        setComplete(false);
+        return;
       }
-    );
-    return () => unsub();
+      const p = await getProfile(uid);
+      if (cancelled) return;
+      setProfile(p);
+      setComplete(Boolean(p?.fullName && p?.age));
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [uid]);
 
-  return state;
+  return { loading, complete, profile };
 }
