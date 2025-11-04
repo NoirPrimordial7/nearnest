@@ -528,3 +528,18 @@
   .input, .primaryBtn, .googleBtn, .secondaryBtn{ height:46px; }
 }
 
+/* One definitive auth shell (replace others) */
+.authShell{
+  min-height: 100svh;                     /* safe viewport height (mobile friendly) */
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 2.5vw, 32px);
+  background: var(--bg, #f7f8fb);
+  overflow-x: clip;                        /* no horizontal scroll */
+  overflow-y: auto;                        /* allow vertical scroll on tiny screens only */
+}
+
+/* On hover-capable devices, don't translate the card (prevents tiny page height changes) */
+@media (hover:hover){
+  .authCard:hover{ transform: none; }
+}
