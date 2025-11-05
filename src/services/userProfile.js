@@ -1,177 +1,70 @@
-/*// src/services/userProfile.js
-import { db, storage, auth } from "../firebase/firebase";
-import {
-  doc, getDoc, setDoc, serverTimestamp,
-} from "firebase/firestore";
-import {
-  ref, uploadBytes, getDownloadURL,
-} from "firebase/storage";
 import { useEffect, useState } from "react";
-import { updateProfile as updateAuthProfile } from "firebase/auth";
-
-const userDocRef = (uid) => doc(db, "users", uid);
-const genUserId = () =>
-  "NRN-" + Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-
-export async function uploadAvatar(uid, file) {
-  const ext = (file.name?.split(".").pop() || "jpg").toLowerCase();
-  const path = `users/${uid}/avatar.${ext}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file, { contentType: file.type });
-  const url = await getDownloadURL(storageRef);
-  return { url, path };
-}
-
-/**
- * saveProfile(uid, data, avatarFile?)
- * - Ensures stable userId is set once
- * - Uploads avatar if provided
- * - Stores profile in /users/{uid}
- * - Mirrors displayName/photoURL to Firebase Auth user
- *//*
-export async function saveProfile(uid, data, avatarFile) {
-  const snap = await getDoc(userDocRef(uid));
-  let existing = snap.exists() ? snap.data() : {};
-  let userId = existing.userId || genUserId();
-  let photoURL = existing.photoURL || null;
-
-  if (avatarFile) {
-    const uploaded = await uploadAvatar(uid, avatarFile);
-    photoURL = uploaded.url;
-  }
-
-  const payload = {
-    ...existing,
-    ...data,
-    userId,
-    photoURL,
-    updatedAt: serverTimestamp(),
-    createdAt: existing.createdAt || serverTimestamp(),
-  };
-
-  await setDoc(userDocRef(uid), payload, { merge: true });
-
-  // Mirror to Firebase Auth profile
-  if (auth.currentUser) {
-    try {
-      await updateAuthProfile(auth.currentUser, {
-        displayName: data.fullName || auth.currentUser.displayName || "",
-        photoURL: photoURL || auth.currentUser.photoURL || null,
-      });
-    } catch (e) {
-      // don't block on this
-      console.warn("Auth profile update skipped:", e?.message);
-    }
-  }
-
-  return payload;
-}
-
-export async function getProfile(uid) {
-  const snap = await getDoc(userDocRef(uid));
-  return snap.exists() ? snap.data() : null;
-}
-
-export function useProfileComplete(uid) {
-  const [loading, setLoading] = useState(true);
-  const [complete, setComplete] = useState(false);
-  const [profile, setProfile] = useState(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!uid) {
-        setLoading(false);
-        setComplete(false);
-        return;
-      }
-      const p = await getProfile(uid);
-      if (cancelled) return;
-      setProfile(p);
-      setComplete(Boolean(p?.fullName && p?.age));
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [uid]);
-
-  return { loading, complete, profile };
-} */
-
-  // src/services/userProfile.js
-import { useEffect, useState } from "react";
-import { db, storage } from "../firebase";
- // works via the barrel src/firebase/index.js
+import { auth, db, storage } from "../firebase/firebase"; // << correct path
 import {
   doc,
   getDoc,
   onSnapshot,
-  serverTimestamp,
   setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// --- helpers ---
-const userDoc = (uid) => doc(db, "users", uid);
-
-// ---- reads ----
+// read once
 export async function getProfile(uid) {
-  if (!uid) return null;
-  const snap = await getDoc(userDoc(uid));
+  const snap = await getDoc(doc(db, "profiles", uid));
   return snap.exists() ? snap.data() : null;
 }
 
-export function subscribeProfile(uid, cb) {
-  if (!uid) return () => {};
-  return onSnapshot(userDoc(uid), (snap) => cb(snap.exists() ? snap.data() : null));
-}
-
+// live hook
 export function useProfile(uid) {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(!!uid);
-  const [error, setError] = useState(null);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    if (!uid) { setData(null); setLoading(false); return; }
-    const unsub = onSnapshot(
-      userDoc(uid),
-      (snap) => { setData(snap.exists() ? snap.data() : null); setLoading(false); },
-      (err) => { setError(err); setLoading(false); }
-    );
-    return unsub;
+    if (!uid) return;
+    const unsub = onSnapshot(doc(db, "profiles", uid), (d) => {
+      setData(d.exists() ? d.data() : null);
+      setLoading(false);
+    });
+    return () => unsub && unsub();
   }, [uid]);
-
-  return { data, loading, error };
+  return { data, loading };
 }
 
-export function useProfileComplete(uid) {
-  const { data, loading } = useProfile(uid);
-  return { complete: !!(data && data.profileComplete), loading };
+// used by RequireProfile
+export function useProfileComplete() {
+  const u = auth.currentUser;
+  const { data, loading } = useProfile(u?.uid || null);
+  const isComplete =
+    !!data &&
+    !!data.fullName &&
+    !!data.age &&
+    !!data.gender &&
+    !!data.phone; // adjust to your rules
+  return { isComplete, loading };
 }
 
-// ---- writes ----
-export async function saveProfile(uid, payload, file /* File | undefined */) {
-  if (!uid) throw new Error("saveProfile: missing uid");
+// save profile with optional photo upload
+export async function saveProfile({ fullName, age, phone, gender, file }) {
+  const u = auth.currentUser;
+  if (!u) throw new Error("Not signed in");
 
-  // optional photo upload
-  let photoURL = payload?.photoURL || null;
+  let photoURL = null;
   if (file) {
-    const r = ref(storage, `users/${uid}/avatar`);
+    const r = ref(storage, `profilePhotos/${u.uid}.jpg`);
     await uploadBytes(r, file);
     photoURL = await getDownloadURL(r);
   }
 
-  const now = serverTimestamp();
   await setDoc(
-    userDoc(uid),
+    doc(db, "profiles", u.uid),
     {
-      ...payload,
-      ...(photoURL ? { photoURL } : {}),
-      profileComplete: true,
-      updatedAt: now,
-      createdAt: now, // won't overwrite existing because merge:true
+      fullName: fullName?.trim() || "",
+      age: Number(age) || null,
+      phone: phone?.trim() || "",
+      gender: gender || "",
+      photoURL: photoURL ?? null,
+      updatedAt: serverTimestamp(),
     },
     { merge: true }
   );
-
-  return { photoURL };
 }
