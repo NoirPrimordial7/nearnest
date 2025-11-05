@@ -1,72 +1,96 @@
-.shell{
+/* src/pages/User/home.module.css */
+.shell {
   min-height: 100vh;
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(0,0,0,0.05), transparent 60%),
-    radial-gradient(900px 500px at 90% -20%, rgba(0,0,0,0.06), transparent 60%),
-    linear-gradient(180deg, #f7f7f8 0%, #f9fafb 100%);
+    radial-gradient(1000px 600px at 50% -10%, rgba(0,0,0,0.06), transparent 60%),
+    linear-gradient(#fafafa, #f7f7f7);
 }
 
-.topbar{
-  max-width: 1120px;
+.header {
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 20px 20px 0;
-  display:flex; align-items:center; justify-content:space-between;
+  padding: 20px 24px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.brand{ display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;}
-.dot{ width:10px; height:10px; border-radius:999px; background:#111;}
-.logoText{ font-size:18px; color:#111;}
-
-.topActions{ display:flex; align-items:center; gap:12px;}
-.ghostBtn{
-  padding:8px 12px; border:1px solid #e5e7eb; border-radius:10px;
-  background:#fff; color:#111; text-decoration:none; font-weight:600;
-}
-.avatar{
-  width:34px; height:34px; border-radius:999px; background:#111; color:#fff;
-  display:grid; place-items:center; font-weight:700; overflow:hidden; cursor:pointer;
-}
-.avatar img{ width:100%; height:100%; object-fit:cover; }
-
-.container{ max-width:1120px; margin:0 auto; padding:34px 20px 60px; }
-.hero{ margin:10px 0 24px; }
-.h1{ font-size:28px; font-weight:800; color:#0b0b0b; margin:0 0 6px; }
-.sub{ color:#6b7280; margin:0; }
-
-.loader{ margin-top:40px; color:#111; font-weight:600; }
-
-.empty{
-  margin-top:28px; padding:34px; background:#fff; border:1px solid #eee;
-  border-radius:18px; box-shadow:0 30px 80px rgba(0,0,0,.06);
-}
-.primaryBtn{
-  display:inline-block; padding:10px 14px; border-radius:12px; background:#111; color:#fff;
-  text-decoration:none; font-weight:700; margin-top:12px;
+.brand {
+  font-weight: 700;
+  letter-spacing: .3px;
+  font-size: 20px;
 }
 
-.grid{
-  margin-top:18px;
-  display:grid; gap:14px;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+.primaryBtn, .linkBtn {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  transition: transform .06s ease;
+  text-decoration: none;
 }
-.card{
-  text-align:left;
-  background:#fff;
-  border:1px solid #eee; border-radius:18px;
-  padding:18px; cursor:pointer;
-  box-shadow:0 16px 60px rgba(0,0,0,.05);
-}
-.card:hover{ transform:translateY(-1px); box-shadow:0 22px 70px rgba(0,0,0,.08); }
-.cardTop{ display:flex; justify-content:flex-end; }
-.badge{
-  padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700;
-  background:#f4f4f5; color:#111; border:1px solid #eee;
-}
-.Approved{ background:#eafff2; border-color:#bff3d2; color:#0d7a3e; }
-.Pending{ background:#fff7e6; border-color:#ffe3a3; color:#9a6b00; }
-.Rejected{ background:#ffeaea; border-color:#ffc0c0; color:#a00000; }
+.primaryBtn:hover, .linkBtn:hover { transform: translateY(-1px); }
 
-.title{ margin:10px 0 2px; font-size:18px; font-weight:800; color:#0b0b0b; }
-.meta{ margin:0; color:#6b7280; font-size:14px; }
-.cardFoot{ margin-top:14px; }
-.linkLike{ color:#111; font-weight:700; }
+.main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.hero h1 {
+  font-size: 28px;
+  margin: 6px 0 2px;
+}
+.sub {
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
+.empty {
+  margin-top: 24px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px;
+  text-align: center;
+  border: 1px solid #eee;
+  box-shadow: 0 20px 45px rgba(0,0,0,.06);
+}
+
+.grid {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.storeCard {
+  text-align: left;
+  width: 100%;
+  border: 1px solid #eee;
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
+  cursor: pointer;
+}
+.storeTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.storeName { font-weight: 700; font-size: 16px; }
+.storeMeta { margin-top: 6px; color: #6b7280; font-size: 13px; }
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badgePending  { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.badgeApproved { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.badgeRejected { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }

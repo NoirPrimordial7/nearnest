@@ -1,16 +1,25 @@
 // src/components/RequireProfile.jsx
-import React from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useProfileComplete } from "../services/userProfile";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function RequireProfile({ children }) {
-  const { user } = useAuth();
-  const { loading, complete } = useProfileComplete(user?.uid);
+  const nav = useNavigate();
+  const [checked, setChecked] = useState(false);
 
-  if (!user) return <Navigate to="/signin" replace />;
-  if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
-  if (!complete) return <Navigate to="/setup-profile" replace />;
+  useEffect(() => {
+    const u = auth.currentUser;
+    if (!u) { nav("/signin", { replace: true }); return; }
+    getDoc(doc(db, "users", u.uid)).then(snap => {
+      if (!snap.exists() || snap.data()?.profileComplete === false) {
+        nav("/setup-profile", { replace: true });
+      } else {
+        setChecked(true);
+      }
+    }).catch(() => setChecked(true));
+  }, [nav]);
 
+  if (!checked) return <div style={{padding:24}}>Loading…</div>;
   return children;
 }
