@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { listenUserStores } from "../../services/stores";
+import { useProfileComplete } from "../../services/userProfile";
 import s from "./home.module.css";
 
 function useAvatarMenu() {
@@ -19,9 +20,9 @@ function useAvatarMenu() {
   return { open, setOpen, ref };
 }
 
-function initials(fullName) {
-  if (!fullName) return "U";
-  return fullName
+function initials(name) {
+  if (!name) return "U";
+  return name
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
@@ -32,8 +33,13 @@ function initials(fullName) {
 export default function UserHome() {
   const nav = useNavigate();
   const { user, signOut } = useAuth?.() || {};
-  const [stores, setStores] = useState(null); // null = loading, [] = empty
+
+  const [stores, setStores] = useState(null);
   const { open, setOpen, ref } = useAvatarMenu();
+
+  // Pull latest profile for avatar + greeting
+  const profileState = useProfileComplete(user?.uid);
+  const profile = profileState.data;
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -48,6 +54,17 @@ export default function UserHome() {
     return "Good evening";
   }, []);
 
+  const displayName =
+    profile?.profile?.fullName ||
+    user?.displayName ||
+    user?.email?.split("@")[0];
+
+  const avatarSrc =
+    profile?.profile?.avatarUrl ||
+    profile?.photoURL ||
+    user?.photoURL ||
+    null;
+
   return (
     <div className={s.screen}>
       <div className={s.container}>
@@ -59,7 +76,7 @@ export default function UserHome() {
               NearNest
             </div>
             <div className={s.greet}>
-              {hello}, <strong>{user?.displayName || user?.email?.split("@")[0]}</strong>
+              {hello}, <strong>{displayName}</strong>
             </div>
           </div>
 
@@ -71,10 +88,10 @@ export default function UserHome() {
               aria-expanded={open}
               title="Account"
             >
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className={s.avatarImg} />
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="Profile" className={s.avatarImg} />
               ) : (
-                <div className={s.avatarFallback}>{initials(user?.displayName)}</div>
+                <div className={s.avatarFallback}>{initials(displayName)}</div>
               )}
             </button>
 
@@ -82,17 +99,18 @@ export default function UserHome() {
               <div className={s.menu} role="menu">
                 <div className={s.menuHeader}>
                   <div className={s.menuAvatar}>
-                    {user?.photoURL ? (
-                      <img src={user.photoURL} alt="Profile" />
+                    {avatarSrc ? (
+                      <img src={avatarSrc} alt="Profile" />
                     ) : (
-                      <span>{initials(user?.displayName)}</span>
+                      <span>{initials(displayName)}</span>
                     )}
                   </div>
                   <div className={s.menuName}>
-                    <div className={s.name}>{user?.displayName || "User"}</div>
+                    <div className={s.name}>{displayName || "User"}</div>
                     <div className={s.email}>{user?.email}</div>
                   </div>
                 </div>
+
                 <button
                   className={s.menuItem}
                   onClick={() => {
@@ -102,6 +120,7 @@ export default function UserHome() {
                 >
                   Personal information
                 </button>
+
                 <button
                   className={s.menuItem}
                   onClick={() => {
@@ -111,7 +130,9 @@ export default function UserHome() {
                 >
                   Edit profile
                 </button>
+
                 <div className={s.menuLine} />
+
                 <button
                   className={s.menuItemDanger}
                   onClick={async () => {
@@ -177,7 +198,8 @@ export default function UserHome() {
               </div>
             ) : stores.length === 0 ? (
               <div className={s.empty}>
-                No stores yet. Use “Register a Store” on the left to get started.
+                No stores yet. Use “Register a Store” on the left to get
+                started.
               </div>
             ) : (
               <div className={s.grid}>
