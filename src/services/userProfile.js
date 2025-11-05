@@ -32,28 +32,36 @@ export function onProfile(uid, cb, onError) {
 }
 
 /** Create/merge profile; optionally upload avatar to Storage and store photoURL */
-export async function saveProfile(uid, data, avatarFile) {
-  if (!uid) throw new Error("saveProfile: missing uid");
-
-  let photoURL = data?.photoURL || null;
+export async function saveProfile(uid, profile, avatarFile) {
+  let avatarUrl;
 
   if (avatarFile) {
     const path = `avatars/${uid}/${Date.now()}-${avatarFile.name}`;
     const r = ref(storage, path);
-    await uploadBytes(r, avatarFile);
-    photoURL = await getDownloadURL(r);
+    await uploadBytes(r, avatarFile, { contentType: avatarFile.type || "image/*" });
+    avatarUrl = await getDownloadURL(r);
   }
 
-  const payload = {
-    ...data,
-    ...(photoURL ? { photoURL } : {}),
-    updatedAt: serverTimestamp(),
-  };
+  await setDoc(
+    doc(db, "users", uid),
+    {
+      role: "user",
+      roles: ["user"],
+      hasProfile: true,
+      profile: {
+        fullName: profile.fullName,
+        age: Number(profile.age),
+        phone: profile.phone || "",
+        gender: profile.gender || null,
+        ...(avatarUrl ? { avatarUrl } : {})
+      },
+      updatedAt: serverTimestamp()
+    },
+    { merge: true }
+  );
 
-  await setDoc(doc(db, "users", uid), payload, { merge: true });
-  return payload;
+  return avatarUrl;
 }
-
 /** Hook: tell if the user's profile doc exists (and surface rule errors) */
 export function useProfileComplete(uid) {
   const [state, setState] = useState({

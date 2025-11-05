@@ -21,6 +21,6 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const db = getFirestore(app);
-const storage = getStorage(app);
+export const storage = getStorage(app, "gs://nearnest-platform.firebasestorage.app");
 
 export { app, auth, googleProvider, db, storage };
