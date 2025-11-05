@@ -4,24 +4,24 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
 
-    // Users manage their own profile
+    // Users can read/write their own profile
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
-    // Stores: owner or member can read/write
+    // Stores: owner or in members / visibleTo
     match /stores/{storeId} {
       allow read, write: if signedIn() && (
         resource.data.ownerId == request.auth.uid ||
         request.resource.data.ownerId == request.auth.uid ||
-        (request.auth.uid in (resource.data.members.keys() || [])) ||
-        (request.auth.uid in (request.resource.data.members.keys() || [])) ||
+        (resource.data.members != null && request.auth.uid in resource.data.members.keys()) ||
+        (request.resource.data.members != null && request.auth.uid in request.resource.data.members.keys()) ||
         (resource.data.visibleTo != null && resource.data.visibleTo.hasAny([request.auth.uid])) ||
         (request.resource.data.visibleTo != null && request.resource.data.visibleTo.hasAny([request.auth.uid]))
       );
     }
 
-    // Everything else locked
+    // default deny
     match /{document=**} {
       allow read, write: if false;
     }

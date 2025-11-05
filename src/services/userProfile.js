@@ -1,5 +1,6 @@
+// src/services/userProfile.js
 import { useEffect, useState } from "react";
-import { auth, db, storage } from "../firebase/firebase"; // << correct path
+import { db, storage } from "../firebase/firebase";
 import {
   doc,
   getDoc,
@@ -9,62 +10,83 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// read once
+/** One-shot read of the signed-in user's profile */
 export async function getProfile(uid) {
-  const snap = await getDoc(doc(db, "profiles", uid));
+  const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
 }
 
-// live hook
-export function useProfile(uid) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    if (!uid) return;
-    const unsub = onSnapshot(doc(db, "profiles", uid), (d) => {
-      setData(d.exists() ? d.data() : null);
-      setLoading(false);
-    });
-    return () => unsub && unsub();
-  }, [uid]);
-  return { data, loading };
+/** Live listener for the signed-in user's profile */
+export function onProfile(uid, cb, onError) {
+  if (!uid) return () => {};
+  const d = doc(db, "users", uid);
+  return onSnapshot(
+    d,
+    (snap) => cb(snap.exists() ? snap.data() : null),
+    (err) => {
+      console.error("onProfile() error:", err);
+      onError?.(err);
+      cb(null); // ensure UI doesn't freeze on loader
+    }
+  );
 }
 
-// used by RequireProfile
-export function useProfileComplete() {
-  const u = auth.currentUser;
-  const { data, loading } = useProfile(u?.uid || null);
-  const isComplete =
-    !!data &&
-    !!data.fullName &&
-    !!data.age &&
-    !!data.gender &&
-    !!data.phone; // adjust to your rules
-  return { isComplete, loading };
-}
+/** Create/merge profile; optionally upload avatar to Storage and store photoURL */
+export async function saveProfile(uid, data, avatarFile) {
+  if (!uid) throw new Error("saveProfile: missing uid");
 
-// save profile with optional photo upload
-export async function saveProfile({ fullName, age, phone, gender, file }) {
-  const u = auth.currentUser;
-  if (!u) throw new Error("Not signed in");
+  let photoURL = data?.photoURL || null;
 
-  let photoURL = null;
-  if (file) {
-    const r = ref(storage, `profilePhotos/${u.uid}.jpg`);
-    await uploadBytes(r, file);
+  if (avatarFile) {
+    const path = `avatars/${uid}/${Date.now()}-${avatarFile.name}`;
+    const r = ref(storage, path);
+    await uploadBytes(r, avatarFile);
     photoURL = await getDownloadURL(r);
   }
 
-  await setDoc(
-    doc(db, "profiles", u.uid),
-    {
-      fullName: fullName?.trim() || "",
-      age: Number(age) || null,
-      phone: phone?.trim() || "",
-      gender: gender || "",
-      photoURL: photoURL ?? null,
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
+  const payload = {
+    ...data,
+    ...(photoURL ? { photoURL } : {}),
+    updatedAt: serverTimestamp(),
+  };
+
+  await setDoc(doc(db, "users", uid), payload, { merge: true });
+  return payload;
+}
+
+/** Hook: tell if the user's profile doc exists (and surface rule errors) */
+export function useProfileComplete(uid) {
+  const [state, setState] = useState({
+    loading: true,
+    exists: false,
+    data: null,
+    error: null,
+  });
+
+  useEffect(() => {
+    if (!uid) {
+      setState((s) => ({ ...s, loading: false, exists: false }));
+      return;
+    }
+    const unsub = onProfile(
+      uid,
+      (data) =>
+        setState({
+          loading: false,
+          exists: !!data,
+          data: data || null,
+          error: null,
+        }),
+      (err) =>
+        setState({
+          loading: false,
+          exists: false,
+          data: null,
+          error: err,
+        })
+    );
+    return unsub;
+  }, [uid]);
+
+  return state;
 }
