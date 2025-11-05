@@ -1,24 +1,37 @@
+// src/services/stores.js
 import { db } from "../firebase/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 
-export async function getStoresForUser(uid) {
+/**
+ * Listen to stores visible to a user.
+ * Expects documents in "stores" to have either:
+ *  - ownerId: <uid> OR
+ *  - members: { <uid>: true } OR an array "memberUids" containing <uid>
+ */
+export function listenUserStores(uid, setStores, setError) {
+  // try a permissive query (adjust to your schema)
   const storesCol = collection(db, "stores");
+  const q = query(storesCol, where("visibleTo", "array-contains", uid)); // if you use array
+  // If you use ownerId / members instead, change the query to match your schema.
 
-  // 1) Owned by user
-  const qOwner = query(storesCol, where("ownerId", "==", uid));
-  const owned = await getDocs(qOwner);
+  const unsub = onSnapshot(
+    q,
+    (snap) => {
+      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setStores(rows);
+    },
+    (err) => {
+      console.error("listenUserStores:", err);
+      setError?.(err);
+      // fall back to empty to avoid a forever loader
+      setStores([]);
+    }
+  );
 
-  // 2) Staff membership (array-contains)
-  const qStaff = query(storesCol, where("staffIds", "array-contains", uid));
-  const staffed = await getDocs(qStaff);
-
-  const map = new Map();
-  owned.forEach((d) => map.set(d.id, { id: d.id, ...d.data() }));
-  staffed.forEach((d) => map.set(d.id, { id: d.id, ...d.data() }));
-
-  // Normalize status field name
-  return Array.from(map.values()).map((s) => ({
-    ...s,
-    verificationStatus: s.verificationStatus || s.status || "Pending",
-  }));
+  return unsub;
 }

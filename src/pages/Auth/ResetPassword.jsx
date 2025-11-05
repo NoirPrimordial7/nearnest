@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { confirmPasswordReset } from "firebase/auth";
 
-import { auth } from "../../firebase";
+import { auth } from "../../firebase/firebase"; // ✅
+
 
 
 import styles from "./auth.module.css";

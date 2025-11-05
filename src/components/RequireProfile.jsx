@@ -1,25 +1,27 @@
 // src/components/RequireProfile.jsx
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { auth, db } from "../firebase/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useProfileComplete } from "../services/userProfile";
 
 export default function RequireProfile({ children }) {
-  const nav = useNavigate();
-  const [checked, setChecked] = useState(false);
+  const { user } = useAuth();
+  const { loading, exists, error } = useProfileComplete(user?.uid);
 
-  useEffect(() => {
-    const u = auth.currentUser;
-    if (!u) { nav("/signin", { replace: true }); return; }
-    getDoc(doc(db, "users", u.uid)).then(snap => {
-      if (!snap.exists() || snap.data()?.profileComplete === false) {
-        nav("/setup-profile", { replace: true });
-      } else {
-        setChecked(true);
-      }
-    }).catch(() => setChecked(true));
-  }, [nav]);
+  if (!user) return <Navigate to="/signin" replace />;
 
-  if (!checked) return <div style={{padding:24}}>Loading…</div>;
+  if (loading) return <div style={{ padding: 24 }}>Loading profile…</div>;
+
+  if (error?.code === "permission-denied") {
+    return (
+      <div style={{ padding: 24 }}>
+        Can’t read your profile due to Firestore rules (<b>permission-denied</b>).
+        Deploy the rules below and reload.
+      </div>
+    );
+  }
+
+  if (!exists) return <Navigate to="/setup-profile" replace />;
+
   return children;
 }
