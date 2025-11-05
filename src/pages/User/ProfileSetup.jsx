@@ -1,13 +1,16 @@
 // src/pages/User/ProfileSetup.jsx
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./profile.module.css";
+
 import { useAuth } from "../../context/AuthContext";
-import { saveProfile } from "../../services/userProfile";
+import { onProfile, saveProfile } from "../../services/userProfile";
+import { auth } from "../../firebase/firebase";
+import { updateProfile } from "firebase/auth";
 
 export default function ProfileSetup() {
   const navigate = useNavigate();
-  const { user } = useAuth(); // expects { user } from your context
+  const { user } = useAuth();
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -22,6 +25,31 @@ export default function ProfileSetup() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  // Prefill from Firestore
+  useEffect(() => {
+    if (!user?.uid) return;
+    const unsub = onProfile(
+      user.uid,
+      (data) => {
+        if (!data?.profile) return;
+        setForm({
+          fullName: data.profile.fullName || "",
+          age: data.profile.age ?? "",
+          phone: data.profile.phone || "",
+          gender: data.profile.gender || "",
+        });
+        if (data.profile.avatarUrl) {
+          setAvatarPreview(data.profile.avatarUrl);
+        }
+      },
+      (err) => {
+        console.error("Profile prefill failed:", err);
+        setError("Could not fetch your profile.");
+      }
+    );
+    return unsub;
+  }, [user?.uid]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +66,7 @@ export default function ProfileSetup() {
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
     if (!form.fullName || !form.age) {
       setError("Full name and age are required.");
       return;
@@ -46,14 +75,26 @@ export default function ProfileSetup() {
       setError("You must be signed in.");
       return;
     }
+
     try {
       setSubmitting(true);
-      await saveProfile(user.uid, {
-        fullName: form.fullName.trim(),
-        age: Number(form.age),
-        phone: form.phone.trim(),
-        gender: form.gender || null,
-      }, avatarFile); // also uploads avatar if provided
+
+      // Save to Firestore and upload avatar if provided
+      const { photoURL } = await saveProfile(user.uid, form, avatarFile);
+
+      // Update Firebase Auth profile so the top-right avatar updates instantly
+      const updates = { displayName: form.fullName };
+      if (photoURL) updates.photoURL = photoURL;
+
+      try {
+        await updateProfile(auth.currentUser, updates);
+        // Force local user object to refresh
+        await auth.currentUser.reload();
+      } catch (e) {
+        // Not fatal for the flow; avatar in header may refresh after next token refresh
+        console.warn("Auth profile update warning:", e);
+      }
+
       navigate("/home");
     } catch (err) {
       console.error(err);
@@ -179,7 +220,7 @@ export default function ProfileSetup() {
               disabled={submitting}
               aria-busy={submitting ? "true" : "false"}
             >
-              {submitting ? "Saving…" : "Save & continue"}
+              {submitting ? "Saving..." : "Save & continue"}
             </button>
           </div>
         </form>
