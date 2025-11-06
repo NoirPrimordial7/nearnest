@@ -1,98 +1,132 @@
 // src/services/userProfile.js
-import { db, storage, auth } from "../firebase/firebase";
-import {
-  doc, getDoc, setDoc, serverTimestamp,
-} from "firebase/firestore";
-import {
-  ref, uploadBytes, getDownloadURL,
-} from "firebase/storage";
 import { useEffect, useState } from "react";
-import { updateProfile as updateAuthProfile } from "firebase/auth";
+import { db, storage } from "../firebase/firebase";
+import {
+  doc,
+  getDoc,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-const userDocRef = (uid) => doc(db, "users", uid);
-const genUserId = () =>
-  "NRN-" + Math.random().toString(36).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-
-export async function uploadAvatar(uid, file) {
-  const ext = (file.name?.split(".").pop() || "jpg").toLowerCase();
-  const path = `users/${uid}/avatar.${ext}`;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, file, { contentType: file.type });
-  const url = await getDownloadURL(storageRef);
-  return { url, path };
-}
-
-/**
- * saveProfile(uid, data, avatarFile?)
- * - Ensures stable userId is set once
- * - Uploads avatar if provided
- * - Stores profile in /users/{uid}
- * - Mirrors displayName/photoURL to Firebase Auth user
- */
-export async function saveProfile(uid, data, avatarFile) {
-  const snap = await getDoc(userDocRef(uid));
-  let existing = snap.exists() ? snap.data() : {};
-  let userId = existing.userId || genUserId();
-  let photoURL = existing.photoURL || null;
-
-  if (avatarFile) {
-    const uploaded = await uploadAvatar(uid, avatarFile);
-    photoURL = uploaded.url;
-  }
-
-  const payload = {
-    ...existing,
-    ...data,
-    userId,
-    photoURL,
-    updatedAt: serverTimestamp(),
-    createdAt: existing.createdAt || serverTimestamp(),
-  };
-
-  await setDoc(userDocRef(uid), payload, { merge: true });
-
-  // Mirror to Firebase Auth profile
-  if (auth.currentUser) {
-    try {
-      await updateAuthProfile(auth.currentUser, {
-        displayName: data.fullName || auth.currentUser.displayName || "",
-        photoURL: photoURL || auth.currentUser.photoURL || null,
-      });
-    } catch (e) {
-      // don't block on this
-      console.warn("Auth profile update skipped:", e?.message);
-    }
-  }
-
-  return payload;
-}
-
+/** One-shot read of the signed-in user's profile (Firestore) */
 export async function getProfile(uid) {
-  const snap = await getDoc(userDocRef(uid));
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, "users", uid));
   return snap.exists() ? snap.data() : null;
 }
 
+/** Live listener for the signed-in user's profile (Firestore) */
+export function onProfile(uid, cb, onError) {
+  if (!uid) return () => {};
+  const d = doc(db, "users", uid);
+  return onSnapshot(
+    d,
+    (snap) => cb(snap.exists() ? snap.data() : null),
+    (err) => {
+      console.error("onProfile() error:", err);
+      onError?.(err);
+      cb(null);
+    }
+  );
+}
+
+/**
+ * Create/merge profile; optionally upload avatar to Storage and store URLs.
+ * - Saves both profile.avatarUrl and top-level photoURL for convenience.
+ * - Sets createdAt on first write; always updates updatedAt.
+ * Returns: { photoURL, data } (data = merged user doc)
+ */
+export async function saveProfile(uid, profile, avatarFile) {
+  if (!uid) throw new Error("saveProfile: missing uid");
+
+  const userRef = doc(db, "users", uid);
+  const prev = await getDoc(userRef);
+  const now = serverTimestamp();
+
+  // 1) Upload avatar if provided
+  let uploadedPhotoURL = null;
+  if (avatarFile) {
+    const safeName =
+      (avatarFile.name || "avatar.png").replace(/[^\w.\-]+/g, "_");
+    const path = `avatars/${uid}/${Date.now()}-${safeName}`;
+    const fileRef = ref(storage, path);
+    await uploadBytes(fileRef, avatarFile, {
+      contentType: avatarFile.type || "image/*",
+    });
+    uploadedPhotoURL = await getDownloadURL(fileRef);
+  }
+
+  // 2) Build merged document
+  const ageNum =
+    typeof profile?.age === "number"
+      ? profile.age
+      : Number.parseInt(profile?.age || "0", 10) || null;
+
+  const baseUpdate = {
+    role: "user",
+    roles: ["user"],
+    hasProfile: true,
+    // keep your nested shape…
+    profile: {
+      fullName: (profile?.fullName || "").trim(),
+      age: ageNum,
+      phone: (profile?.phone || "").trim(),
+      gender: profile?.gender || null,
+      ...(uploadedPhotoURL ? { avatarUrl: uploadedPhotoURL } : {}),
+    },
+    // …and also a convenient top-level URL
+    ...(uploadedPhotoURL ? { photoURL: uploadedPhotoURL } : {}),
+    updatedAt: now,
+  };
+
+  // 3) Write doc (set createdAt on first creation)
+  if (prev.exists()) {
+    await updateDoc(userRef, baseUpdate);
+  } else {
+    await setDoc(userRef, { ...baseUpdate, createdAt: now });
+  }
+
+  // 4) Return the fresh doc
+  const fresh = await getDoc(userRef);
+  return { photoURL: uploadedPhotoURL || fresh.data()?.photoURL || null, data: fresh.data() };
+}
+
+/** Hook: tell if the user's profile doc exists (and surface rule errors) */
 export function useProfileComplete(uid) {
-  const [loading, setLoading] = useState(true);
-  const [complete, setComplete] = useState(false);
-  const [profile, setProfile] = useState(null);
+  const [state, setState] = useState({
+    loading: true,
+    exists: false,
+    data: null,
+    error: null,
+  });
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (!uid) {
-        setLoading(false);
-        setComplete(false);
-        return;
-      }
-      const p = await getProfile(uid);
-      if (cancelled) return;
-      setProfile(p);
-      setComplete(Boolean(p?.fullName && p?.age));
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    if (!uid) {
+      setState((s) => ({ ...s, loading: false, exists: false, data: null }));
+      return;
+    }
+    const unsub = onProfile(
+      uid,
+      (data) => 
+        setState({
+          loading: false,
+          exists: !!data,
+          data: data || null,
+          error: null,
+        }),
+      (err) =>
+        setState({
+          loading: false,
+          exists: false,
+          data: null,
+          error: err,
+        })
+    );
+    return unsub;
   }, [uid]);
 
-  return { loading, complete, profile };
+  return state;
 }

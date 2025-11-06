@@ -1,28 +1,27 @@
 // src/firebase/firebase.js
-import { initializeApp, getApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey:             import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:         import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:          import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:      import.meta.env.VITE_FIREBASE_STORAGE_BUCKET, // e.g. nearnest-platform.appspot.com
+  messagingSenderId:  import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:              import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId:      import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// avoid duplicate-app during HMR
+// Avoid duplicate app during HMR
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-// ✅ export Google provider
 const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({ prompt: "select_account" });
+const db = getFirestore(app);
 
-export { app, auth, db, storage, googleProvider };
+// Use the bucket from firebaseConfig.storageBucket
+const storage = getStorage(app, "gs://nearnest-platform.firebasestorage.app");
+
+export { app, auth, googleProvider, db, storage };

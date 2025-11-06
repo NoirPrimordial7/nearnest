@@ -12,8 +12,39 @@ import {
 import { auth, googleProvider, db } from "../../firebase/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
+/* ---------------------- role helpers ---------------------- */
+async function fetchRoles(uid) {
+  try {
+    const snap = await getDoc(doc(db, "users", uid));
+    const data = snap.exists() ? snap.data() || {} : {};
+    return {
+      role: data.role || "user",
+      roles: Array.isArray(data.roles) && data.roles.length ? data.roles : ["user"],
+    };
+  } catch (e) {
+    console.error("fetchRoles error:", e);
+    return { role: "user", roles: ["user"] };
+  }
+}
+
+async function redirectByRole(navigate, uid) {
+  const { role, roles } = await fetchRoles(uid);
+
+  if (role === "admin" || roles.includes("admin")) {
+    return navigate("/admin", { replace: true });
+  }
+  if (roles.includes("storeAdmin") || roles.some((r) => r.endsWith(":Owner"))) {
+    return navigate("/store-admin/home", { replace: true });
+  }
+  if (roles.some((r) => r.includes(":"))) {
+    return navigate("/store-staff/home", { replace: true });
+  }
+  return navigate("/home", { replace: true });
+}
+
+/* ---------------------- component ---------------------- */
 export default function SignIn() {
-  const nav = useNavigate();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: localStorage.getItem("rememberEmail") || "",
     password: "",
@@ -31,33 +62,7 @@ export default function SignIn() {
         e.target.type === "checkbox" ? e.target.checked : e.target.value,
     }));
 
-  // Centralized role redirect
-  const handleRedirectByRole = async (user) => {
-    try {
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (!snap.exists()) return nav("/signin", { replace: true });
-
-      const { roles = [] } = snap.data() || {};
-      // Admin first (has full access)
-      if (roles.includes("admin")) return nav("/admin/dashboard", { replace: true });
-
-      // Store admin (either global 'storeAdmin' or :Owner)
-      if (roles.includes("storeAdmin") || roles.some((r) => r.endsWith(":Owner")))
-        return nav("/store-admin/home", { replace: true });
-
-      // Any store-scoped role goes to staff home
-      if (roles.some((r) => r.includes(":")))
-        return nav("/store-staff/home", { replace: true });
-
-      // Fallback
-      return nav("/", { replace: true });
-    } catch (e) {
-      console.error("Redirect by role failed:", e);
-      nav("/signin", { replace: true });
-    }
-  };
-
-  // EMAIL/PASSWORD LOGIN
+  /* ---------------- email/password login ---------------- */
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -65,28 +70,59 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      const cred = await signInWithEmailAndPassword(auth, form.email.trim(), form.password);
+      const cred = await signInWithEmailAndPassword(
+        auth,
+        form.email.trim(),
+        form.password
+      );
       const user = cred.user;
 
+      // Ensure user doc exists (first login or migrated users)
+      const userRef = doc(db, "users", user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          name: user.displayName || "New User",
+          email: user.email,
+          role: "user",
+          roles: ["user"],
+          createdAt: Date.now(),
+        });
+      }
+
+      // Make sure email verification state is fresh
+      await user.reload();
       if (!user.emailVerified) {
         setOk("Email not verified. Redirecting…");
-        setTimeout(() => nav("/verify-email", { replace: true }), 1000);
+        setTimeout(() => navigate("/verify-email", { replace: true }), 900);
         return;
       }
 
+      // remember email if requested
       if (form.remember) localStorage.setItem("rememberEmail", form.email);
       else localStorage.removeItem("rememberEmail");
 
-      await handleRedirectByRole(user);
+      await redirectByRole(navigate, user.uid);
     } catch (e) {
       console.error("Login failed:", e);
-      setErr("Invalid email or password.");
+      const code = e?.code || "";
+      if (
+        code === "auth/invalid-credential" ||
+        code === "auth/wrong-password" ||
+        code === "auth/user-not-found"
+      ) {
+        setErr("Invalid email or password.");
+      } else if (code === "auth/too-many-requests") {
+        setErr("Too many attempts. Try again later.");
+      } else {
+        setErr("Couldn’t sign you in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // GOOGLE LOGIN
+  /* ----------------------- Google login ----------------------- */
   const google = async () => {
     setErr("");
     setOk("");
@@ -95,19 +131,20 @@ export default function SignIn() {
       const cred = await signInWithPopup(auth, googleProvider);
       const user = cred.user;
 
+      // Ensure user doc exists
       const userRef = doc(db, "users", user.uid);
       const snap = await getDoc(userRef);
       if (!snap.exists()) {
         await setDoc(userRef, {
           name: user.displayName || "New User",
           email: user.email,
-          roles: ["user"],           // default
+          role: "user",
+          roles: ["user"],
           createdAt: Date.now(),
         });
       }
 
-      // Google accounts are often already verified
-      await handleRedirectByRole(user);
+      await redirectByRole(navigate, user.uid);
     } catch (e) {
       console.error("Google sign-in failed:", e);
       setErr("Google sign-in failed.");
@@ -116,12 +153,13 @@ export default function SignIn() {
     }
   };
 
+  /* --------------------- Forgot password --------------------- */
   const forgot = async () => {
     setErr("");
     setOk("");
     if (!form.email) return setErr("Enter your email first.");
     try {
-      await sendPasswordResetEmail(auth, form.email);
+      await sendPasswordResetEmail(auth, form.email.trim());
       setOk("Reset link sent. Check your inbox.");
     } catch (e) {
       console.error(e);
@@ -129,7 +167,7 @@ export default function SignIn() {
     }
   };
 
-  // ==== RENDER (unchanged design) ====
+  /* -------------------------- UI -------------------------- */
   return (
     <div className={styles.authShell}>
       <div className={styles.authCard}>
@@ -141,8 +179,17 @@ export default function SignIn() {
 
         <form className={styles.authForm} onSubmit={onSubmit}>
           <div className={styles.rowBetween}>
-            <button type="button" className={styles.googleBtn} onClick={google}>
-              <img src="/google-icon.png" alt="Google" className={styles.googleIcon} />
+            <button
+              type="button"
+              className={styles.googleBtn}
+              onClick={google}
+              disabled={loading}
+            >
+              <img
+                src="/google-icon.png"
+                alt="Google"
+                className={styles.googleIcon}
+              />
               Continue with Google
             </button>
           </div>

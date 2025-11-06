@@ -1,0 +1,123 @@
+.shell{min-height:100vh;background:#f6f7f9;padding:56px 16px}
+.card{max-width:900px;margin:0 auto;background:#fff;border:1px solid #eceff3;border-radius:24px;box-shadow:0 30px 60px rgba(0,0,0,.08);padding:24px 24px 28px}
+.title{margin:0;font-weight:800;font-size:26px}
+.subtitle{color:#6a7079;margin:4px 0 18px}
+.groupTitle{margin:22px 0 10px;font-size:16px;font-weight:800}
+.err{background:#fee2e2;color:#7f1d1d;border:1px solid #fecaca;border-radius:12px;padding:10px 12px;margin-bottom:12px}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field input,.field select{height:42px;border:1px solid #e5e7eb;border-radius:12px;padding:0 12px;outline:none}
+.field input:focus,.field select:focus{border-color:#111;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:14px}
+@media (max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+.mapRow{display:flex;align-items:center;gap:12px;margin-top:8px}
+.hint{font-size:12px;color:#6a7079}
+
+.actions{display:flex;justify-content:flex-end;margin-top:20px}
+.primary{height:46px;border:0;background:#111;color:#fff;border-radius:999px;padding:0 18px;font-weight:800}
+.secondary{height:36px;border-radius:10px;border:1px solid #d8dbe2;background:#fff;padding:0 10px}
+
+.wrap{max-width:960px;margin:40px auto;padding:24px;border-radius:16px;background:#fff;box-shadow:0 20px 50px rgba(0,0,0,.08)}
+.title{font-size:24px;font-weight:800;margin:0 0 4px}
+.sub{color:#64748b;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row{display:grid;gap:8px}
+.input{height:44px;border-radius:12px;border:1px solid #e5e7eb;background:#f4f6fb;padding:0 12px;font-weight:600}
+.btn{height:44px;border-radius:12px;background:#111;color:#fff;font-weight:800;padding:0 16px;border:none;cursor:pointer}
+.actions{display:flex;gap:10px;margin-top:16px}
+
+/* LocationPicker minimal styles */
+.lp-wrap{display:grid;gap:8px;margin-top:10px}
+.lp-label{font-weight:700}
+.lp-row{display:flex;gap:8px}
+.lp-input{flex:1;height:40px;border:1px solid #e5e7eb;border-radius:10px;padding:0 10px;background:#f8fafc}
+.lp-btn{height:40px;border-radius:10px;border:1px solid #111;background:#111;color:#fff;font-weight:700;padding:0 12px;cursor:pointer}
+.lp-btn.ghost{background:#fff;color:#111}
+.lp-map{margin-top:8px;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden}
+.lp-meta{display:flex;gap:12px;align-items:center;margin-top:8px;color:#475569;font-size:14px}
+
+/* src/pages/RegisterStore/register.module.css */
+.wrap {
+  min-height: 100vh;
+  background: radial-gradient(900px 400px at -10% -10%, rgba(0,0,0,.06), transparent 60%),
+              radial-gradient(900px 400px at 110% 10%, rgba(0,0,0,.06), transparent 60%),
+              #f6f7fb;
+  padding: 32px 16px;
+}
+.card {
+  max-width: 920px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 30px 60px rgba(0,0,0,.10);
+  padding: 24px;
+}
+.h1 {
+  margin: 0 0 6px 0;
+}
+.sub {
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.input {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 0 14px;
+  outline: none;
+  font-size: 14px;
+}
+.label {
+  font-weight: 700;
+  margin-top: 10px;
+  margin-bottom: 6px;
+}
+.btnRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.primary {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-weight: 800;
+  background: #111;
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+}
+.ghost {
+  height: 46px;
+  padding: 0 18px;
+  border-radius: 14px;
+  font-weight: 800;
+  background: #fff;
+  color: #111;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+}
+.hint {
+  color: #6b7280;
+  font-size: 12px;
+}
+.section {
+  border-top: 1px solid #eee;
+  margin-top: 18px;
+  padding-top: 16px;
+}
+/* minimal extras for LocationEditor */
+.lp-wrap{display:grid;gap:8px;margin-top:10px}
+.lp-row{display:flex;gap:8px}
+.lp-input{flex:1;height:40px;border:1px solid #e5e7eb;border-radius:10px;padding:0 10px;background:#f8fafc}
+.lp-btn{height:40px;border-radius:10px;border:1px solid #111;background:#111;color:#fff;font-weight:700;padding:0 12px;cursor:pointer}
+.lp-btn.ghost{background:#fff;color:#111}
+.lp-map{margin-top:8px;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden}

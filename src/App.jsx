@@ -1,108 +1,109 @@
 // src/App.jsx
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import ReviewSubmit from "./pages/Stores/ReviewSubmit.jsx";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
-
-// Guards
-import ProtectedRoute from "./routes/ProtectedRoute";
-import RequireProfile from "./components/RequireProfile";
-
-// Auth
+// auth pages
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
-import ResetPassword from "./pages/Auth/ResetPassword";
-import VerifyEmail from "./pages/Auth/VerifyEmail";
 
-// User
-import ProfileSetup from "./pages/User/ProfileSetup";
+// user
 import UserHome from "./pages/User/UserHome";
+import ProfileSetup from "./pages/User/ProfileSetup";
 
-// Store register
-import ConfirmStart from "./pages/RegisterStore/ConfirmStart";
-import StoreForm from "./pages/RegisterStore/StoreForm";
+// store register flow
+import StoreForm from "./pages/RegisterStore/ConfirmStart";
+import RegisterStore from "./pages/RegisterStore/RegisterStore";
 
-// Admin
-import AdminLayout from "./pages/Admin/AdminLayout";
+// guards
+import ProtectedRoute from "./routes/ProtectedRoute";
+import RequireProfile from "./components/RequireProfile";
+import VerificationStatus from "./pages/Stores/VerificationStatus";
 
-// smart landing
-function IndexRedirect() {
-  const { user, role } = useAuth?.() || {};
-  if (!user) return <Navigate to="/signin" replace />;
-  if (role === "admin") return <Navigate to="/admin" replace />;
-  return <Navigate to="/home" replace />;
-}
+// role landing
+import RoleRedirect from "./routes/RoleRedirect";
 
 export default function App() {
-  // NOTE: <BrowserRouter> must be ONLY in src/main.jsx
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="/" element={<IndexRedirect />} />
+    <Routes>
+      {/* auth */}
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
 
-        {/* auth */}
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
+      {/* first-run profile setup */}
+      <Route
+        path="/setup-profile"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
+            <ProfileSetup />
+          </ProtectedRoute>
+        }
+      />
 
-        {/* profile */}
-        <Route
-          path="/setup-profile"
-          element={
-            <ProtectedRoute>
-              <ProfileSetup />
-            </ProtectedRoute>
-          }
-        />
+      {/* user home */}
+      <Route
+        path="/home"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
+            <RequireProfile>
+              <UserHome />
+            </RequireProfile>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* user home */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <RequireProfile>
-                <UserHome />
-              </RequireProfile>
-            </ProtectedRoute>
-          }
-        />
+      {/* store registration (ConfirmStart / Register) */}
+      <Route
+        path="/register-store"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
+            <RequireProfile>
+              <StoreForm />
+            </RequireProfile>
+          </ProtectedRoute>
+        }
+      />
+      {/* remove duplicate - keep only one /register-store route */}
 
-        {/* store registration */}
-        <Route
-          path="/register-store/start"
-          element={
-            <ProtectedRoute>
-              <RequireProfile>
-                <ConfirmStart />
-              </RequireProfile>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/register-store"
-          element={
-            <ProtectedRoute>
-              <RequireProfile>
-                <StoreForm />
-              </RequireProfile>
-            </ProtectedRoute>
-          }
-        />
+      {/* full register with map/address etc. */}
+      <Route
+        path="/register-store/details"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
+            <RequireProfile>
+              <RegisterStore />
+            </RequireProfile>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* admin */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute allowedRoles={["admin"]}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        />
+      {/* verification tracking */}
+      <Route
+        path="/verification-status/:id"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
+            <RequireProfile>
+              <VerificationStatus />
+            </RequireProfile>
+          </ProtectedRoute>
+        }
+      />
 
-        {/* fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AuthProvider>
+      {/* review & submit should be protected */}
+      <Route
+        path="/review-submit/:id"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
+            <ReviewSubmit />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* landing decides per-role homes */}
+      <Route path="/" element={<RoleRedirect />} />
+
+      {/* 404 */}
+      <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
+    </Routes>
   );
 }
