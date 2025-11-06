@@ -22,7 +22,7 @@ service cloud.firestore {
     }
 
     // Accept members as MAP: { "<uid>": true } OR ARRAY: ["<uid>", ...]
-    function isMember(members) {
+    function isMemberMapOrArray(members) {
       return signedIn()
         && members != null
         && (
@@ -31,20 +31,26 @@ service cloud.firestore {
            );
     }
 
+    // NEW: also allow via membersArr (array of uids)
+    function isMemberPlus(members, membersArr) {
+      return isMemberMapOrArray(members)
+        || (signedIn() && membersArr is list && membersArr.hasAny([request.auth.uid]));
+    }
+
     function isVisibleTo(visibleTo) {
       return signedIn()
         && visibleTo != null
         && visibleTo.hasAny([request.auth.uid]);
     }
 
-    // For subcollections (we can't use resource.data of the parent there)
+    // For subcollections we must fetch the parent doc
     function storeDoc(storeId) {
       return get(/databases/$(database)/documents/stores/$(storeId));
     }
 
     function canAccessStoreViaDoc(s) {
       return isOwner(s.data.ownerId)
-          || isMember(s.data.members)
+          || isMemberPlus(s.data.members, s.data.membersArr)
           || isVisibleTo(s.data.visibleTo)
           || isAdmin();
     }
@@ -57,26 +63,22 @@ service cloud.firestore {
 
     /* ------------ stores ------------ */
     match /stores/{storeId} {
-      // IMPORTANT: use resource.data directly (no self-get)
       allow read: if
         isOwner(resource.data.ownerId) ||
-        isMember(resource.data.members) ||
+        isMemberPlus(resource.data.members, resource.data.membersArr) ||
         isVisibleTo(resource.data.visibleTo) ||
         isAdmin();
 
-      // Owner (self) or admin can create
       allow create: if signedIn() && (
         request.resource.data.ownerId == request.auth.uid || isAdmin()
       );
 
-      // Owner/member/admin can update
       allow update: if signedIn() && (
         isOwner(resource.data.ownerId) ||
-        isMember(resource.data.members) ||
+        isMemberPlus(resource.data.members, resource.data.membersArr) ||
         isAdmin()
       );
 
-      // Only owner or admin can delete
       allow delete: if signedIn() && (
         isOwner(resource.data.ownerId) || isAdmin()
       );
@@ -95,7 +97,6 @@ service cloud.firestore {
                || isAdmin()
              );
 
-        // uploadedBy cannot change (unless admin)
         allow update: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           (resource.data.uploadedBy == request.auth.uid &&
@@ -115,53 +116,10 @@ service cloud.firestore {
         allow read:  if canAccessStoreViaDoc(storeDoc(storeId));
         allow write: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
-          isMember(storeDoc(storeId).data.members) ||
+          isMemberPlus(storeDoc(storeId).data.members, storeDoc(storeId).data.membersArr) ||
           isAdmin()
         );
       }
-    }
-
-    /* ------------ (optional) other top-level collections ------------ */
-    match /projects/{docId} {
-      allow read: if signedIn() && (
-        resource.data.ownerId == request.auth.uid ||
-        (resource.data.visibleTo != null &&
-         resource.data.visibleTo.hasAny([request.auth.uid])) ||
-        (resource.data.public == true) || isAdmin()
-      );
-      allow create: if signedIn() &&
-        request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && (
-        resource.data.ownerId == request.auth.uid || isAdmin()
-      );
-    }
-
-    match /workspaces/{docId} {
-      allow read: if signedIn() && (
-        resource.data.ownerId == request.auth.uid ||
-        (resource.data.visibleTo != null &&
-         resource.data.visibleTo.hasAny([request.auth.uid])) ||
-        (resource.data.public == true) || isAdmin()
-      );
-      allow create: if signedIn() &&
-        request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && (
-        resource.data.ownerId == request.auth.uid || isAdmin()
-      );
-    }
-
-    match /branding/{docId} {
-      allow read: if signedIn() && (
-        resource.data.ownerId == request.auth.uid ||
-        (resource.data.visibleTo != null &&
-         resource.data.visibleTo.hasAny([request.auth.uid])) ||
-        (resource.data.public == true) || isAdmin()
-      );
-      allow create: if signedIn() &&
-        request.resource.data.ownerId == request.auth.uid;
-      allow update, delete: if signedIn() && (
-        resource.data.ownerId == request.auth.uid || isAdmin()
-      );
     }
 
     /* ------------ default deny ------------ */
