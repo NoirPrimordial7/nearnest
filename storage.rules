@@ -3,47 +3,48 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // --- Avatars ---
+    // ----- Avatars -----
     match /avatars/{uid}/{file=**} {
-      allow read: if request.auth != null;                       // for getDownloadURL
+      allow read:  if request.auth != null;                         // for getDownloadURL
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // --- Store verification documents ---
-    // Path used by the app: storeDocs/{storeId}/{docId-or-kind}-{filename}
+    // ----- Store verification documents -----
+    // Path used by app: storeDocs/{storeId}/{docId-or-kind}-{filename}
     match /storeDocs/{storeId}/{file=**} {
 
-      // helper reads the store document from Firestore (requires cross-service role, which you already granted)
+      // Read the store doc from Firestore (Storage rules MUST use (default))
       function _store() {
-        return firestore.get(/databases/$(database)/documents/stores/$(storeId)).data;
+        return firestore.get(/databases/(default)/documents/stores/$(storeId)).data;
       }
 
       function _isOwner() {
-        return request.auth != null && _store().ownerId == request.auth.uid;
+        return request.auth != null
+               && _store() != null
+               && _store().ownerId == request.auth.uid;
       }
 
-      // members is a map like { uid: true }
       function _isMember() {
         return request.auth != null
+               && _store() != null
                && _store().members != null
                && (request.auth.uid in _store().members
                    || request.auth.uid in _store().members.keys());
       }
 
-      // READ: owner or members can read their own uploads
+      // Owner or members can read their uploads
       allow read: if _isOwner() || _isMember();
 
-      // WRITE: owner or members can upload/replace docs
-      // We also require a sensible contentType (image/* or application/pdf)
+      // Owner or members can write; only allow images or PDFs
       allow write: if (_isOwner() || _isMember())
                    && request.resource != null
-                   && request.resource.contentType.matches('image/.*')
-                      || request.resource.contentType == 'application/pdf';
+                   && (
+                        request.resource.contentType.matches('image/.*')
+                        || request.resource.contentType == 'application/pdf'
+                      );
     }
 
-    // default deny
-    match /{allPaths=**} {
-      allow read, write: if false;
-    }
+    // Default deny
+    match /{allPaths=**} { allow read, write: if false; }
   }
 }

@@ -3,59 +3,92 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    /* ---------- helpers ---------- */
     function signedIn() { return request.auth != null; }
-    function isOwner(ownerId) { return signedIn() && request.auth.uid == ownerId; }
+
+    function isOwner(ownerId) {
+      return signedIn() && request.auth.uid == ownerId;
+    }
+
     function isMember(members) {
       return signedIn()
         && members != null
         && (request.auth.uid in members || request.auth.uid in members.keys());
     }
+
     function isVisibleTo(visibleTo) {
-      return signedIn() && visibleTo != null && visibleTo.hasAny([request.auth.uid]);
+      return signedIn()
+        && visibleTo != null
+        && visibleTo.hasAny([request.auth.uid]);
     }
 
-    // Helper: can the current user access this store?
+    // read the store once and reuse
+    function storeDoc(storeId) {
+      return get(/databases/$(database)/documents/stores/$(storeId));
+    }
+
     function canAccessStore(storeId) {
-      let store = get(/databases/$(database)/documents/stores/$(storeId)).data;
-      return isOwner(store.ownerId) || isMember(store.members) || isVisibleTo(store.visibleTo);
+      return isOwner(storeDoc(storeId).data.ownerId)
+          || isMember(storeDoc(storeId).data.members)
+          || isVisibleTo(storeDoc(storeId).data.visibleTo);
     }
 
-    // users
+    /* ---------- users ---------- */
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
-    // stores
+    /* ---------- stores ---------- */
     match /stores/{storeId} {
-      // existing docs
+      // read store doc if the user can access it
       allow read: if canAccessStore(storeId);
 
-      // create: only the owner (by declaring ownerId = auth.uid)
-      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
+      // create only if declaring yourself the owner
+      allow create: if signedIn() &&
+        request.resource.data.ownerId == request.auth.uid;
 
-      // update/delete: owner or a member
-      allow update, delete: if signedIn() && (
+      // updates by owner or member; delete only by owner
+      allow update: if signedIn() && (
         isOwner(resource.data.ownerId) || isMember(resource.data.members)
       );
+      allow delete: if signedIn() && isOwner(resource.data.ownerId);
 
-      // subcollection: stores/{storeId}/documents/{docId}
+      /* --- verification documents: stores/{storeId}/documents/{docId} --- */
       match /documents/{docId} {
-        // owner and members can read
         allow read: if canAccessStore(storeId);
 
-        // owner or members can create (upload)
-        allow create: if signedIn() && (
-          isOwner(get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId) ||
-          isMember(get(/databases/$(database)/documents/stores/$(storeId)).data.members)
+        // uploader must be the signed-in user; basic field validation
+        allow create: if canAccessStore(storeId)
+          && request.resource.data.path is string
+          && request.resource.data.url  is string
+          && request.resource.data.kind is string
+          && request.resource.data.uploadedBy == request.auth.uid;
+
+        // owner or original uploader can modify/delete
+        allow update: if signedIn() && (
+          isOwner(storeDoc(storeId).data.ownerId) ||
+          request.resource.data.uploadedBy == request.auth.uid
         );
 
-        // only owner can update/delete a specific document
-        allow update, delete: if signedIn() &&
-          isOwner(get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId);
+        allow delete: if signedIn() && (
+          isOwner(storeDoc(storeId).data.ownerId) ||
+          resource.data.uploadedBy == request.auth.uid
+        );
+      }
+
+      /* fallback for any other subcollections under a store */
+      match /{sub=**}/{docId} {
+        allow read:  if canAccessStore(storeId);
+        allow write: if signedIn() && (
+          isOwner(storeDoc(storeId).data.ownerId) ||
+          isMember(storeDoc(storeId).data.members)
+        );
       }
     }
 
-    // default deny
-    match /{document=**} { allow read, write: if false; }
+    /* ---------- default deny ---------- */
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
