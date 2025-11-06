@@ -72,6 +72,7 @@ async function isAdmin(uid) {
 
 /* -------------------- CRUD -------------------- */
 
+// src/services/stores.js
 export async function createStore(ownerOrObj, maybeData = {}) {
   const normalized =
     typeof ownerOrObj === "string"
@@ -81,16 +82,20 @@ export async function createStore(ownerOrObj, maybeData = {}) {
   const ownerId = normalized.ownerId;
   if (!ownerId) throw new Error("ownerId is required");
 
-  const membersMap =
+  // always include owner in both structures
+  const membersMapBase =
     normalized.members && typeof normalized.members === "object"
       ? normalized.members
-      : { [ownerId]: true };
+      : {};
+  const membersMap = { ...membersMapBase, [ownerId]: true };
 
-  const membersArr = Array.isArray(normalized.membersArr)
+  const rawArr = Array.isArray(normalized.membersArr)
     ? normalized.membersArr
-    : toArrayMaybe(membersMap);
+    : Object.keys(membersMap);
+  const membersArr = Array.from(new Set([ownerId, ...rawArr]));
 
   const payload = {
+    // ... your other fields ...
     name: normalized.name || "",
     phone: normalized.phone || "",
     licenseNo: normalized.licenseNo || "",
@@ -101,14 +106,8 @@ export async function createStore(ownerOrObj, maybeData = {}) {
     geo:
       normalized.geo && typeof normalized.geo === "object"
         ? {
-            lat:
-              normalized.geo.lat === "" || normalized.geo.lat == null
-                ? null
-                : Number(normalized.geo.lat),
-            lng:
-              normalized.geo.lng === "" || normalized.geo.lng == null
-                ? null
-                : Number(normalized.geo.lng),
+            lat: normalized.geo.lat === "" || normalized.geo.lat == null ? null : Number(normalized.geo.lat),
+            lng: normalized.geo.lng === "" || normalized.geo.lng == null ? null : Number(normalized.geo.lng),
           }
         : null,
 
@@ -117,7 +116,6 @@ export async function createStore(ownerOrObj, maybeData = {}) {
     membersArr,
 
     visibleTo: normalized.visibleTo || null,
-
     verificationStatus: normalized.verificationStatus || "Pending",
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -126,6 +124,7 @@ export async function createStore(ownerOrObj, maybeData = {}) {
   const ref = await addDoc(collection(db, "stores"), payload);
   return ref.id;
 }
+
 
 export async function deleteStore(storeId) {
   await deleteDoc(doc(db, "stores", storeId));
@@ -194,6 +193,7 @@ export async function listenUserStores(uid, onData, onError) {
       (qs) => {
         state.owned.clear;
         state.owned = new Map();
+        
         qs.docs.forEach((d) => state.owned.set(d.id, docToStore(d)));
         emit();
       },
@@ -206,6 +206,7 @@ export async function listenUserStores(uid, onData, onError) {
       qMember,
       (qs) => {
         state.member = new Map();
+        state.member.clear();
         qs.docs.forEach((d) => state.member.set(d.id, docToStore(d)));
         emit();
       },
@@ -218,3 +219,4 @@ export async function listenUserStores(uid, onData, onError) {
       try { u && u(); } catch {}
     });
 }
+

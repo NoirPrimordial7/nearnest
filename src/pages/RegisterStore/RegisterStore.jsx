@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { createStore } from "../../services/stores";
 import s from "./register.module.css";
-
 /* --------------- Google Maps helpers (inline) --------------- */
 function loadGoogle(key) {
   if (window.__gmapsPromise) return window.__gmapsPromise;
@@ -335,7 +334,6 @@ function LocationEditor({ value, onChange }) {
   );
 }
 
-/* --------------- Register Store Page --------------- */
 export default function RegisterStore() {
   const nav = useNavigate();
   const { user } = useAuth() || {};
@@ -411,43 +409,28 @@ export default function RegisterStore() {
   return (
     <div className={s.wrap}>
       <div className={s.card}>
-        {/* Back / Next row */}
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+
+        {/* NEW: top bar with back */}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
           <button
-            type="button"
             onClick={() => nav(-1)}
+            aria-label="Go back"
             style={{
-              height: 38,
-              padding: "0 14px",
+              height: 36,
+              padding: "0 12px",
               borderRadius: 10,
               background: "#f2f4f7",
               border: "1px solid #e6e9ef",
               fontWeight: 700,
               cursor: "pointer",
+              marginRight: 8,
             }}
           >
-            ← Prev
+            ← Back
           </button>
-
-          <button
-            type="button"
-            onClick={submit}
-            style={{
-              height: 38,
-              padding: "0 16px",
-              borderRadius: 10,
-              background: "#111",
-              color: "#fff",
-              border: 0,
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
-          >
-            Save & Continue →
-          </button>
+          <h2 className={s.h1} style={{ margin: 0 }}>Register a Store</h2>
         </div>
 
-        <h2 className={s.h1}>Register a Store</h2>
         <div className={s.sub}>Basic details for onboarding & verification.</div>
 
         <label className={s.label}>Store name*</label>
@@ -516,11 +499,9 @@ export default function RegisterStore() {
         )}
 
         <div className={s.btnRow}>
+          <button className={s.ghost} onClick={() => nav(-1)}>← Back</button>
           <button className={s.primary} disabled={busy} onClick={submit}>
             {busy ? "Creating…" : "Create store"}
-          </button>
-          <button className={s.ghost} type="button" onClick={() => nav(-1)}>
-            ← Back
           </button>
         </div>
       </div>
