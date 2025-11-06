@@ -1,80 +1,78 @@
 // src/context/AuthContext.jsx
-/*import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
-const Ctx = createContext({ user: null, roles: [], storeId: null, loading: true });
-export const useAuth = () => useContext(Ctx);
+const AuthCtx = createContext({
+  user: null,
+  roles: [],
+  storeId: null,
+  authLoading: true,
+  hasRole: () => false,
+});
 
-export default function AuthProvider({ children }) {
-  const [state, setState] = useState({ user: null, roles: [], storeId: null, loading: true });
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [storeId, setStoreId] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
-  // 🔧 env-driven dev bypass
+  // ⚙️ Dev bypass flags (optional, convenient for local)
   const DEV_BYPASS = import.meta.env.VITE_DEV_BYPASS === "true";
-  const DEV_ROLE   = import.meta.env.VITE_DEV_ROLE || "admin";
+  const DEV_ROLE = import.meta.env.VITE_DEV_ROLE || "admin";
+  const DEV_STORE = import.meta.env.VITE_DEV_STORE || "demoStore";
 
   useEffect(() => {
-    const stop = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       try {
-        if (!user) {
+        if (!u) {
           if (DEV_BYPASS) {
-            setState({
-              user: { uid: "dev-user", email: "dev@local" },
-              roles: [DEV_ROLE],
-              storeId: "demoStore",
-              loading: false,
-            });
+            setUser({ uid: "dev-user", email: "dev@local" });
+            setRoles([DEV_ROLE]);
+            setStoreId(DEV_STORE);
+            setAuthLoading(false);
           } else {
-            setState({ user: null, roles: [], storeId: null, loading: false });
+            setUser(null);
+            setRoles([]);
+            setStoreId(null);
+            setAuthLoading(false);
           }
           return;
         }
 
-        const snap = await getDoc(doc(db, "users", user.uid));
+        // fetch user doc for roles/store linkage
+        const snap = await getDoc(doc(db, "users", u.uid));
         const data = snap.exists() ? snap.data() : {};
         const rolesFromDb = Array.isArray(data.roles) ? data.roles : [];
 
-        setState({
-          user,
-          roles: DEV_BYPASS ? [DEV_ROLE] : rolesFromDb,
-          storeId: data.storeId || data.storeIdRef || null,
-          loading: false,
-        });
-      } catch (e) {
-        console.error("Auth bootstrap failed:", e);
-        setState((s) => ({ ...s, loading: false }));
+        setUser(u);
+        setRoles(DEV_BYPASS ? [DEV_ROLE] : rolesFromDb);
+        setStoreId(data.storeId || data.storeIdRef || null);
+        setAuthLoading(false);
+      } catch (err) {
+        console.error("Auth bootstrap failed:", err);
+        setUser(u || null);
+        setRoles([]);
+        setStoreId(null);
+        setAuthLoading(false);
       }
-    });
-    return () => stop();
-  }, []);
-
-  return <Ctx.Provider value={state}>{children}</Ctx.Provider>;
-} */
-import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../firebase/firebase";
-
-const AuthCtx = createContext(null);
-
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u || null);
-      setAuthLoading(false);
     });
     return () => unsub();
   }, []);
 
-  return (
-    <AuthCtx.Provider value={{ user, authLoading }}>
-      {children}
-    </AuthCtx.Provider>
+  const hasRole = useMemo(
+    () => (r) => (Array.isArray(r) ? r : [r]).some((x) => roles.includes(x)),
+    [roles]
   );
+
+  const value = useMemo(
+    () => ({ user, roles, storeId, authLoading, hasRole }),
+    [user, roles, storeId, authLoading, hasRole]
+  );
+
+  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
 }
 
 export function useAuth() {

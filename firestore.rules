@@ -7,7 +7,7 @@ service cloud.firestore {
     function signedIn() { return request.auth != null; }
 
     function isOwner(ownerId) {
-      return signedIn() && request.auth.uid == ownerId;
+      return signedIn() && ownerId != null && request.auth.uid == ownerId;
     }
 
     function isMember(members) {
@@ -22,15 +22,16 @@ service cloud.firestore {
         && visibleTo.hasAny([request.auth.uid]);
     }
 
-    // read the store once and reuse
+    // single read accessor
     function storeDoc(storeId) {
       return get(/databases/$(database)/documents/stores/$(storeId));
     }
 
     function canAccessStore(storeId) {
-      return isOwner(storeDoc(storeId).data.ownerId)
-          || isMember(storeDoc(storeId).data.members)
-          || isVisibleTo(storeDoc(storeId).data.visibleTo);
+      let s = storeDoc(storeId);
+      return isOwner(s.data.ownerId)
+        || isMember(s.data.members)
+        || isVisibleTo(s.data.visibleTo);
     }
 
     /* ---------- users ---------- */
@@ -40,43 +41,48 @@ service cloud.firestore {
 
     /* ---------- stores ---------- */
     match /stores/{storeId} {
-      // read store doc if the user can access it
+
+      // read allowed if the user can access this store
       allow read: if canAccessStore(storeId);
 
-      // create only if declaring yourself the owner
+      // create only by claiming yourself owner
       allow create: if signedIn() &&
         request.resource.data.ownerId == request.auth.uid;
 
-      // updates by owner or member; delete only by owner
+      // update by owner or member
       allow update: if signedIn() && (
         isOwner(resource.data.ownerId) || isMember(resource.data.members)
       );
+
+      // delete only by owner
       allow delete: if signedIn() && isOwner(resource.data.ownerId);
 
       /* --- verification documents: stores/{storeId}/documents/{docId} --- */
       match /documents/{docId} {
         allow read: if canAccessStore(storeId);
 
-        // uploader must be the signed-in user; basic field validation
+        // create: must be accessible & required fields are strings & uploader is caller
         allow create: if canAccessStore(storeId)
           && request.resource.data.path is string
           && request.resource.data.url  is string
           && request.resource.data.kind is string
           && request.resource.data.uploadedBy == request.auth.uid;
 
-        // owner or original uploader can modify/delete
+        // update: owner OR original uploader; cannot change uploadedBy to someone else
         allow update: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
-          request.resource.data.uploadedBy == request.auth.uid
+          (resource.data.uploadedBy == request.auth.uid &&
+           request.resource.data.uploadedBy == resource.data.uploadedBy)
         );
 
+        // delete: owner OR original uploader
         allow delete: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           resource.data.uploadedBy == request.auth.uid
         );
       }
 
-      /* fallback for any other subcollections under a store */
+      /* --- fallback for other subcollections under a store --- */
       match /{sub=**}/{docId} {
         allow read:  if canAccessStore(storeId);
         allow write: if signedIn() && (
