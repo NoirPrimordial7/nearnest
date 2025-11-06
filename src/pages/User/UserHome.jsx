@@ -1,8 +1,13 @@
+// src/pages/User/UserHome.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { listenUserStores } from "../../services/stores";
 import { useProfileComplete } from "../../services/userProfile";
+import {
+  listenUserStores,
+  deleteStore,
+  storeBucket,
+} from "../../services/stores";
 import s from "./home.module.css";
 
 function useAvatarMenu() {
@@ -37,21 +42,71 @@ function prettyAddress(addr) {
 
 export default function UserHome() {
   const nav = useNavigate();
-  const { user, signOut } = useAuth?.() || {};
-
+  const { user } = useAuth();
   const [stores, setStores] = useState(null);
-  const { open, setOpen, ref } = useAvatarMenu();
+  const [errMsg, setErrMsg] = useState("");
 
-  // Modal state (confirm before going to /register-store)
+  const { open, setOpen, ref } = useAvatarMenu();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Pull latest profile for avatar + greeting
+  // drawers
+  const [openVerified, setOpenVerified] = useState(true);
+  const [openUnder, setOpenUnder] = useState(true);
+
+  // kebab menu
+  const [menuFor, setMenuFor] = useState(null);
+  const menuRef = useRef(null);
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuFor(null);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
   const { data: prof } = useProfileComplete(user?.uid);
 
+  // ✅ FIX: await async listener to get proper unsubscribe
   useEffect(() => {
     if (!user?.uid) return;
-    const unsub = listenUserStores(user.uid, setStores);
-    return () => unsub && unsub();
+
+    setErrMsg("");
+    setStores(null);
+
+    let mounted = true;
+    let stop = () => {};
+
+    (async () => {
+      try {
+        const maybeUnsub = await listenUserStores(
+          user.uid,
+          (arrOrUpdater) =>
+            setStores((prev) =>
+              typeof arrOrUpdater === "function" ? arrOrUpdater(prev) : arrOrUpdater
+            ),
+          (e) => {
+            console.error("[stores] listener:", e);
+            if (!mounted) return;
+            setErrMsg("Could not load your stores.");
+            setStores([]);
+          }
+        );
+        if (mounted && typeof maybeUnsub === "function") stop = maybeUnsub;
+      } catch (e) {
+        console.error("[stores] bootstrap failed:", e);
+        if (mounted) {
+          setErrMsg("Could not start store listener.");
+          setStores([]);
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      try {
+        stop && stop();
+      } catch {}
+    };
   }, [user?.uid]);
 
   const hello = useMemo(() => {
@@ -67,13 +122,21 @@ export default function UserHome() {
   const avatarSrc =
     prof?.profile?.avatarUrl || prof?.photoURL || user?.photoURL || null;
 
-  // Close modal via ESC
-  useEffect(() => {
-    if (!confirmOpen) return;
-    const onKey = (e) => e.key === "Escape" && setConfirmOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [confirmOpen]);
+  const openStore = (st) => {
+    const bucket = storeBucket(st.verificationStatus);
+    if (bucket === "verified") {
+      nav(`/store-admin/home?storeId=${encodeURIComponent(st.id)}`);
+    } else {
+      nav(`/verification-status/${st.id}`);
+    }
+  };
+
+  const verified = (stores || []).filter(
+    (x) => storeBucket(x.verificationStatus) === "verified"
+  );
+  const under = (stores || []).filter(
+    (x) => storeBucket(x.verificationStatus) !== "verified"
+  );
 
   return (
     <div className={s.screen}>
@@ -142,20 +205,9 @@ export default function UserHome() {
                 </button>
 
                 <div className={s.menuLine} />
-
-                <button
-                  className={s.menuItemDanger}
-                  onClick={async () => {
-                    setOpen(false);
-                    try {
-                      await signOut?.();
-                    } finally {
-                      nav("/signin", { replace: true });
-                    }
-                  }}
-                >
-                  Sign out
-                </button>
+                <a className={s.menuItem} href="mailto:support@nearnest.app">
+                  Help & support
+                </a>
               </div>
             )}
           </div>
@@ -179,7 +231,6 @@ export default function UserHome() {
               <span>Ready to onboard</span>
             </div>
 
-            {/* Open confirm modal instead of direct redirect */}
             <button className={s.primaryCta} onClick={() => setConfirmOpen(true)}>
               <span className={s.ctaIcon} />
               Register a Store
@@ -187,7 +238,7 @@ export default function UserHome() {
             </button>
           </section>
 
-          {/* Right list */}
+          {/* Right list with drawers */}
           <section className={s.cardRight}>
             <div className={s.rightHeader}>
               <h3>Projects & workspaces</h3>
@@ -198,58 +249,83 @@ export default function UserHome() {
               </div>
             </div>
 
-            {stores === null ? (
-              <div className={s.grid}>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className={`${s.storeCard} ${s.skel}`} />
-                ))}
-              </div>
-            ) : stores.length === 0 ? (
-              <div className={s.empty}>
-                No stores yet. Use “Register a Store” on the left to get started.
-              </div>
-            ) : (
-              <div className={s.grid}>
-                {stores.map((st) => {
-                  const status = (st.verificationStatus || "Pending")?.toLowerCase();
-                  const statusClass =
-                    status === "approved"
-                      ? s.badgeGreen
-                      : status === "rejected"
-                      ? s.badgeRed
-                      : s.badgeBlue;
+            {errMsg && <div className={s.errBanner}>{errMsg}</div>}
 
-                  return (
-                    <button
+            {/* Verified drawer */}
+            <Drawer
+              title={`Verified stores (${verified.length})`}
+              open={openVerified}
+              setOpen={setOpenVerified}
+            >
+              {stores === null ? (
+                <SkeletonGrid />
+              ) : verified.length === 0 ? (
+                <Empty text="No verified stores yet." />
+              ) : (
+                <div className={s.grid}>
+                  {verified.map((st) => (
+                    <StoreCard
                       key={st.id}
-                      className={s.storeCard}
-                      onClick={() => nav(`/verification-status/${st.id}`)}
-                      title="Open status"
-                    >
-                      <div className={s.storeTopRow}>
-                        <div className={s.storeName}>
-                          {st.name || "Untitled store"}
-                        </div>
-                        <span className={`${s.badge} ${statusClass}`}>
-                          {st.verificationStatus || "Pending"}
-                        </span>
-                      </div>
-                      <div className={s.storeAddr}>
-                        {prettyAddress(st.address)}
-                      </div>
-                      <div className={s.storeMeta}>
-                        <span>ID: {st.id.slice(0, 8)}…</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                      s={st}
+                      badgeClass={s.badgeGreen}
+                      onOpen={() => openStore(st)}
+                      onKebab={() => setMenuFor(st.id)}
+                      menuOpen={menuFor === st.id}
+                      menuRef={menuRef}
+                      onDelete={async () => {
+                        if (!window.confirm("Delete this store? This can’t be undone.")) return;
+                        await deleteStore(st.id);
+                        setMenuFor(null);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </Drawer>
+
+            {/* Under verification drawer */}
+            <Drawer
+              title={`Under verification (${under.length})`}
+              open={openUnder}
+              setOpen={setOpenUnder}
+            >
+              {stores === null ? (
+                <SkeletonGrid />
+              ) : under.length === 0 ? (
+                <Empty text="No applications in progress." />
+              ) : (
+                <div className={s.grid}>
+                  {under.map((st) => {
+                    const status = (st.verificationStatus || "Pending").toLowerCase();
+                    const badge =
+                      status === "rejected" ? s.badgeRed :
+                      status === "draft"    ? s.badgeBlue :
+                                              s.badgeBlue;
+                    return (
+                      <StoreCard
+                        key={st.id}
+                        s={st}
+                        badgeClass={badge}
+                        onOpen={() => openStore(st)}
+                        onKebab={() => setMenuFor(st.id)}
+                        menuOpen={menuFor === st.id}
+                        menuRef={menuRef}
+                        onDelete={async () => {
+                          if (!window.confirm("Delete this application?")) return;
+                          await deleteStore(st.id);
+                          setMenuFor(null);
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </Drawer>
           </section>
         </main>
       </div>
 
-      {/* Lightweight modal (inline styles to avoid CSS edits if you prefer) */}
+      {/* Confirm modal */}
       {confirmOpen && (
         <div
           onClick={() => setConfirmOpen(false)}
@@ -317,6 +393,121 @@ export default function UserHome() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- small local components ---------- */
+
+function Drawer({ title, open, setOpen, children }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className={s.drawerBtn ?? ""}
+        style={{
+          width: "100%",
+          textAlign: "left",
+          background: "#fff",
+          border: "1px solid #eee",
+          borderRadius: 12,
+          padding: "10px 14px",
+          fontWeight: 700,
+        }}
+      >
+        {open ? "▾" : "▸"} {title}
+      </button>
+      {open && <div style={{ marginTop: 12 }}>{children}</div>}
+    </div>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className={s.grid}>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className={`${s.storeCard} ${s.skel}`} />
+      ))}
+    </div>
+  );
+}
+
+function Empty({ text }) {
+  return <div className={s.empty}>{text}</div>;
+}
+
+function StoreCard({ s, badgeClass, onOpen, onKebab, menuOpen, menuRef, onDelete }) {
+  return (
+    <div className={s.storeCard} style={{ position: "relative" }}>
+      <button className={s.cardClickLayer} onClick={onOpen} title="Open" />
+      <div className={s.storeTopRow}>
+        <div className={s.storeName}>{s.name || "Untitled store"}</div>
+        <span className={`${s.badge} ${badgeClass}`}>
+          {s.verificationStatus || "Pending"}
+        </span>
+      </div>
+      <div className={s.storeAddr}>{prettyAddress(s.address)}</div>
+      <div className={s.storeMeta}>
+        <span>ID: {String(s.id).slice(0, 8)}…</span>
+      </div>
+
+      {/* kebab */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onKebab?.();
+        }}
+        title="More"
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          border: "1px solid #eee",
+          background: "#fff",
+          display: "grid",
+          placeItems: "center",
+          cursor: "pointer",
+        }}
+      >
+        ⋮
+      </button>
+
+      {menuOpen && (
+        <div
+          ref={menuRef}
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 8,
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: 10,
+            boxShadow: "0 10px 30px rgba(0,0,0,.08)",
+            minWidth: 160,
+            zIndex: 10,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={onDelete}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "10px 12px",
+              background: "transparent",
+              border: 0,
+              cursor: "pointer",
+              color: "#c22",
+              fontWeight: 700,
+            }}
+          >
+            Delete
+          </button>
         </div>
       )}
     </div>
