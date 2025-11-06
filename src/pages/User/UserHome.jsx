@@ -72,7 +72,7 @@ export default function UserHome() {
     setStores(null);
 
     let mounted = true;
-    let stop = () => {};
+    let stop = () => { };
 
     (async () => {
       try {
@@ -105,7 +105,7 @@ export default function UserHome() {
 
     return () => {
       mounted = false;
-      try { stop && stop(); } catch {}
+      try { stop && stop(); } catch { }
     };
   }, [user?.uid]);
 
@@ -208,6 +208,18 @@ export default function UserHome() {
                 <a className={s.menuItem} href="mailto:support@nearnest.app">
                   Help & support
                 </a>
+                <button
+                  className={s.menuItemDanger}
+                  onClick={async () => {
+                    try {
+                      await signOut();
+                    } finally {
+                      nav("/signin", { replace: true });
+                    }
+                  }}
+                >
+                  Sign out
+                </button>
               </div>
             )}
           </div>
@@ -334,8 +346,8 @@ export default function UserHome() {
                   const status = (st.verificationStatus || "Pending").toLowerCase();
                   const badge =
                     status === "rejected" ? s.badgeRed :
-                    status === "draft"    ? s.badgeBlue :
-                                            s.badgeBlue;
+                      status === "draft" ? s.badgeBlue :
+                        s.badgeBlue;
                   return (
                     <StoreCard
                       key={st.id}

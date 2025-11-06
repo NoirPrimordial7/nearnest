@@ -228,3 +228,13 @@
   height: 42px; padding: 0 18px; border-radius: 10px;
   background: #111; color: #fff; border: 0; font-weight: 800; cursor: pointer;
 }
+.menuItemDanger {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #c22;
+  font-weight: 800;
+}
