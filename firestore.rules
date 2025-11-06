@@ -6,7 +6,6 @@ service cloud.firestore {
     /* ------------ helpers ------------ */
     function signedIn() { return request.auth != null; }
 
-    // read the user doc once
     function userDoc(uid) {
       return get(/databases/$(database)/documents/users/$(uid));
     }
@@ -34,7 +33,6 @@ service cloud.firestore {
         && visibleTo.hasAny([request.auth.uid]);
     }
 
-    // store access — read once and reuse
     function storeDoc(storeId) {
       return get(/databases/$(database)/documents/stores/$(storeId));
     }
@@ -48,50 +46,43 @@ service cloud.firestore {
 
     /* ------------ users ------------ */
     match /users/{uid} {
-      // user can read/write own profile; admins may read everyone
-      allow read: if (signedIn() && request.auth.uid == uid) || isAdmin();
+      allow read:  if (signedIn() && request.auth.uid == uid) || isAdmin();
       allow write: if signedIn() && request.auth.uid == uid;
     }
 
     /* ------------ stores ------------ */
     match /stores/{storeId} {
-
-      // READ: owner/member/visible or admin
       allow read: if canAccessStore(storeId) || isAdmin();
 
-      // CREATE: owner must be the caller OR admin can seed/import
       allow create: if signedIn() && (
         request.resource.data.ownerId == request.auth.uid || isAdmin()
       );
 
-      // UPDATE: owner/member or admin
       allow update: if signedIn() && (
         isOwner(resource.data.ownerId) ||
         isMember(resource.data.members) ||
         isAdmin()
       );
 
-      // DELETE: only owner or admin
       allow delete: if signedIn() && (
         isOwner(resource.data.ownerId) || isAdmin()
       );
 
-      /* --- verification docs: stores/{storeId}/documents/{docId} --- */
+      /* verification docs */
       match /documents/{docId} {
         allow read: if canAccessStore(storeId) || isAdmin();
 
-        // create: must be accessible; basic field checks; uploader is caller (admin may also upload)
         allow create: if (canAccessStore(storeId) || isAdmin())
           && request.resource.data.path is string
           && request.resource.data.url  is string
           && request.resource.data.kind is string
           && request.resource.data.uploadedBy is string
           && (
-              request.resource.data.uploadedBy == request.auth.uid
-              || isAdmin()
+            request.resource.data.uploadedBy == request.auth.uid
+            || isAdmin()
           );
 
-        // update: owner/uploader/admin; uploadedBy cannot be reassigned unless admin
+        // uploadedBy can’t be reassigned unless admin
         allow update: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           (resource.data.uploadedBy == request.auth.uid &&
@@ -99,7 +90,6 @@ service cloud.firestore {
           isAdmin()
         );
 
-        // delete: owner, original uploader, or admin
         allow delete: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           resource.data.uploadedBy == request.auth.uid ||
@@ -107,7 +97,7 @@ service cloud.firestore {
         );
       }
 
-      /* --- other subcollections under a store --- */
+      /* other subcollections under a store */
       match /{sub=**}/{docId} {
         allow read:  if canAccessStore(storeId) || isAdmin();
         allow write: if signedIn() && (
@@ -116,6 +106,53 @@ service cloud.firestore {
           isAdmin()
         );
       }
+    }
+
+    /* ------------ DASHBOARD collections (top-level) ------------ */
+    /* projects */
+    match /projects/{docId} {
+      allow read: if signedIn() && (
+        (resource.data.public == true) ||
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.visibleTo != null &&
+         resource.data.visibleTo.hasAny([request.auth.uid])) ||
+        isAdmin()
+      );
+      allow create: if signedIn() &&
+        request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn() && (
+        resource.data.ownerId == request.auth.uid || isAdmin()
+      );
+    }
+
+    /* workspaces */
+    match /workspaces/{docId} {
+      allow read: if signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.visibleTo != null &&
+         resource.data.visibleTo.hasAny([request.auth.uid])) ||
+        isAdmin()
+      );
+      allow create: if signedIn() &&
+        request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn() && (
+        resource.data.ownerId == request.auth.uid || isAdmin()
+      );
+    }
+
+    /* branding */
+    match /branding/{docId} {
+      allow read: if signedIn() && (
+        resource.data.ownerId == request.auth.uid ||
+        (resource.data.visibleTo != null &&
+         resource.data.visibleTo.hasAny([request.auth.uid])) ||
+        isAdmin()
+      );
+      allow create: if signedIn() &&
+        request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if signedIn() && (
+        resource.data.ownerId == request.auth.uid || isAdmin()
+      );
     }
 
     /* ------------ default deny ------------ */
