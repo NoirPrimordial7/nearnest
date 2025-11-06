@@ -49,11 +49,10 @@ export default function UserHome() {
   const { open, setOpen, ref } = useAvatarMenu();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // drawers
-  const [openVerified, setOpenVerified] = useState(true);
-  const [openUnder, setOpenUnder] = useState(true);
+  // Tabs
+  const [tab, setTab] = useState("verified"); // 'verified' | 'under'
 
-  // kebab menu
+  // kebab
   const [menuFor, setMenuFor] = useState(null);
   const menuRef = useRef(null);
   useEffect(() => {
@@ -66,7 +65,7 @@ export default function UserHome() {
 
   const { data: prof } = useProfileComplete(user?.uid);
 
-  // ✅ FIX: await async listener to get proper unsubscribe
+  // await listener to get a real unsubscribe
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -78,7 +77,7 @@ export default function UserHome() {
 
     (async () => {
       try {
-        const maybeUnsub = await listenUserStores(
+        const unsub = await listenUserStores(
           user.uid,
           (arrOrUpdater) =>
             setStores((prev) =>
@@ -91,7 +90,7 @@ export default function UserHome() {
             setStores([]);
           }
         );
-        if (mounted && typeof maybeUnsub === "function") stop = maybeUnsub;
+        if (mounted && typeof unsub === "function") stop = unsub;
       } catch (e) {
         console.error("[stores] bootstrap failed:", e);
         if (mounted) {
@@ -122,6 +121,13 @@ export default function UserHome() {
   const avatarSrc =
     prof?.profile?.avatarUrl || prof?.photoURL || user?.photoURL || null;
 
+  const verified = (stores || []).filter(
+    (x) => storeBucket(x.verificationStatus) === "verified"
+  );
+  const under = (stores || []).filter(
+    (x) => storeBucket(x.verificationStatus) !== "verified"
+  );
+
   const openStore = (st) => {
     const bucket = storeBucket(st.verificationStatus);
     if (bucket === "verified") {
@@ -131,16 +137,9 @@ export default function UserHome() {
     }
   };
 
-  const verified = (stores || []).filter(
-    (x) => storeBucket(x.verificationStatus) === "verified"
-  );
-  const under = (stores || []).filter(
-    (x) => storeBucket(x.verificationStatus) !== "verified"
-  );
-
   return (
-    <div className={s.screen}>
-      <div className={s.container}>
+    <div className={s.screen} style={{ minHeight: "100vh" }}>
+      <div className={s.container} style={{ maxWidth: "1400px" }}>
         {/* Topbar */}
         <header className={s.topbar}>
           <div className={s.brandWrap}>
@@ -213,8 +212,16 @@ export default function UserHome() {
           </div>
         </header>
 
-        {/* Two-column */}
-        <main className={s.layout}>
+        {/* Full-width main */}
+        <main
+          className={s.layout}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "420px 1fr",
+            gap: 20,
+            alignItems: "start",
+          }}
+        >
           {/* Left CTA */}
           <section className={s.cardLeft}>
             <div className={s.switchRow}>
@@ -238,8 +245,8 @@ export default function UserHome() {
             </button>
           </section>
 
-          {/* Right list with drawers */}
-          <section className={s.cardRight}>
+          {/* Right: Tabs */}
+          <section className={s.cardRight} style={{ height: "100%" }}>
             <div className={s.rightHeader}>
               <h3>Projects & workspaces</h3>
               <div className={s.legend}>
@@ -249,17 +256,54 @@ export default function UserHome() {
               </div>
             </div>
 
-            {errMsg && <div className={s.errBanner}>{errMsg}</div>}
+            {errMsg && (
+              <div className={s.errBanner} style={{ marginBottom: 10 }}>
+                {errMsg}
+              </div>
+            )}
 
-            {/* Verified drawer */}
-            <Drawer
-              title={`Verified stores (${verified.length})`}
-              open={openVerified}
-              setOpen={setOpenVerified}
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                borderBottom: "1px solid #eee",
+                marginBottom: 12,
+              }}
             >
-              {stores === null ? (
-                <SkeletonGrid />
-              ) : verified.length === 0 ? (
+              <button
+                onClick={() => setTab("verified")}
+                style={{
+                  padding: "10px 14px",
+                  border: 0,
+                  background: tab === "verified" ? "#111" : "transparent",
+                  color: tab === "verified" ? "#fff" : "#111",
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Verified stores ({verified.length})
+              </button>
+              <button
+                onClick={() => setTab("under")}
+                style={{
+                  padding: "10px 14px",
+                  border: 0,
+                  background: tab === "under" ? "#111" : "transparent",
+                  color: tab === "under" ? "#fff" : "#111",
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Under verification ({under.length})
+              </button>
+            </div>
+
+            {stores === null ? (
+              <SkeletonGrid />
+            ) : tab === "verified" ? (
+              verified.length === 0 ? (
                 <Empty text="No verified stores yet." />
               ) : (
                 <div className={s.grid}>
@@ -280,47 +324,36 @@ export default function UserHome() {
                     />
                   ))}
                 </div>
-              )}
-            </Drawer>
-
-            {/* Under verification drawer */}
-            <Drawer
-              title={`Under verification (${under.length})`}
-              open={openUnder}
-              setOpen={setOpenUnder}
-            >
-              {stores === null ? (
-                <SkeletonGrid />
-              ) : under.length === 0 ? (
-                <Empty text="No applications in progress." />
-              ) : (
-                <div className={s.grid}>
-                  {under.map((st) => {
-                    const status = (st.verificationStatus || "Pending").toLowerCase();
-                    const badge =
-                      status === "rejected" ? s.badgeRed :
-                      status === "draft"    ? s.badgeBlue :
-                                              s.badgeBlue;
-                    return (
-                      <StoreCard
-                        key={st.id}
-                        s={st}
-                        badgeClass={badge}
-                        onOpen={() => openStore(st)}
-                        onKebab={() => setMenuFor(st.id)}
-                        menuOpen={menuFor === st.id}
-                        menuRef={menuRef}
-                        onDelete={async () => {
-                          if (!window.confirm("Delete this application?")) return;
-                          await deleteStore(st.id);
-                          setMenuFor(null);
-                        }}
-                      />
-                    );
-                  })}
-                </div>
-              )}
-            </Drawer>
+              )
+            ) : under.length === 0 ? (
+              <Empty text="No applications in progress." />
+            ) : (
+              <div className={s.grid}>
+                {under.map((st) => {
+                  const status = (st.verificationStatus || "Pending").toLowerCase();
+                  const badge =
+                    status === "rejected" ? s.badgeRed :
+                    status === "draft"    ? s.badgeBlue :
+                                            s.badgeBlue;
+                  return (
+                    <StoreCard
+                      key={st.id}
+                      s={st}
+                      badgeClass={badge}
+                      onOpen={() => openStore(st)}
+                      onKebab={() => setMenuFor(st.id)}
+                      menuOpen={menuFor === st.id}
+                      menuRef={menuRef}
+                      onDelete={async () => {
+                        if (!window.confirm("Delete this application?")) return;
+                        await deleteStore(st.id);
+                        setMenuFor(null);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </section>
         </main>
       </div>
@@ -399,41 +432,17 @@ export default function UserHome() {
   );
 }
 
-/* ---------- small local components ---------- */
-
-function Drawer({ title, open, setOpen, children }) {
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={s.drawerBtn ?? ""}
-        style={{
-          width: "100%",
-          textAlign: "left",
-          background: "#fff",
-          border: "1px solid #eee",
-          borderRadius: 12,
-          padding: "10px 14px",
-          fontWeight: 700,
-        }}
-      >
-        {open ? "▾" : "▸"} {title}
-      </button>
-      {open && <div style={{ marginTop: 12 }}>{children}</div>}
-    </div>
-  );
-}
+/* ---------- small UI bits ---------- */
 
 function SkeletonGrid() {
   return (
     <div className={s.grid}>
-      {Array.from({ length: 4 }).map((_, i) => (
+      {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className={`${s.storeCard} ${s.skel}`} />
       ))}
     </div>
   );
 }
-
 function Empty({ text }) {
   return <div className={s.empty}>{text}</div>;
 }
