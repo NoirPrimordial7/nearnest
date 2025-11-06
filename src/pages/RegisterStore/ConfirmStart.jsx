@@ -1,33 +1,100 @@
 // src/pages/RegisterStore/ConfirmStart.jsx
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { createStore } from "../../services/stores";
 
 export default function ConfirmStart() {
-  const [ok, setOk] = useState(false);
   const nav = useNavigate();
+  const { user } = useAuth();
+  const [form, setForm] = useState({
+    name: "",
+    address: "",
+    phone: "",
+    licenseNumber: "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setErr("");
+    if (!user?.uid) return setErr("Sign in required.");
+    if (!form.name || !form.address) {
+      return setErr("Name and address are required.");
+    }
+    try {
+      setBusy(true);
+      const storeId = await createStore(user.uid, user.email, form);
+      nav(`/verification-status/${storeId}`, { replace: true });
+    } catch (e2) {
+      console.error(e2);
+      setErr("Could not create the store. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
-    <div style={{maxWidth:620, margin:"40px auto", padding:"20px"}}>
-      <h1 style={{fontWeight:800, marginBottom:6}}>Register a store</h1>
-      <p style={{color:"#64748b"}}>Three steps: Register → Upload Docs → Review & Approval.</p>
+    <div style={{ minHeight: "100vh", background: "#f7f8fb", padding: "40px 16px" }}>
+      <div style={{
+        maxWidth: 760, margin: "0 auto", background: "#fff",
+        borderRadius: 18, boxShadow: "0 20px 50px rgba(0,0,0,.10)", padding: 24
+      }}>
+        <h1 style={{ margin: 0, fontSize: 26 }}>Register a Store</h1>
+        <p style={{ color: "#6b7280", marginTop: 6 }}>
+          Basic details for onboarding & verification.
+        </p>
 
-      <label style={{display:"flex", gap:10, marginTop:16}}>
-        <input type="checkbox" checked={ok} onChange={e=>setOk(e.target.checked)} />
-        I confirm I’ll submit authentic documents and accept verification terms.
-      </label>
+        {err ? <div style={{
+          background: "#fee2e2", color: "#991B1B", padding: 10, borderRadius: 8, marginTop: 8
+        }}>{err}</div> : null}
 
-      <div style={{marginTop:16, display:"flex", gap:10}}>
-        <button
-          disabled={!ok}
-          onClick={()=>nav("/register-store")}
-          style={{
-            opacity: ok?1:.6, cursor: ok?"pointer":"not-allowed",
-            background:"#111", color:"#fff", border:"0", padding:"10px 16px", borderRadius:10, fontWeight:800
-          }}
-        >
-          Continue
-        </button>
-        <Link to="/home" style={{padding:"10px 14px"}}>Cancel</Link>
+        <form onSubmit={onSubmit} style={{ marginTop: 18, display: "grid", gap: 12 }}>
+          <div>
+            <label style={{ fontWeight: 700 }}>Store name*</label>
+            <input name="name" value={form.name} onChange={onChange}
+              placeholder="e.g., Gholap Pharmacy"
+              style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #e5e7eb" }} />
+          </div>
+
+          <div>
+            <label style={{ fontWeight: 700 }}>Address*</label>
+            <input name="address" value={form.address} onChange={onChange}
+              placeholder="Street, City, PIN"
+              style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #e5e7eb" }} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <label style={{ fontWeight: 700 }}>Phone</label>
+              <input name="phone" value={form.phone} onChange={onChange}
+                placeholder="+91-9xxxxxxxxx"
+                style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #e5e7eb" }} />
+            </div>
+            <div>
+              <label style={{ fontWeight: 700 }}>License No.</label>
+              <input name="licenseNumber" value={form.licenseNumber} onChange={onChange}
+                placeholder="DL/XX/XXXX"
+                style={{ width: "100%", marginTop: 6, padding: 10, borderRadius: 10, border: "1px solid #e5e7eb" }} />
+            </div>
+          </div>
+
+          <div style={{ marginTop: 8 }}>
+            <button disabled={busy}
+              style={{
+                height: 46, padding: "0 18px", fontWeight: 800, color: "#fff",
+                borderRadius: 999, border: 0, background: "#111", cursor: "pointer"
+              }}>
+              {busy ? "Creating…" : "Create store"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
