@@ -1,18 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { listenUserStores } from "../../services/stores";
 import { useProfileComplete } from "../../services/userProfile";
-import { auth, db } from "../../firebase/firebase";
-import {
-  collection,
-  onSnapshot,
-  query,
-  where,
-} from "firebase/firestore";
-import { signOut as fbSignOut } from "firebase/auth";
 import s from "./home.module.css";
 
-/* ---------------- UI helpers ---------------- */
 function useAvatarMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -43,79 +35,23 @@ function prettyAddress(addr) {
   return [line1, city, state, pin, country].filter(Boolean).join(", ");
 }
 
-/* ---------------- Component ---------------- */
 export default function UserHome() {
   const nav = useNavigate();
-  const { user } = useAuth(); // <- call the hook normally
+  const { user, signOut } = useAuth?.() || {};
 
-  const [stores, setStores] = useState(null);     // null = loading state
-  const [storesErr, setStoresErr] = useState(""); // capture permission errors
+  const [stores, setStores] = useState(null);
   const { open, setOpen, ref } = useAvatarMenu();
 
   // Modal state (confirm before going to /register-store)
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // Profile (avatar + greeting)
+  // Pull latest profile for avatar + greeting
   const { data: prof } = useProfileComplete(user?.uid);
 
-  // Subscribe only to stores the user can read:
-  // 1) ownerId == uid
-  // 2) members.<uid> == true  (shared)
   useEffect(() => {
     if (!user?.uid) return;
-
-    setStoresErr("");
-    setStores(null);
-
-    const unsubs = [];
-
-    // Owned stores
-    const qOwned = query(
-      collection(db, "stores"),
-      where("ownerId", "==", user.uid)
-    );
-    unsubs.push(
-      onSnapshot(
-        qOwned,
-        (snap) => {
-          const owned = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setStores((prev) => {
-            const map = new Map((prev || []).map((p) => [p.id, p]));
-            for (const o of owned) map.set(o.id, o);
-            return Array.from(map.values());
-          });
-        },
-        (err) => {
-          console.error("[stores owned] listener:", err);
-          setStoresErr("Could not load your stores (owned).");
-        }
-      )
-    );
-
-    // Member-shared stores (members.<uid> == true)
-    const qShared = query(
-      collection(db, "stores"),
-      where(`members.${user.uid}`, "==", true)
-    );
-    unsubs.push(
-      onSnapshot(
-        qShared,
-        (snap) => {
-          const shared = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-          setStores((prev) => {
-            const map = new Map((prev || []).map((p) => [p.id, p]));
-            for (const s of shared) map.set(s.id, s);
-            return Array.from(map.values());
-          });
-        },
-        (err) => {
-          console.error("[stores shared] listener:", err);
-          // if owned succeeded but shared fails (e.g., rules difference), keep UI usable
-        }
-      )
-    );
-
-    return () => unsubs.forEach((u) => u && u());
+    const unsub = listenUserStores(user.uid, setStores);
+    return () => unsub && unsub();
   }, [user?.uid]);
 
   const hello = useMemo(() => {
@@ -212,7 +148,7 @@ export default function UserHome() {
                   onClick={async () => {
                     setOpen(false);
                     try {
-                      await fbSignOut(auth);
+                      await signOut?.();
                     } finally {
                       nav("/signin", { replace: true });
                     }
@@ -262,12 +198,6 @@ export default function UserHome() {
               </div>
             </div>
 
-            {storesErr && (
-              <div className={s.errBanner}>
-                {storesErr} (You might not have access to some shared stores.)
-              </div>
-            )}
-
             {stores === null ? (
               <div className={s.grid}>
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -308,7 +238,7 @@ export default function UserHome() {
                         {prettyAddress(st.address)}
                       </div>
                       <div className={s.storeMeta}>
-                        <span>ID: {String(st.id).slice(0, 8)}…</span>
+                        <span>ID: {st.id.slice(0, 8)}…</span>
                       </div>
                     </button>
                   );
@@ -319,7 +249,7 @@ export default function UserHome() {
         </main>
       </div>
 
-      {/* Confirm modal */}
+      {/* Lightweight modal (inline styles to avoid CSS edits if you prefer) */}
       {confirmOpen && (
         <div
           onClick={() => setConfirmOpen(false)}
@@ -341,8 +271,7 @@ export default function UserHome() {
               width: "min(560px,92vw)",
               background: "#fff",
               borderRadius: 20,
-              boxShadow:
-                "0 50px 120px rgba(0,0,0,.25), 0 2px 0 rgba(255,255,255,.8) inset",
+              boxShadow: "0 50px 120px rgba(0,0,0,.25), 0 2px 0 rgba(255,255,255,.8) inset",
               padding: "22px 22px 18px",
             }}
           >
