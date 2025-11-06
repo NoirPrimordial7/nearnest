@@ -1,67 +1,61 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
     function signedIn() { return request.auth != null; }
-
-    // Optional admin support via custom claims:
-    //  - request.auth.token.admin == true, or
-    //  - roles array includes "admin"
-    function isAdmin() {
-      return signedIn() && (
-        (request.auth.token.admin == true) ||
-        ("roles" in request.auth.token && "admin" in request.auth.token.roles)
-      );
+    function isOwner(ownerId) { return signedIn() && request.auth.uid == ownerId; }
+    function isMember(members) {
+      return signedIn()
+        && members != null
+        && (request.auth.uid in members || request.auth.uid in members.keys());
+    }
+    function isVisibleTo(visibleTo) {
+      return signedIn() && visibleTo != null && visibleTo.hasAny([request.auth.uid]);
     }
 
-    /* -------------------- users -------------------- */
-    // User can read/write own profile; admins can override.
+    // Helper: can the current user access this store?
+    function canAccessStore(storeId) {
+      let store = get(/databases/$(database)/documents/stores/$(storeId)).data;
+      return isOwner(store.ownerId) || isMember(store.members) || isVisibleTo(store.visibleTo);
+    }
+
+    // users
     match /users/{uid} {
-      allow read:  if signedIn() && (request.auth.uid == uid || isAdmin());
-      allow write: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow read, write: if signedIn() && request.auth.uid == uid;
     }
 
-    /* -------------------- stores ------------------- */
-    // Helpers
-    function isOwnerCreate() {
-      return request.method == 'create'
-             && request.resource.data.ownerId == request.auth.uid;
-    }
-    function isOwnerExisting() {
-      return request.method != 'create'
-             && resource.data.ownerId == request.auth.uid;
-    }
-    // members: map keyed by uid -> true
-    function inMembers(data) {
-      return data.members != null
-             && request.auth.uid in data.members.keys();
-    }
-    // visibleTo: array of uids
-    function inVisible(data) {
-      return data.visibleTo != null
-             && data.visibleTo.hasAny([request.auth.uid]);
-    }
-
+    // stores
     match /stores/{storeId} {
-      // READ: owner, member, visibleTo, or admin
-      allow get, list: if signedIn() && (
-        isOwnerExisting() || inMembers(resource.data) || inVisible(resource.data) || isAdmin()
-      );
+      // existing docs
+      allow read: if canAccessStore(storeId);
 
-      // CREATE: must set ownerId = self (or admin creating)
-      allow create: if signedIn() && (
-        isOwnerCreate() || isAdmin()
-      );
+      // create: only the owner (by declaring ownerId = auth.uid)
+      allow create: if signedIn() && request.resource.data.ownerId == request.auth.uid;
 
-      // UPDATE / DELETE: owner or admin
+      // update/delete: owner or a member
       allow update, delete: if signedIn() && (
-        isOwnerExisting() || isAdmin()
+        isOwner(resource.data.ownerId) || isMember(resource.data.members)
       );
+
+      // subcollection: stores/{storeId}/documents/{docId}
+      match /documents/{docId} {
+        // owner and members can read
+        allow read: if canAccessStore(storeId);
+
+        // owner or members can create (upload)
+        allow create: if signedIn() && (
+          isOwner(get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId) ||
+          isMember(get(/databases/$(database)/documents/stores/$(storeId)).data.members)
+        );
+
+        // only owner can update/delete a specific document
+        allow update, delete: if signedIn() &&
+          isOwner(get(/databases/$(database)/documents/stores/$(storeId)).data.ownerId);
+      }
     }
 
-    /* ---------------- default deny ---------------- */
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    // default deny
+    match /{document=**} { allow read, write: if false; }
   }
 }
