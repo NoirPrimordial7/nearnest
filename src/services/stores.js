@@ -1,138 +1,220 @@
-// src/services/stores.js
-import { db } from "../firebase/firebase";
 import {
+  addDoc,
   collection,
+  deleteDoc,
   doc,
   getDoc,
-  getDocs,
   onSnapshot,
   query,
-  setDoc,
   serverTimestamp,
+  updateDoc,
   where,
+  orderBy,
+  limit,
 } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 
-/** ---------- single-store helpers ---------- */
+/* -------------------- helpers -------------------- */
+function toArrayMaybe(v) {
+  if (Array.isArray(v)) return v;
+  if (v && typeof v === "object") return Object.keys(v);
+  return [];
+}
 
-/** Get a single store (throws if not found). */
-export async function getStore(storeId) {
-  if (!storeId) throw new Error("storeId required");
-  const ref = doc(db, "stores", storeId);
-  const snap = await getDoc(ref);
-  if (!snap.exists()) {
-    const err = new Error("store-not-found");
-    err.code = "not-found";
-    throw err;
+function ensureAddressShape(a) {
+  if (!a || typeof a !== "object") {
+    return { line1: "", city: "", state: "", pin: "", country: "IN" };
   }
-  return { id: snap.id, ...snap.data() };
+  return {
+    line1: a.line1 || "",
+    city: a.city || "",
+    state: a.state || "",
+    pin: a.pin || "",
+    country: a.country || "IN",
+  };
 }
 
-/** Live-listen to one store. Returns unsubscribe. */
-export function listenStore(storeId, onData, onError) {
-  if (!storeId) return () => {};
-  const ref = doc(db, "stores", storeId);
-  return onSnapshot(
-    ref,
-    (snap) => {
-      if (!snap.exists()) {
-        onError?.(Object.assign(new Error("store-not-found"), { code: "not-found" }));
-        return;
-      }
-      onData({ id: snap.id, ...snap.data() });
-    },
-    (err) => onError?.(err)
-  );
+function docToStore(snap) {
+  const data = snap.data() || {};
+  const membersMap =
+    data.members && typeof data.members === "object" ? data.members : {};
+  const membersArr = Array.isArray(data.membersArr)
+    ? data.membersArr
+    : toArrayMaybe(membersMap);
+
+  return {
+    id: snap.id,
+    ...data,
+    address: ensureAddressShape(data.address),
+    ownerAddr: ensureAddressShape(data.ownerAddr),
+    members: membersMap,
+    membersArr,
+    verificationStatus: data.verificationStatus || "Pending",
+  };
 }
 
+export function storeBucket(status) {
+  const s = (status || "").toLowerCase();
+  return s === "approved" || s === "verified" ? "verified" : "under";
+}
+
+async function isAdmin(uid) {
+  try {
+    const s = await getDoc(doc(db, "users", uid));
+    if (!s.exists()) return false;
+    const d = s.data() || {};
+    const roles = Array.isArray(d.roles) ? d.roles : [];
+    return d.role === "admin" || roles.includes("admin");
+  } catch {
+    return false;
+  }
+}
+
+/* -------------------- CRUD -------------------- */
+
+export async function createStore(ownerOrObj, maybeData = {}) {
+  const normalized =
+    typeof ownerOrObj === "string"
+      ? { ownerId: ownerOrObj, ...(maybeData || {}) }
+      : { ...(ownerOrObj || {}) };
+
+  const ownerId = normalized.ownerId;
+  if (!ownerId) throw new Error("ownerId is required");
+
+  const membersMap =
+    normalized.members && typeof normalized.members === "object"
+      ? normalized.members
+      : { [ownerId]: true };
+
+  const membersArr = Array.isArray(normalized.membersArr)
+    ? normalized.membersArr
+    : toArrayMaybe(membersMap);
+
+  const payload = {
+    name: normalized.name || "",
+    phone: normalized.phone || "",
+    licenseNo: normalized.licenseNo || "",
+    address: ensureAddressShape(normalized.address),
+    ownerAddr: ensureAddressShape(normalized.ownerAddr),
+    formatted: normalized.formatted || null,
+    placeId: normalized.placeId || null,
+    geo:
+      normalized.geo && typeof normalized.geo === "object"
+        ? {
+            lat:
+              normalized.geo.lat === "" || normalized.geo.lat == null
+                ? null
+                : Number(normalized.geo.lat),
+            lng:
+              normalized.geo.lng === "" || normalized.geo.lng == null
+                ? null
+                : Number(normalized.geo.lng),
+          }
+        : null,
+
+    ownerId,
+    members: membersMap,
+    membersArr,
+
+    visibleTo: normalized.visibleTo || null,
+
+    verificationStatus: normalized.verificationStatus || "Pending",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  };
+
+  const ref = await addDoc(collection(db, "stores"), payload);
+  return ref.id;
+}
+
+export async function deleteStore(storeId) {
+  await deleteDoc(doc(db, "stores", storeId));
+}
+
+export async function getStore(storeId) {
+  const s = await getDoc(doc(db, "stores", storeId));
+  return s.exists() ? docToStore(s) : null;
+}
+
+export async function submitStoreForVerification(storeId, status = "Pending") {
+  await updateDoc(doc(db, "stores", storeId), {
+    verificationStatus: status,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/* -------------------- listeners -------------------- */
 /**
- * Submit a store for verification.
- * Sets a status and audit fields; safe to re-run (merge).
- * Status vocabulary used across the app: Pending | Approved | Rejected
- */
-export async function submitStoreForVerification(storeId, uid) {
-  if (!storeId || !uid) throw new Error("storeId and uid required");
-  const ref = doc(db, "stores", storeId);
-  await setDoc(
-    ref,
-    {
-      verificationStatus: "Pending",
-      submittedBy: uid,
-      submittedAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    },
-    { merge: true }
-  );
-}
-
-/** ---------- user-scoped listing ---------- */
-
-/**
- * Listen to stores visible to a user:
- *  - ownerId == uid
- *  - members.<uid> == true (map-style membership)
- * If user is admin (users/{uid}.roles includes 'admin'), reads all stores.
- * onData receives either full array (admin) or merged array (non-admin).
+ * Returns Promise<unsubscribe>
  */
 export async function listenUserStores(uid, onData, onError) {
-  if (!uid) return () => {};
+  const admin = await isAdmin(uid);
 
-  // Admin check via users/{uid}.roles
-  let isAdmin = false;
-  try {
-    const uSnap = await getDoc(doc(db, "users", uid));
-    const uData = uSnap.exists() ? uSnap.data() : {};
-    isAdmin = Array.isArray(uData.roles) && uData.roles.includes("admin");
-  } catch {
-    isAdmin = false;
+  // Admin: simple stream (single-field orderBy is OK)
+  if (admin) {
+    const qAll = query(
+      collection(db, "stores"),
+      orderBy("createdAt", "desc"),
+      limit(200)
+    );
+    const unsub = onSnapshot(
+      qAll,
+      (qs) => onData(qs.docs.map(docToStore)),
+      onError
+    );
+    return unsub;
+  }
+
+  // Non-admins: remove orderBy to avoid composite index requirement
+  const qOwned = query(
+    collection(db, "stores"),
+    where("ownerId", "==", uid)
+  );
+
+  const qMember = query(
+    collection(db, "stores"),
+    where("membersArr", "array-contains", uid)
+  );
+
+  const state = {
+    owned: new Map(),
+    member: new Map(),
+  };
+
+  function emit() {
+    const merged = new Map([...state.member, ...state.owned]);
+    onData(Array.from(merged.values()));
   }
 
   const unsubs = [];
-  const emitMerge = (incoming) =>
-    onData((prev = []) => {
-      const map = new Map(prev.map((p) => [p.id, p]));
-      for (const it of incoming) map.set(it.id, it);
-      return Array.from(map.values());
-    });
 
-  if (isAdmin) {
-    // Admin: whole collection
-    const qAll = collection(db, "stores");
-    unsubs.push(
-      onSnapshot(
-        qAll,
-        (snap) => onData(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
-        (err) => onError?.(err)
-      )
-    );
-    return () => unsubs.forEach((u) => u && u());
-  }
-
-  // Owned
-  const qOwned = query(collection(db, "stores"), where("ownerId", "==", uid));
   unsubs.push(
     onSnapshot(
       qOwned,
-      (snap) => emitMerge(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
-      (err) => onError?.(err)
+      (qs) => {
+        state.owned.clear;
+        state.owned = new Map();
+        qs.docs.forEach((d) => state.owned.set(d.id, docToStore(d)));
+        emit();
+      },
+      onError
     )
   );
 
-  // Shared via map membership (members.<uid> == true)
-  const qSharedMap = query(
-    collection(db, "stores"),
-    where(`members.${uid}`, "==", true)
-  );
   unsubs.push(
     onSnapshot(
-      qSharedMap,
-      (snap) => emitMerge(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
-      (err) => onError?.(err)
+      qMember,
+      (qs) => {
+        state.member = new Map();
+        qs.docs.forEach((d) => state.member.set(d.id, docToStore(d)));
+        emit();
+      },
+      onError
     )
   );
 
-  // If you also keep an ARRAY variant for members, you can add:
-  // const qSharedArr = query(collection(db, "stores"), where("members", "array-contains", uid));
-  // unsubs.push(onSnapshot(qSharedArr, (snap) => emitMerge(snap.docs.map(d => ({ id:d.id, ...d.data() }))), (err) => onError?.(err)));
-
-  return () => unsubs.forEach((u) => u && u());
+  return () =>
+    unsubs.forEach((u) => {
+      try { u && u(); } catch {}
+    });
 }

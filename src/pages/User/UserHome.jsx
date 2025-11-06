@@ -1,4 +1,3 @@
-// src/pages/User/UserHome.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -86,7 +85,11 @@ export default function UserHome() {
           (e) => {
             console.error("[stores] listener:", e);
             if (!mounted) return;
-            setErrMsg("Could not load your stores.");
+            setErrMsg(
+              e?.code === "permission-denied"
+                ? "Missing or insufficient permissions for one or more stores."
+                : "Could not load your stores."
+            );
             setStores([]);
           }
         );
@@ -102,9 +105,7 @@ export default function UserHome() {
 
     return () => {
       mounted = false;
-      try {
-        stop && stop();
-      } catch {}
+      try { stop && stop(); } catch {}
     };
   }, [user?.uid]);
 
