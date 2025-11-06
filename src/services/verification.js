@@ -7,15 +7,11 @@ import {
   serverTimestamp,
   setDoc,
   deleteDoc,
+  getDocs,
   query,
   orderBy,
 } from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 /** Canonical set of required docs and their friendly labels/icons */
 export const KIND_META = {
@@ -26,43 +22,17 @@ export const KIND_META = {
   storePhoto:  { label: "Store Photo (front view)",        icon: "🏪" },
   other:       { label: "Supporting document",             icon: "📎" },
 };
+export const REQUIRED_KINDS = ["aadhaar","pan","property","drugLicense","storePhoto"];
 
-export const REQUIRED_KINDS = [
-  "aadhaar",
-  "pan",
-  "property",
-  "drugLicense",
-  "storePhoto",
-];
-
-/** Best-effort MIME inference for when the browser doesn’t give file.type */
-function inferContentType(safeName, file) {
-  if (file?.type) return file.type;
-  const lower = (safeName || "").toLowerCase();
-  if (lower.endsWith(".pdf"))  return "application/pdf";
-  if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
-  if (lower.endsWith(".png"))  return "image/png";
-  if (lower.endsWith(".webp")) return "image/webp";
-  if (lower.endsWith(".gif"))  return "image/gif";
-  return "image/png"; // last resort to satisfy rules expecting image/* or pdf
-}
-
-/**
- * Upload a verification document.
- * - Required kinds use stable docId == kind (so re-uploads overwrite).
- * - "other" uses unique id to allow multiple uploads.
- */
+/** Upload (replace for required kinds; append for "other"). */
 export async function uploadVerificationDoc(uid, storeId, file, kind = "other") {
   const safeName = (file?.name || "document").replace(/[^\w.\-]+/g, "_");
   const isRequired = REQUIRED_KINDS.includes(kind);
-
   const docId = isRequired ? kind : `other-${Date.now()}`;
   const storagePath = `storeDocs/${storeId}/${docId}-${safeName}`;
 
   const r = ref(storage, storagePath);
-  const contentType = inferContentType(safeName, file);
-
-  await uploadBytes(r, file, { contentType });
+  await uploadBytes(r, file, { contentType: file.type || "application/octet-stream" });
   const url = await getDownloadURL(r);
 
   const meta = KIND_META[kind] || KIND_META.other;
@@ -74,8 +44,8 @@ export async function uploadVerificationDoc(uid, storeId, file, kind = "other") 
       label: meta.label,
       icon: meta.icon,
       name: safeName,
-      size: file?.size ?? null,
-      mime: contentType,
+      size: file.size || null,
+      mime: file.type || null,
       path: storagePath,
       url,
       status: "Pending",
@@ -89,21 +59,29 @@ export async function uploadVerificationDoc(uid, storeId, file, kind = "other") 
   return { id: docId, url, path: storagePath };
 }
 
-/** Live stream of docs under stores/{storeId}/documents ordered by time */
+/** Live docs stream */
 export function listenVerificationDocs(storeId, cb, onErr) {
   const col = collection(db, "stores", storeId, "documents");
   const q = query(col, orderBy("uploadedAt", "desc"));
-  return onSnapshot(
-    q,
-    (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))),
-    onErr
-  );
+  return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))), onErr);
+}
+
+/** One-shot fetch of docs (used by Review page) */
+export async function fetchVerificationDocsOnce(storeId) {
+  const col = collection(db, "stores", storeId, "documents");
+  const q = query(col, orderBy("uploadedAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+/** Helper: are all required kinds present? */
+export function hasAllRequired(docs) {
+  const set = new Set(docs.map((d) => d.kind));
+  return REQUIRED_KINDS.every((k) => set.has(k));
 }
 
 /** Delete both Storage object and Firestore doc */
 export async function deleteVerificationDoc(storeId, docId, path) {
-  if (path) {
-    try { await deleteObject(ref(storage, path)); } catch {}
-  }
+  if (path) await deleteObject(ref(storage, path)).catch(() => {});
   await deleteDoc(doc(db, "stores", storeId, "documents", docId));
 }
