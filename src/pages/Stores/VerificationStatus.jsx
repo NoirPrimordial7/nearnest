@@ -1,15 +1,10 @@
-// src/pages/Stores/VerificationStatus.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getStore } from "../../services/stores";
-import {
-  uploadVerificationDoc,
-  listenVerificationDocs,
-} from "../../services/verification";
+import { getStore, uploadStoreDocument, listenStoreDocs } from "../../services/stores";
 
 export default function VerificationStatus() {
-  const { id } = useParams();            // route: /verification-status/:id
+  const { id } = useParams();      // /verification-status/:id
   const storeId = id;
   const { user } = useAuth() || {};
   const [store, setStore] = useState(null);
@@ -20,10 +15,10 @@ export default function VerificationStatus() {
   useEffect(() => {
     if (!storeId) return;
     (async () => setStore(await getStore(storeId)))();
-    const unsub = listenVerificationDocs(
+    const unsub = listenStoreDocs(
       storeId,
       (rows) => setDocs(rows),
-      (e) => setErr(e?.message || "Failed to load documents")
+      () => setErr("Missing or insufficient permissions.")
     );
     return () => unsub && unsub();
   }, [storeId]);
@@ -31,37 +26,14 @@ export default function VerificationStatus() {
   const prettyAddress = useMemo(() => {
     const a = store?.address;
     if (!a) return "—";
-    const parts = [a.line1, a.city, a.state, a.pin, a.country].filter(Boolean);
-    return parts.join(", ");
+    return [a.line1, a.city, a.state, a.pin, a.country].filter(Boolean).join(", ");
   }, [store]);
 
-  const statusBadge = (s) => {
-    const base = {
-      padding: "4px 10px",
-      borderRadius: 999,
-      fontWeight: 800,
-      fontSize: 12,
-      display: "inline-block",
-    };
-    if (s === "Approved") {
-      return (
-        <span style={{ ...base, background: "#dcfce7", color: "#166534" }}>
-          Approved
-        </span>
-      );
-    }
-    if (s === "Rejected") {
-      return (
-        <span style={{ ...base, background: "#fee2e2", color: "#991B1B" }}>
-          Rejected
-        </span>
-      );
-    }
-    return (
-      <span style={{ ...base, background: "#e0f2fe", color: "#075985" }}>
-        Pending
-      </span>
-    );
+  const badge = (s) => {
+    const base = { padding: "4px 10px", borderRadius: 999, fontWeight: 800, fontSize: 12, display: "inline-block" };
+    if (s === "Approved") return <span style={{ ...base, background: "#dcfce7", color: "#166534" }}>Approved</span>;
+    if (s === "Rejected") return <span style={{ ...base, background: "#fee2e2", color: "#991B1B" }}>Rejected</span>;
+    return <span style={{ ...base, background: "#e0f2fe", color: "#075985" }}>Pending</span>;
   };
 
   async function doUpload(kind, file) {
@@ -69,9 +41,8 @@ export default function VerificationStatus() {
     try {
       setErr("");
       setBusyKind(kind);
-      await uploadVerificationDoc(user.uid, storeId, file, kind);
+      await uploadStoreDocument(storeId, file, kind);
     } catch (e) {
-      console.error(e);
       setErr("Upload failed. Try again.");
     } finally {
       setBusyKind(null);
@@ -79,11 +50,11 @@ export default function VerificationStatus() {
   }
 
   function makeInput(kind, label, accept = "image/*,.pdf") {
-    const id = `file-${kind}`;
+    const inputId = `file-${kind}`;
     return (
       <div key={kind} style={{ display: "grid", gap: 6 }}>
         <label
-          htmlFor={id}
+          htmlFor={inputId}
           style={{
             display: "inline-flex",
             alignItems: "center",
@@ -99,7 +70,7 @@ export default function VerificationStatus() {
           }}
         >
           <input
-            id={id}
+            id={inputId}
             type="file"
             accept={accept}
             onChange={(e) => {
@@ -119,9 +90,7 @@ export default function VerificationStatus() {
     );
   }
 
-  if (!store) {
-    return <div style={{ padding: 24 }}>Loading…</div>;
-  }
+  if (!store) return <div style={{ padding: 24 }}>Loading…</div>;
 
   return (
     <div style={{ minHeight: "100vh", background: "#f7f8fb", padding: 24 }}>
@@ -138,9 +107,7 @@ export default function VerificationStatus() {
         <header style={{ display: "grid", gap: 4 }}>
           <h1 style={{ margin: 0 }}>{store.name || "Untitled store"}</h1>
           <div style={{ color: "#6b7280" }}>{prettyAddress}</div>
-          <div style={{ marginTop: 8 }}>
-            {statusBadge(store.verificationStatus || "Pending")}
-          </div>
+          <div style={{ marginTop: 8 }}>{badge(store.verificationStatus || "Pending")}</div>
         </header>
 
         <section
@@ -154,24 +121,15 @@ export default function VerificationStatus() {
         >
           <h3 style={{ margin: 0 }}>Documents</h3>
           <p style={{ color: "#6b7280", margin: 0 }}>
-            Upload the required documents for verification. You can re-upload if
-            something is rejected.
+            Upload the required documents for verification. You can re-upload if something is rejected.
           </p>
 
-          {err ? (
-            <div
-              style={{
-                background: "#fee2e2",
-                color: "#991B1B",
-                padding: 10,
-                borderRadius: 8,
-              }}
-            >
+          {err && (
+            <div style={{ background: "#fee2e2", color: "#991B1B", padding: 10, borderRadius: 8 }}>
               {err}
             </div>
-          ) : null}
+          )}
 
-          {/* Common KYC set */}
           <div
             style={{
               display: "grid",
@@ -197,12 +155,9 @@ export default function VerificationStatus() {
               padding: 14,
             }}
           >
-            After review, admin will mark each file as{" "}
-            <b>Approved</b> or <b>Rejected</b>. Rejected files can be uploaded
-            again.
+            After review, admin will mark each file as <b>Approved</b> or <b>Rejected</b>. Rejected files can be uploaded again.
           </div>
 
-          {/* Docs list */}
           <div style={{ marginTop: 16 }}>
             <h4 style={{ margin: "6px 0" }}>Uploaded</h4>
             {docs.length === 0 ? (
@@ -222,21 +177,12 @@ export default function VerificationStatus() {
                     }}
                   >
                     <div>
-                      <div style={{ fontWeight: 700 }}>
-                        {d.name || d.kind || "Document"}
-                      </div>
-                      <a
-                        href={d.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ fontSize: 12, color: "#2563eb" }}
-                      >
+                      <div style={{ fontWeight: 700 }}>{d.name || d.kind || "Document"}</div>
+                      <a href={d.url} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#2563eb" }}>
                         Open
                       </a>
                     </div>
-                    <div style={{ justifySelf: "end" }}>
-                      {statusBadge(d.status || "Pending")}
-                    </div>
+                    <div style={{ justifySelf: "end" }}>{badge(d.status || "Pending")}</div>
                   </li>
                 ))}
               </ul>

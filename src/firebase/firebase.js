@@ -22,6 +22,6 @@ const googleProvider = new GoogleAuthProvider();
 const db = getFirestore(app);
 
 // Use the bucket from firebaseConfig.storageBucket
-const storage = getStorage(app);
+const storage = getStorage(app, "gs://nearnest-platform.firebasestorage.app");
 
 export { app, auth, googleProvider, db, storage };
