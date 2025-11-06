@@ -1,5 +1,5 @@
 // src/services/verification.js
-import storage, { db } from "../firebase/firebase";
+import { db, storage } from "../firebase/firebase";
 import {
   collection,
   doc,
@@ -37,23 +37,20 @@ export const REQUIRED_KINDS = [
 
 /** Best-effort MIME inference for when the browser doesn’t give file.type */
 function inferContentType(safeName, file) {
-  if (file?.type) return file.type; // happy path
-
+  if (file?.type) return file.type;
   const lower = (safeName || "").toLowerCase();
-  if (lower.endsWith(".pdf")) return "application/pdf";
+  if (lower.endsWith(".pdf"))  return "application/pdf";
   if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
-  if (lower.endsWith(".png")) return "image/png";
+  if (lower.endsWith(".png"))  return "image/png";
   if (lower.endsWith(".webp")) return "image/webp";
-  if (lower.endsWith(".gif")) return "image/gif";
-
-  // last resort: claim a generic image so rules that expect image/* will pass
-  return "image/png";
+  if (lower.endsWith(".gif"))  return "image/gif";
+  return "image/png"; // last resort to satisfy rules expecting image/* or pdf
 }
 
 /**
  * Upload a verification document.
- * - For required kinds we use a stable docId == kind (so re-uploads overwrite).
- * - For "other" kinds we create a unique doc ID (other-<ts>) to allow multiples.
+ * - Required kinds use stable docId == kind (so re-uploads overwrite).
+ * - "other" uses unique id to allow multiple uploads.
  */
 export async function uploadVerificationDoc(uid, storeId, file, kind = "other") {
   const safeName = (file?.name || "document").replace(/[^\w.\-]+/g, "_");
@@ -81,7 +78,7 @@ export async function uploadVerificationDoc(uid, storeId, file, kind = "other") 
       mime: contentType,
       path: storagePath,
       url,
-      status: "Pending", // Admin will flip to Approved / Rejected
+      status: "Pending",
       uploadedBy: uid,
       uploadedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -106,7 +103,7 @@ export function listenVerificationDocs(storeId, cb, onErr) {
 /** Delete both Storage object and Firestore doc */
 export async function deleteVerificationDoc(storeId, docId, path) {
   if (path) {
-    try { await deleteObject(ref(storage, path)); } catch (_) {}
+    try { await deleteObject(ref(storage, path)); } catch {}
   }
   await deleteDoc(doc(db, "stores", storeId, "documents", docId));
 }
