@@ -18,9 +18,10 @@ import RegisterStore from "./pages/RegisterStore/RegisterStore";
 // guards
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RequireProfile from "./components/RequireProfile";
-
 import VerificationStatus from "./pages/Stores/VerificationStatus";
 
+// role landing
+import RoleRedirect from "./routes/RoleRedirect";
 
 export default function App() {
   return (
@@ -51,7 +52,7 @@ export default function App() {
         }
       />
 
-      {/* store registration */}
+      {/* store registration (ConfirmStart / Register) */}
       <Route
         path="/register-store"
         element={
@@ -62,7 +63,21 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+      {/* remove duplicate - keep only one /register-store route */}
 
+      {/* full register with map/address etc. */}
+      <Route
+        path="/register-store/details"
+        element={
+          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
+            <RequireProfile>
+              <RegisterStore />
+            </RequireProfile>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* verification tracking */}
       <Route
         path="/verification-status/:id"
         element={
@@ -73,20 +88,21 @@ export default function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* review & submit should be protected */}
       <Route
-        path="/register-store"
+        path="/review-submit/:id"
         element={
           <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
-            <RequireProfile>
-              <RegisterStore />
-            </RequireProfile>
+            <ReviewSubmit />
           </ProtectedRoute>
         }
       />
-       <Route path="/review-submit/:id" element={<ReviewSubmit />} /> 
 
-      {/* default */}
-      <Route path="/" element={<Navigate to="/home" replace />} />
+      {/* landing decides per-role homes */}
+      <Route path="/" element={<RoleRedirect />} />
+
+      {/* 404 */}
       <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
     </Routes>
   );
