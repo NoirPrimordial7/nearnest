@@ -7,6 +7,7 @@ import LocationPicker from "../../components/LocationPicker";
 import s from "./register.module.css";
 
 export default function RegisterStore() {
+  console.log("RegisterStore v2 (location-enabled) loaded");
   const nav = useNavigate();
   const { user } = useAuth() || {};
 
@@ -14,11 +15,10 @@ export default function RegisterStore() {
     name: "",
     phone: "",
     licenseNo: "",
-    // address object will be filled from LocationPicker/extraction
     address: { line1: "", city: "", state: "", pin: "", country: "IN" },
-    geo: null,
-    formatted: "",
-    placeId: "",
+    geo: null,              // {lat,lng}
+    formatted: "",          // pretty address
+    placeId: "",            // google place id (if any)
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -36,30 +36,23 @@ export default function RegisterStore() {
       formatted: addr.formatted || "",
       placeId: addr.placeId || "",
       geo:
-        addr.lat && addr.lng
+        addr.lat != null && addr.lng != null
           ? { lat: Number(addr.lat), lng: Number(addr.lng) }
           : null,
     }));
   };
 
   async function submit() {
-    if (!user?.uid) {
-      setErr("You must be signed in.");
-      return;
-    }
-    if (!form.name.trim()) {
-      setErr("Please enter a store name.");
-      return;
-    }
-    if (!form.address.line1 && !form.formatted) {
-      setErr("Please choose the store address (use the search or pin on the map).");
-      return;
-    }
+    if (!user?.uid) return setErr("You must be signed in.");
+    if (!form.name.trim()) return setErr("Please enter a store name.");
+    if (!form.formatted && !form.address.line1 && !form.geo)
+      return setErr("Pick the store location (search, pin, paste link or GPS).");
+
     setErr("");
     setBusy(true);
     try {
       const id = await createStore(user.uid, {
-        name: form.name,
+        name: form.name.trim(),
         address: {
           line1: form.address.line1 || form.formatted || "",
           city: form.address.city,
@@ -67,20 +60,17 @@ export default function RegisterStore() {
           pin: form.address.pin,
           country: form.address.country || "IN",
         },
-        phone: form.phone,
-        licenseNo: form.licenseNo,
+        phone: form.phone || "",
+        licenseNo: form.licenseNo || "",
         category: "Pharmacy",
         gstin: null,
         hours: null,
         geo: form.geo,
-        ownerAddr: {
-          line1: "",
-          city: "",
-          state: "",
-          pin: "",
-          country: "IN",
-        },
+        ownerAddr: { line1: "", city: "", state: "", pin: "", country: "IN" },
+        placeId: form.placeId || null,
+        formatted: form.formatted || null,
       });
+
       nav(`/verification-status/${id}`);
     } catch (e) {
       console.error(e);
@@ -94,7 +84,7 @@ export default function RegisterStore() {
     <div className={s.wrap}>
       <div className={s.card}>
         <h2 className={s.h1}>Register a Store</h2>
-        <div className={s.sub}>Basic details for onboarding & verification.</div>
+        <div className={s.sub}>Basic details for onboarding &amp; verification.</div>
 
         <label className={s.label}>Store name*</label>
         <input
@@ -107,8 +97,7 @@ export default function RegisterStore() {
         <div className={s.section}>
           <label className={s.label}>Address*</label>
           <div className={s.hint}>
-            Search your address or drop the pin. You can also paste a Google Maps
-            link or use your current location.
+            Search your address or drop the pin. You can also paste a Google Maps link or use your current location.
           </div>
           <LocationPicker
             value={
@@ -141,14 +130,12 @@ export default function RegisterStore() {
               className={s.input}
               placeholder="DL/XX/XXXX"
               value={form.licenseNo}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, licenseNo: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, licenseNo: e.target.value }))}
             />
           </div>
         </div>
 
-        {err ? (
+        {err && (
           <div
             style={{
               marginTop: 12,
@@ -162,7 +149,7 @@ export default function RegisterStore() {
           >
             {err}
           </div>
-        ) : null}
+        )}
 
         <div className={s.btnRow}>
           <button className={s.primary} disabled={busy} onClick={submit}>
