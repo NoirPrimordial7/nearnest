@@ -5,9 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { createStore } from "../../services/stores";
 import s from "./register.module.css";
 
-/* -------------------------------------------------------
-   Tiny helpers for LocationEditor (no external deps)
---------------------------------------------------------*/
+/* --------------- Google Maps helpers (inline) --------------- */
 function loadGoogle(key) {
   if (window.__gmapsPromise) return window.__gmapsPromise;
   window.__gmapsPromise = new Promise((resolve) => {
@@ -64,9 +62,7 @@ function parseGmapsLink(url) {
   return null;
 }
 
-/* -------------------------------------------------------
-   LocationEditor (INLINE, always renders UI)
---------------------------------------------------------*/
+/* --------------- LocationEditor --------------- */
 function LocationEditor({ value, onChange }) {
   const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const [googleObj, setGoogleObj] = useState(null);
@@ -91,7 +87,6 @@ function LocationEditor({ value, onChange }) {
   useEffect(() => {
     if (!googleObj) return;
 
-    // Autocomplete
     if (searchRef.current && !searchRef.current.__ac) {
       const ac = new googleObj.maps.places.Autocomplete(searchRef.current, {
         fields: ["address_components", "formatted_address", "geometry", "name", "place_id"],
@@ -119,16 +114,20 @@ function LocationEditor({ value, onChange }) {
       });
     }
 
-    // Map + marker
     if (mapRef.current && !gmap.current) {
-      const center = lat != null && lng != null ? { lat, lng } : { lat: 18.5204, lng: 73.8567 }; // Pune
+      const center =
+        lat != null && lng != null ? { lat, lng } : { lat: 18.5204, lng: 73.8567 }; // Pune
       gmap.current = new googleObj.maps.Map(mapRef.current, {
         center,
         zoom: 15,
         disableDefaultUI: true,
         clickableIcons: false,
       });
-      gmarker.current = new googleObj.maps.Marker({ position: center, map: gmap.current, draggable: true });
+      gmarker.current = new googleObj.maps.Marker({
+        position: center,
+        map: gmap.current,
+        draggable: true,
+      });
       geocoder.current = new googleObj.maps.Geocoder();
 
       gmarker.current.addListener("dragend", async () => {
@@ -138,7 +137,9 @@ function LocationEditor({ value, onChange }) {
         setLat(nlat);
         setLng(nlng);
         try {
-          const { results } = await geocoder.current.geocode({ location: { lat: nlat, lng: nlng } });
+          const { results } = await geocoder.current.geocode({
+            location: { lat: nlat, lng: nlng },
+          });
           const best = results?.[0];
           const ex = extractFromPlace(best || {});
           ex.lat = nlat;
@@ -153,7 +154,12 @@ function LocationEditor({ value, onChange }) {
             country: ex.country || "IN",
           });
         } catch {
-          onChange?.({ formatted: addr || "Pinned location", lat: nlat, lng: nlng, placeId: "" });
+          onChange?.({
+            formatted: addr || "Pinned location",
+            lat: nlat,
+            lng: nlng,
+            placeId: "",
+          });
         }
       });
     }
@@ -172,7 +178,12 @@ function LocationEditor({ value, onChange }) {
           gmap.current.setCenter(p);
           gmarker.current.setPosition(p);
         }
-        onChange?.({ formatted: addr || "Current location", lat: nlat, lng: nlng, placeId: "" });
+        onChange?.({
+          formatted: addr || "Current location",
+          lat: nlat,
+          lng: nlng,
+          placeId: "",
+        });
       },
       () => {}
     );
@@ -188,13 +199,33 @@ function LocationEditor({ value, onChange }) {
       gmap.current.setCenter(p);
       gmarker.current.setPosition(p);
     }
-    onChange?.({ formatted: addr || "Pinned location", lat: parsed.lat, lng: parsed.lng, placeId: "" });
+    onChange?.({
+      formatted: addr || "Pinned location",
+      lat: parsed.lat,
+      lng: parsed.lng,
+      placeId: "",
+    });
   };
 
-  // Simple inline styles (no CSS-module issues)
   const row = { display: "flex", gap: 8, marginTop: 8 };
-  const input = { flex: 1, height: 40, border: "1px solid #e5e7eb", borderRadius: 10, padding: "0 10px", background: "#f8fafc" };
-  const btn = { height: 40, borderRadius: 10, border: "1px solid #111", background: "#111", color: "#fff", fontWeight: 800, padding: "0 12px", cursor: "pointer" };
+  const input = {
+    flex: 1,
+    height: 40,
+    border: "1px solid #e5e7eb",
+    borderRadius: 10,
+    padding: "0 10px",
+    background: "#f8fafc",
+  };
+  const btn = {
+    height: 40,
+    borderRadius: 10,
+    border: "1px solid #111",
+    background: "#111",
+    color: "#fff",
+    fontWeight: 800,
+    padding: "0 12px",
+    cursor: "pointer",
+  };
   const ghost = { ...btn, background: "#fff", color: "#111" };
 
   return (
@@ -218,8 +249,12 @@ function LocationEditor({ value, onChange }) {
           value={link}
           onChange={(e) => setLink(e.target.value)}
         />
-        <button type="button" style={btn} onClick={applyLink}>Parse link</button>
-        <button type="button" style={ghost} onClick={useGPS}>Use my location</button>
+        <button type="button" style={btn} onClick={applyLink}>
+          Parse link
+        </button>
+        <button type="button" style={ghost} onClick={useGPS}>
+          Use my location
+        </button>
       </div>
 
       <div style={row}>
@@ -229,8 +264,9 @@ function LocationEditor({ value, onChange }) {
           value={lat ?? ""}
           onChange={(e) => {
             const v = e.target.value;
-            setLat(v === "" ? null : Number(v));
-            onChange?.({ formatted: addr, lat: v === "" ? null : Number(v), lng, placeId: "" });
+            const num = v === "" ? null : Number(v);
+            setLat(num);
+            onChange?.({ formatted: addr, lat: num, lng, placeId: "" });
           }}
         />
         <input
@@ -239,8 +275,9 @@ function LocationEditor({ value, onChange }) {
           value={lng ?? ""}
           onChange={(e) => {
             const v = e.target.value;
-            setLng(v === "" ? null : Number(v));
-            onChange?.({ formatted: addr, lat, lng: v === "" ? null : Number(v), placeId: "" });
+            const num = v === "" ? null : Number(v);
+            setLng(num);
+            onChange?.({ formatted: addr, lat, lng: num, placeId: "" });
           }}
         />
         {lat != null && lng != null ? (
@@ -256,9 +293,26 @@ function LocationEditor({ value, onChange }) {
       </div>
 
       {googleObj ? (
-        <div ref={mapRef} style={{ height: 260, marginTop: 8, borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }} />
+        <div
+          ref={mapRef}
+          style={{
+            height: 260,
+            marginTop: 8,
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+          }}
+        />
       ) : lat != null && lng != null ? (
-        <div style={{ height: 260, marginTop: 8, borderRadius: 12, border: "1px solid #e5e7eb", overflow: "hidden" }}>
+        <div
+          style={{
+            height: 260,
+            marginTop: 8,
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+          }}
+        >
           <iframe
             title="map"
             width="100%"
@@ -273,7 +327,7 @@ function LocationEditor({ value, onChange }) {
 
       {!googleObj && (
         <div style={{ marginTop: 8, color: "#475569" }}>
-          ⚠️ Autocomplete & draggable pin need a valid <code>VITE_GOOGLE_MAPS_API_KEY</code>.  
+          ⚠️ Autocomplete & draggable pin need a valid <code>VITE_GOOGLE_MAPS_API_KEY</code>.{" "}
           Fallback still works (paste link / GPS / manual lat-lng).
         </div>
       )}
@@ -281,9 +335,7 @@ function LocationEditor({ value, onChange }) {
   );
 }
 
-/* -------------------------------------------------------
-   Register Store Page
---------------------------------------------------------*/
+/* --------------- Register Store Page --------------- */
 export default function RegisterStore() {
   const nav = useNavigate();
   const { user } = useAuth() || {};
@@ -359,6 +411,42 @@ export default function RegisterStore() {
   return (
     <div className={s.wrap}>
       <div className={s.card}>
+        {/* Back / Next row */}
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => nav(-1)}
+            style={{
+              height: 38,
+              padding: "0 14px",
+              borderRadius: 10,
+              background: "#f2f4f7",
+              border: "1px solid #e6e9ef",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            ← Prev
+          </button>
+
+          <button
+            type="button"
+            onClick={submit}
+            style={{
+              height: 38,
+              padding: "0 16px",
+              borderRadius: 10,
+              background: "#111",
+              color: "#fff",
+              border: 0,
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            Save & Continue →
+          </button>
+        </div>
+
         <h2 className={s.h1}>Register a Store</h2>
         <div className={s.sub}>Basic details for onboarding & verification.</div>
 
@@ -431,7 +519,7 @@ export default function RegisterStore() {
           <button className={s.primary} disabled={busy} onClick={submit}>
             {busy ? "Creating…" : "Create store"}
           </button>
-          <button className={s.ghost} onClick={() => history.back()}>
+          <button className={s.ghost} type="button" onClick={() => nav(-1)}>
             ← Back
           </button>
         </div>
