@@ -3,14 +3,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
 
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from "firebase/aut                                      h";
-
-import { auth, googleProvider, db } from "./firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { auth, db, signInWithEmailAndPassword, signInWithPopup, sendPasswordResetEmail, googleProvider,doc, getDoc, setDoc } 
+  from "./firebase";
 
 /* ---------------------- role helpers ---------------------- */
 async function fetchRoles(uid) {

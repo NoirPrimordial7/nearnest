@@ -1,15 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
-import { auth, googleProvider, db } from "./firebase";
-import {
-  createUserWithEmailAndPassword,
-  updateProfile,
-  sendEmailVerification,
-  signInWithPopup,
-  reload,
-} from "firebase/auth";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+
+import { auth, db, googleProvider, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, signInWithPopup, reload, doc, setDoc, getDoc } 
+  from "./firebase";
 
 const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 

@@ -10,8 +10,8 @@ import {
   getDocs,
   query,
   orderBy,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+} from "../Auth/firebase";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "../Auth/firebase";
 
 /** Canonical set of required docs and their friendly labels/icons */
 export const KIND_META = {

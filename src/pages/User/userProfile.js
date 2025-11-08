@@ -8,8 +8,8 @@ import {
   setDoc,
   updateDoc,
   serverTimestamp,
-} from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+} from "../Auth/firebase";
+import { ref, uploadBytes, getDownloadURL } from "../Auth/firebase";
 
 /** One-shot read of the signed-in user's profile (Firestore) */
 export async function getProfile(uid) {

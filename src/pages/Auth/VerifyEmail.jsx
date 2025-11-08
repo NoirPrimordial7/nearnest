@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
 import { auth } from "./firebase"; 
-import { onAuthStateChanged, sendEmailVerification, reload } from "firebase/auth";
+import { onAuthStateChanged, sendEmailVerification, reload } from "./firebase";
 
 const APP_URL = import.meta.env.VITE_PUBLIC_APP_URL || window.location.origin;
 

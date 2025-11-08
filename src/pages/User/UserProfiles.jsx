@@ -6,7 +6,7 @@ import styles from "./profile.module.css";
 import { useAuth } from "../Auth/AuthContext";
 import { onProfile, saveProfile } from "../user/userProfile";
 import { auth } from "../Auth/firebase";
-import { updateProfile } from "firebase/auth";
+import { updateProfile } from "../Auth/firebase";
 
 export default function ProfileSetup() {
   const navigate = useNavigate();

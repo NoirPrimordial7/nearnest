@@ -11,7 +11,7 @@ import SignUp from './pages/Auth/SignUp';
 import VerifyEmail from './pages/Auth/VerifyEmail';
 
 // User
-import UserHome from './pages/User/UserHome';
+import UserHome from './pages/user/UserHome';
 import UserProfile from './pages/user/UserProfiles';
 
 // Store Onboarding
