@@ -7,9 +7,9 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   sendPasswordResetEmail,
-} from "firebase/auth";
+} from "firebase/aut                                      h";
 
-import { auth, googleProvider, db } from "../../firebase/firebase";
+import { auth, googleProvider, db } from "./firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 /* ---------------------- role helpers ---------------------- */

@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { createStore } from "../../services/stores";
+import { createStore } from "../../../../../../temp/services/stores";
 import s from "./register.module.css";
 /* --------------- Google Maps helpers (inline) --------------- */
 function loadGoogle(key) {

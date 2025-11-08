@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./auth.module.css";
-import { auth, googleProvider, db } from "../../firebase/firebase";
+import { auth, googleProvider, db } from "./firebase";
 import {
   createUserWithEmailAndPassword,
   updateProfile,

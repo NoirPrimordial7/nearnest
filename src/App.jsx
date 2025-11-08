@@ -2,14 +2,14 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import ReviewSubmit from "./pages/Stores/ReviewSubmit.jsx";
-
+import Home from "./pages/Home/Home.jsx";
 // auth pages
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 
 // user
 import UserHome from "./pages/User/UserHome";
-import ProfileSetup from "./pages/User/ProfileSetup";
+import ProfileSetup from "./pages/user/UserProfile.jsx";
 
 // store register flow
 import StoreForm from "./pages/RegisterStore/ConfirmStart";
@@ -100,7 +100,7 @@ export default function App() {
       />
 
       {/* landing decides per-role homes */}
-      <Route path="/" element={<RoleRedirect />} />
+      <Route path="/" element={<Home />} />
 
       {/* 404 */}
       <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
