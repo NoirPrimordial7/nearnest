@@ -1,109 +1,122 @@
-// src/App.jsx
-import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
-import ReviewSubmit from "./pages/Stores/ReviewSubmit.jsx";
-import Home from "./pages/Home/Home.jsx";
-// auth pages
-import SignIn from "./pages/Auth/SignIn";
-import SignUp from "./pages/Auth/SignUp";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// user
-import UserHome from "./pages/User/UserHome";
-import ProfileSetup from "./pages/user/UserProfile.jsx";
+import { AuthProvider, RoleRedirect } from "./pages/Auth/AuthContext";
+import RequireProfile from "./pages/User/RequireProfile";
+import ProtectedRoute from './routes/ProtectedRoute';
 
-// store register flow
-import StoreForm from "./pages/RegisterStore/ConfirmStart";
-import RegisterStore from "./pages/RegisterStore/RegisterStore";
+// Auth
+import SignIn from './pages/Auth/SignIn';
+import SignUp from './pages/Auth/SignUp';
+import VerifyEmail from './pages/Auth/VerifyEmail';
 
-// guards
-import ProtectedRoute from "./routes/ProtectedRoute";
-import RequireProfile from "./components/RequireProfile";
-import VerificationStatus from "./pages/Stores/VerificationStatus";
+// User
+import UserHome from './pages/User/UserHome';
+import UserProfile from './pages/User/UserProfile';
 
-// role landing
-import RoleRedirect from "./routes/RoleRedirect";
+// Store Onboarding
+import RegisterStore from './pages/register-store/RegisterStore';
+import ReviewSubmit from './pages/register-store/ReviewSubmit';
+import VerificationStatus from './pages/register-store/VerificationStatus';
 
-export default function App() {
+// Admin
+import AdminLayout from './pages/Admin/AdminLayout';
+import DocumentVerification from './pages/Admin/Verification/DocumentVerification';
+import SupportTickets from './pages/Admin/Support/SupportTickets';
+
+function App() {
   return (
-    <Routes>
-      {/* auth */}
-      <Route path="/signin" element={<SignIn />} />
-      <Route path="/signup" element={<SignUp />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* 🔐 AUTH ROUTES */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
-      {/* first-run profile setup */}
-      <Route
-        path="/setup-profile"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
-            <ProfileSetup />
-          </ProtectedRoute>
-        }
-      />
+          {/* 🔁 ROOT REDIRECTS BASED ON ROLE */}
+          <Route path="/" element={<RoleRedirect />} />
 
-      {/* user home */}
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
-            <RequireProfile>
-              <UserHome />
-            </RequireProfile>
-          </ProtectedRoute>
-        }
-      />
+          {/* 👤 USER ROUTES */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+                <RequireProfile>
+                  <UserHome />
+                </RequireProfile>
+              </ProtectedRoute>
+            }
+          />
 
-      {/* store registration (ConfirmStart / Register) */}
-      <Route
-        path="/register-store"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
-            <RequireProfile>
-              <StoreForm />
-            </RequireProfile>
-          </ProtectedRoute>
-        }
-      />
-      {/* remove duplicate - keep only one /register-store route */}
+          <Route
+            path="/setup-profile"
+            element={
+              <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+                <UserProfile />
+              </ProtectedRoute>
+            }
+          />
 
-      {/* full register with map/address etc. */}
-      <Route
-        path="/register-store/details"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
-            <RequireProfile>
-              <RegisterStore />
-            </RequireProfile>
-          </ProtectedRoute>
-        }
-      />
+          {/* 🏪 STORE REGISTRATION FLOW */}
+          <Route
+            path="/register-store"
+            element={
+              <ProtectedRoute allowed={['user', 'storeAdmin']}>
+                <RegisterStore />
+              </ProtectedRoute>
+            }
+          />
 
-      {/* verification tracking */}
-      <Route
-        path="/verification-status/:id"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin", "storeStaff"]}>
-            <RequireProfile>
-              <VerificationStatus />
-            </RequireProfile>
-          </ProtectedRoute>
-        }
-      />
+          <Route
+            path="/verification-status/:id"
+            element={
+              <ProtectedRoute allowed={['user', 'storeAdmin']}>
+                <VerificationStatus />
+              </ProtectedRoute>
+            }
+          />
 
-      {/* review & submit should be protected */}
-      <Route
-        path="/review-submit/:id"
-        element={
-          <ProtectedRoute allowed={["admin", "user", "storeAdmin"]}>
-            <ReviewSubmit />
-          </ProtectedRoute>
-        }
-      />
+          <Route
+            path="/review-submit/:id"
+            element={
+              <ProtectedRoute allowed={['user', 'storeAdmin']}>
+                <ReviewSubmit />
+              </ProtectedRoute>
+            }
+          />
 
-      {/* landing decides per-role homes */}
-      <Route path="/" element={<Home />} />
+          {/* 🛠️ ADMIN ROUTES */}
+          <Route
+            path="/admin/*"
+            element={
+              <ProtectedRoute allowed={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          />
 
-      {/* 404 */}
-      <Route path="*" element={<div style={{ padding: 24 }}>Not found</div>} />
-    </Routes>
+          <Route
+            path="/admin/verification"
+            element={
+              <ProtectedRoute allowed={['admin']}>
+                <DocumentVerification />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/support"
+            element={
+              <ProtectedRoute allowed={['admin']}>
+                <SupportTickets />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
+
+export default App;
