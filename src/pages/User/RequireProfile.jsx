@@ -1,7 +1,7 @@
 // src/components/RequireProfile.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../Auth/AuthContext";
 import { useProfileComplete } from "../services/userProfile";
 
 export default function RequireProfile({ children }) {

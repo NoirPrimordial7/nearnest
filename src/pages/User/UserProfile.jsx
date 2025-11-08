@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./profile.module.css";
 
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../Auth/AuthContext";
 import { onProfile, saveProfile } from "../../services/userProfile";
 import { auth } from "../../firebase/firebase";
 import { updateProfile } from "firebase/auth";

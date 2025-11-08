@@ -1,29 +1,63 @@
-
+// src/auth/AuthContext.jsx
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../../../../../temp/firebase/firebase";
+import { auth, db } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { Navigate } from "react-router-dom";
 
-const AuthCtx = createContext(null);
+const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [roles, setRoles] = useState([]);
   const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u || null);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setAuthLoading(true);
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        try {
+          const docRef = doc(db, "users", firebaseUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            setRoles(userData.roles || []);
+          } else {
+            setRoles([]);
+          }
+        } catch (error) {
+          console.error("Error fetching user roles:", error);
+          setRoles([]);
+        }
+      } else {
+        setUser(null);
+        setRoles([]);
+      }
       setAuthLoading(false);
     });
-    return () => unsub();
+
+    return () => unsubscribe();
   }, []);
 
   return (
-    <AuthCtx.Provider value={{ user, authLoading }}>
+    <AuthContext.Provider value={{ user, roles, authLoading }}>
       {children}
-    </AuthCtx.Provider>
+    </AuthContext.Provider>
   );
-}
+};
 
-export function useAuth() {
-  return useContext(AuthCtx);
-}
+export const useAuth = () => useContext(AuthContext);
+
+export const RoleRedirect = () => {
+  const { user, roles, authLoading } = useAuth();
+
+  if (authLoading) return null;
+
+  if (!user) return <Navigate to="/signin" replace />;
+  if (roles.includes("admin")) return <Navigate to="/admin" replace />;
+  if (roles.includes("storeAdmin")) return <Navigate to="/store-admin/home" replace />;
+  if (roles.includes("storeStaff")) return <Navigate to="/store-staff/home" replace />;
+
+  return <Navigate to="/home" replace />;
+};
