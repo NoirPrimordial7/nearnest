@@ -1,5 +1,5 @@
 // src/services/verification.js
-import { db, storage } from "../firebase/firebase";
+import { db, storage } from "../Auth/firebase";
 import {
   collection,
   doc,

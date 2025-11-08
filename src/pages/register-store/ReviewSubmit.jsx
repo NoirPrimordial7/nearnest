@@ -1,14 +1,14 @@
 // src/pages/Stores/ReviewSubmit.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { getStore, submitStoreForVerification } from "../../services/stores";
+import { useAuth } from "../Auth/AuthContext";
+import { getStore, submitStoreForVerification } from "../register-store/stores";
 import {
   fetchVerificationDocsOnce,
   REQUIRED_KINDS,
   KIND_META,
   hasAllRequired,
-} from "../../services/verification";
+} from "../register-store/verification";
 
 export default function ReviewSubmit() {
   const { id } = useParams();

@@ -1,15 +1,15 @@
 // src/pages/Stores/VerificationStatus.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { getStore } from "../../services/stores";
+import { useAuth } from "../Auth/AuthContext";
+import { getStore } from "../register-store/stores";
 import {
   uploadVerificationDoc,
   listenVerificationDocs,
   KIND_META,
   REQUIRED_KINDS,
   hasAllRequired,
-} from "../../services/verification";
+} from "../register-store/verification";
 
 export default function VerificationStatus() {
   const { id } = useParams();

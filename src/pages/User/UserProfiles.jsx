@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import styles from "./profile.module.css";
 
 import { useAuth } from "../Auth/AuthContext";
-import { onProfile, saveProfile } from "../../services/userProfile";
-import { auth } from "../../firebase/firebase";
+import { onProfile, saveProfile } from "../user/userProfile";
+import { auth } from "../Auth/firebase";
 import { updateProfile } from "firebase/auth";
 
 export default function ProfileSetup() {

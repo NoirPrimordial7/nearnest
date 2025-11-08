@@ -2,8 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import { AuthProvider, RoleRedirect } from "./pages/Auth/AuthContext";
-import RequireProfile from "./pages/User/RequireProfile";
-import ProtectedRoute from './routes/ProtectedRoute';
+import RequireProfile from "./pages/user/RequireProfile";
+import ProtectedRoute from './pages/routes/ProtectedRoute';
 
 // Auth
 import SignIn from './pages/Auth/SignIn';
@@ -12,7 +12,7 @@ import VerifyEmail from './pages/Auth/VerifyEmail';
 
 // User
 import UserHome from './pages/User/UserHome';
-import UserProfile from './pages/User/UserProfile';
+import UserProfile from './pages/user/UserProfiles';
 
 // Store Onboarding
 import RegisterStore from './pages/register-store/RegisterStore';

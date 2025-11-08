@@ -1,6 +1,6 @@
 // src/services/userProfile.js
 import { useEffect, useState } from "react";
-import { db, storage } from "../firebase/firebase";
+import { db, storage } from "../Auth/firebase";
 import {
   doc,
   getDoc,

@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
-import { useProfileComplete } from "../../services/userProfile";
+import { useAuth } from "../Auth/AuthContext";
+import { useProfileComplete } from "../user/userProfile";
 import {
   listenUserStores,
   deleteStore,
   storeBucket,
-} from "../../services/stores";
+} from "../register-store/stores";
 import s from "./home.module.css";
 
 function useAvatarMenu() {

@@ -11,8 +11,8 @@ import {
   where,
   orderBy,
   limit,
-} from "firebase/firestore";
-import { db } from "../firebase/firebase";
+} from "../Auth/firebase";
+import { db } from "../Auth/firebase";
 
 /* -------------------- helpers -------------------- */
 function toArrayMaybe(v) {
