@@ -21,9 +21,12 @@ import ReviewSubmit from './pages/register-store/ReviewSubmit';
 import VerificationStatus from './pages/register-store/VerificationStatus';
 
 // Admin
+// Admin components
 import AdminLayout from './pages/Admin/AdminLayout';
-import DocumentVerification from './pages/Admin/Verification/DocumentVerification';
-import SupportTickets from './pages/Admin/Support/SupportTickets';
+import AdminDashboard from './pages/Admin/Dashboard/Dashboard';
+import AdminStores from './pages/Admin/Stores/StoresPage';
+import AdminVerification from './pages/Admin/Verification/DocumentVerification';
+import AdminSupport from './pages/Admin/Support/SupportTickets';
 
 function App() {
   return (
@@ -97,41 +100,19 @@ function App() {
         />
 
         {/* 🛠️ ADMIN ROUTES */}
-        <Route
-          path="/admin/*"
-          element={
-            <ProtectedRoute allowed={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/verification"
-          element={
-            <ProtectedRoute allowed={['admin']}>
-              <DocumentVerification />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/support"
-          element={
-            <ProtectedRoute allowed={['admin']}>
-              <SupportTickets />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/admin/stores"
-          element={
-            <ProtectedRoute allowed={['admin']}>
-              <storemange />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowed={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="stores" element={<AdminStores />} />
+            <Route path="verification" element={<AdminVerification />} />
+            <Route path="support" element={<AdminSupport />} />
+          </Route>
       </Routes>
 
     </AuthProvider>

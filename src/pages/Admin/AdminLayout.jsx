@@ -32,12 +32,12 @@ const NAV = {
   platform: [
     { label: "Stores", to: "/admin/stores", icon: "M4 6h16v12H4z" },
     { label: "Verification", to: "/admin/verification", icon: "M7 7h10M7 12h10M7 17h6" },
-    { label: "Roles & Permissions", to: "/admin/roles", icon: "M12 3v18M3 12h18" },
-    { label: "Admins", to: "/admin/admins", icon: "M16 11a4 4 0 1 0-8 0v6h8v-6zM4 21h16" },
+    //{ label: "Roles & Permissions", to: "/admin/roles", icon: "M12 3v18M3 12h18" },
+    //{ label: "Admins", to: "/admin/admins", icon: "M16 11a4 4 0 1 0-8 0v6h8v-6zM4 21h16" },
     { label: "Support / Tickets", to: "/admin/support", icon: "M3 8l9 6 9-6M5 19h14" },
-    { label: "Analytics", to: "/admin/analytics", icon: "M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" },
-    { label: "Settings", to: "/admin/settings", icon: "M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" },
-    { label: "Schema", to: "/admin/schema", icon: "M4 7h16M4 12h16M4 17h10" },
+    //{ label: "Analytics", to: "/admin/analytics", icon: "M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" },
+    //{ label: "Settings", to: "/admin/settings", icon: "M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" },
+    //{ label: "Schema", to: "/admin/schema", icon: "M4 7h16M4 12h16M4 17h10" },
   ],
 };
 
