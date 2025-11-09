@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, RoleRedirect } from "./pages/Auth/AuthContext";
 import RequireProfile from "./pages/user/RequireProfile";
 import ProtectedRoute from './pages/routes/ProtectedRoute';
-
+import storemange from './pages/Admin/Stores/StoresPage';
 // Auth
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
@@ -120,6 +120,15 @@ function App() {
           element={
             <ProtectedRoute allowed={['admin']}>
               <SupportTickets />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/stores"
+          element={
+            <ProtectedRoute allowed={['admin']}>
+              <storemange />
             </ProtectedRoute>
           }
         />

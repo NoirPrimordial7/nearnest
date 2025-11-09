@@ -1,13 +1,28 @@
+// e.g. src/pages/Admin/Stores/StoresPage.jsx
+
 import { useEffect, useState } from "react";
-import { listStores, setStoreStatus, deleteStore } from "../../../services/storeService";
-import Pagination from "../../../components/Pagination";
+import { listStores, setStoreStatus, deleteStore } from "./storeService";
+
 import styles from "./stores.module.css";
 
 /* Small stroke icon */
 function Icon({ d, size = 18, className }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path d={d} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      aria-hidden="true"
+    >
+      <path
+        d={d}
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -21,13 +36,112 @@ function StatusPill({ status }) {
     rejected: styles.stRejected,
     suspended: styles.stSuspended,
   };
-  return <span className={`${styles.stPill} ${map[status] || ""}`}>{status}</span>;
+  return (
+    <span className={`${styles.stPill} ${map[status] || ""}`}>{status}</span>
+  );
 }
 
 function formatDate(d) {
   const dt = new Date(d);
-  return dt.toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
+  return dt.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
+
+/* ========= Pagination helpers inlined here ========= */
+
+/** Build page list with ellipses: [1, '…', 4, 5, 6, '…', 20] */
+function buildRange(current, total, siblingCount = 1) {
+  const totalNumbers = siblingCount * 2 + 5; // first,last,current, 2*siblings
+  if (total <= totalNumbers)
+    return Array.from({ length: total }, (_, i) => i + 1);
+
+  const left = Math.max(current - siblingCount, 1);
+  const right = Math.min(current + siblingCount, total);
+
+  const showLeftDots = left > 2;
+  const showRightDots = right < total - 1;
+
+  const out = [];
+  if (!showLeftDots && showRightDots) {
+    const rangeEnd = 1 + 2 * siblingCount + 2;
+    for (let i = 1; i <= rangeEnd; i++) out.push(i);
+    out.push("…", total);
+  } else if (showLeftDots && !showRightDots) {
+    out.push(1, "…");
+    const start = total - (2 * siblingCount + 2);
+    for (let i = start; i <= total; i++) out.push(i);
+  } else {
+    out.push(1, "…");
+    for (let i = left; i <= right; i++) out.push(i);
+    out.push("…", total);
+  }
+  return out;
+}
+
+function Pagination({
+  current,
+  total, // total pages
+  onChange,
+  siblingCount = 1,
+  className = "",
+}) {
+  const range = buildRange(current, total, siblingCount);
+  const go = (p) => p !== current && p >= 1 && p <= total && onChange?.(p);
+
+  return (
+    <nav
+      className={`${pagerStyles.pager} ${className}`}
+      role="navigation"
+      aria-label="Pagination"
+    >
+      <button
+        className={pagerStyles.ctrl}
+        onClick={() => go(current - 1)}
+        disabled={current === 1}
+        aria-label="Previous page"
+      >
+        ‹
+      </button>
+
+      {range.map((it, i) =>
+        it === "…" ? (
+          <span
+            key={`dots-${i}`}
+            className={pagerStyles.dots}
+            aria-hidden
+          >
+            …
+          </span>
+        ) : (
+          <button
+            key={it}
+            className={`${pagerStyles.page} ${
+              it === current ? pagerStyles.active : ""
+            }`}
+            onClick={() => go(it)}
+            aria-current={it === current ? "page" : undefined}
+          >
+            {it}
+          </button>
+        )
+      )}
+
+      <button
+        className={pagerStyles.ctrl}
+        onClick={() => go(current + 1)}
+        disabled={current === total}
+        aria-label="Next page"
+      >
+        ›
+      </button>
+    </nav>
+  );
+}
+
+/* ========= Stores page ========= */
 
 export default function StoresPage() {
   const [search, setSearch] = useState("");
@@ -60,7 +174,10 @@ export default function StoresPage() {
     else {
       const inferred =
         nextCursor != null
-          ? Math.max(targetPage * pageSize + 1, (targetPage - 1) * pageSize + items.length)
+          ? Math.max(
+              targetPage * pageSize + 1,
+              (targetPage - 1) * pageSize + items.length
+            )
           : (targetPage - 1) * pageSize + items.length;
       setTotal(inferred);
     }
@@ -143,7 +260,7 @@ export default function StoresPage() {
         </div>
       </form>
 
-      {/* Table (unchanged below) */}
+      {/* Table */}
       <section className={styles.card}>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -160,7 +277,9 @@ export default function StoresPage() {
             <tbody>
               {rows.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="6" className={styles.empty}>No stores match your filters.</td>
+                  <td colSpan="6" className={styles.empty}>
+                    No stores match your filters.
+                  </td>
                 </tr>
               )}
               {rows.map((s) => (
@@ -170,13 +289,18 @@ export default function StoresPage() {
                   onClick={() => openDrawer(s)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openDrawer(s)}
+                  onKeyDown={(e) =>
+                    (e.key === "Enter" || e.key === " ") && openDrawer(s)
+                  }
                 >
                   <td>
                     <button
                       type="button"
                       className={`${styles.primaryCell} ${styles.clickable}`}
-                      onClick={(e) => { e.stopPropagation(); openDrawer(s); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openDrawer(s);
+                      }}
                     >
                       <div className={styles.logo}>{s.name.slice(0, 2)}</div>
                       <div className={styles.nameWrap}>
@@ -187,9 +311,16 @@ export default function StoresPage() {
                   </td>
                   <td className={styles.colOwner}>{s.owner}</td>
                   <td className={styles.colCity}>{s.city}</td>
-                  <td><StatusPill status={s.status} /></td>
-                  <td className={styles.colJoined}>{formatDate(s.joinedAt)}</td>
-                  <td className={styles.actions} onClick={(e) => e.stopPropagation()}>
+                  <td>
+                    <StatusPill status={s.status} />
+                  </td>
+                  <td className={styles.colJoined}>
+                    {formatDate(s.joinedAt)}
+                  </td>
+                  <td
+                    className={styles.actions}
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       className={styles.iconGhost}
                       title="View"
@@ -199,15 +330,24 @@ export default function StoresPage() {
                       <Icon d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Zm11 4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
                     </button>
                     {s.status === "suspended" ? (
-                      <button className={`${styles.mint} ${styles.fixedBtn}`} onClick={() => unsuspend(s.id)}>
+                      <button
+                        className={`${styles.mint} ${styles.fixedBtn}`}
+                        onClick={() => unsuspend(s.id)}
+                      >
                         Unsuspend
                       </button>
                     ) : (
-                      <button className={`${styles.slate} ${styles.fixedBtn}`} onClick={() => suspend(s.id)}>
+                      <button
+                        className={`${styles.slate} ${styles.fixedBtn}`}
+                        onClick={() => suspend(s.id)}
+                      >
                         Suspend
                       </button>
                     )}
-                    <button className={`${styles.danger} ${styles.fixedBtn}`} onClick={() => remove(s.id)}>
+                    <button
+                      className={`${styles.danger} ${styles.fixedBtn}`}
+                      onClick={() => remove(s.id)}
+                    >
                       Delete
                     </button>
                   </td>
@@ -218,31 +358,66 @@ export default function StoresPage() {
         </div>
 
         <div className={styles.footer}>
-          <Pagination current={page} total={Math.max(1, Math.ceil(total / pageSize))} onChange={(p) => load(p)} />
+          <Pagination
+            current={page}
+            total={totalPages}
+            onChange={(p) => load(p)}
+          />
         </div>
       </section>
 
       {selected && (
         <>
-          <div className={styles.backdrop} onClick={() => setSelected(null)} />
-          <aside className={styles.drawer} role="dialog" aria-modal="true">
+          <div
+            className={styles.backdrop}
+            onClick={() => setSelected(null)}
+          />
+          <aside
+            className={styles.drawer}
+            role="dialog"
+            aria-modal="true"
+          >
             <header className={styles.drawerHead}>
               <div>
                 <div className={styles.drawerTitle}>{selected.name}</div>
                 <div className={styles.drawerSub}>{selected.address}</div>
               </div>
-              <button className={styles.iconBtn} onClick={() => setSelected(null)} aria-label="Close">✕</button>
+              <button
+                className={styles.iconBtn}
+                onClick={() => setSelected(null)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
             </header>
 
             <div className={styles.drawerBody}>
               <section className={styles.infoCard}>
                 <div className={styles.infoGrid}>
-                  <div><span>Owner</span><b>{selected.owner}</b></div>
-                  <div><span>City</span><b>{selected.city}</b></div>
-                  <div><span>GSTIN</span><b>{selected.gstin || "—"}</b></div>
-                  <div><span>License</span><b>{selected.licenseNo || "—"}</b></div>
-                  <div><span>Phone</span><b>{selected.phone || "—"}</b></div>
-                  <div><span>Email</span><b>{selected.email || "—"}</b></div>
+                  <div>
+                    <span>Owner</span>
+                    <b>{selected.owner}</b>
+                  </div>
+                  <div>
+                    <span>City</span>
+                    <b>{selected.city}</b>
+                  </div>
+                  <div>
+                    <span>GSTIN</span>
+                    <b>{selected.gstin || "—"}</b>
+                  </div>
+                  <div>
+                    <span>License</span>
+                    <b>{selected.licenseNo || "—"}</b>
+                  </div>
+                  <div>
+                    <span>Phone</span>
+                    <b>{selected.phone || "—"}</b>
+                  </div>
+                  <div>
+                    <span>Email</span>
+                    <b>{selected.email || "—"}</b>
+                  </div>
                 </div>
               </section>
 
