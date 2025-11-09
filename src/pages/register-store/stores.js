@@ -1,4 +1,6 @@
+// src/pages/register-store/stores.js
 import {
+  db,
   addDoc,
   collection,
   deleteDoc,
@@ -12,7 +14,6 @@ import {
   orderBy,
   limit,
 } from "../Auth/firebase";
-import { db } from "../Auth/firebase";
 
 /* -------------------- helpers -------------------- */
 function toArrayMaybe(v) {
@@ -72,7 +73,12 @@ async function isAdmin(uid) {
 
 /* -------------------- CRUD -------------------- */
 
-// src/services/stores.js
+/**
+ * Create a new store.
+ * Accepts either:
+ *   createStore(ownerUid, data)
+ * or createStore({ ownerId, ...data })
+ */
 export async function createStore(ownerOrObj, maybeData = {}) {
   const normalized =
     typeof ownerOrObj === "string"
@@ -95,7 +101,6 @@ export async function createStore(ownerOrObj, maybeData = {}) {
   const membersArr = Array.from(new Set([ownerId, ...rawArr]));
 
   const payload = {
-    // ... your other fields ...
     name: normalized.name || "",
     phone: normalized.phone || "",
     licenseNo: normalized.licenseNo || "",
@@ -106,8 +111,14 @@ export async function createStore(ownerOrObj, maybeData = {}) {
     geo:
       normalized.geo && typeof normalized.geo === "object"
         ? {
-            lat: normalized.geo.lat === "" || normalized.geo.lat == null ? null : Number(normalized.geo.lat),
-            lng: normalized.geo.lng === "" || normalized.geo.lng == null ? null : Number(normalized.geo.lng),
+            lat:
+              normalized.geo.lat === "" || normalized.geo.lat == null
+                ? null
+                : Number(normalized.geo.lat),
+            lng:
+              normalized.geo.lng === "" || normalized.geo.lng == null
+                ? null
+                : Number(normalized.geo.lng),
           }
         : null,
 
@@ -125,7 +136,6 @@ export async function createStore(ownerOrObj, maybeData = {}) {
   return ref.id;
 }
 
-
 export async function deleteStore(storeId) {
   await deleteDoc(doc(db, "stores", storeId));
 }
@@ -135,41 +145,43 @@ export async function getStore(storeId) {
   return s.exists() ? docToStore(s) : null;
 }
 
-export async function submitStoreForVerification(storeId, status = "Pending") {
+/**
+ * Mark a store as submitted for verification.
+ * Call as: submitStoreForVerification(storeId, user.uid)
+ */
+// src/pages/register-store/stores.js (or your stores service)
+// Make sure this is in the same stores.js that Review/Status import from
+export async function submitStoreForVerification(storeId, submittedBy) {
   await updateDoc(doc(db, "stores", storeId), {
-    verificationStatus: status,
+    verificationStatus: "Submitted",
+    submittedBy: submittedBy || null,
+    submittedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 }
 
+
+
 /* -------------------- listeners -------------------- */
 /**
- * Returns Promise<unsubscribe>
+ * Live list of stores visible to a user.
+ * Returns an unsubscribe function.
  */
 export async function listenUserStores(uid, onData, onError) {
   const admin = await isAdmin(uid);
 
-  // Admin: simple stream (single-field orderBy is OK)
+  // Admin: stream most recent stores
   if (admin) {
     const qAll = query(
       collection(db, "stores"),
       orderBy("createdAt", "desc"),
       limit(200)
     );
-    const unsub = onSnapshot(
-      qAll,
-      (qs) => onData(qs.docs.map(docToStore)),
-      onError
-    );
-    return unsub;
+    return onSnapshot(qAll, (qs) => onData(qs.docs.map(docToStore)), onError);
   }
 
-  // Non-admins: remove orderBy to avoid composite index requirement
-  const qOwned = query(
-    collection(db, "stores"),
-    where("ownerId", "==", uid)
-  );
-
+  // Non-admin: two simple filters merged in-memory (no composite index needed)
+  const qOwned = query(collection(db, "stores"), where("ownerId", "==", uid));
   const qMember = query(
     collection(db, "stores"),
     where("membersArr", "array-contains", uid)
@@ -181,42 +193,31 @@ export async function listenUserStores(uid, onData, onError) {
   };
 
   function emit() {
-    const merged = new Map([...state.member, ...state.owned]);
+    const merged = new Map([...state.owned, ...state.member]);
     onData(Array.from(merged.values()));
   }
 
-  const unsubs = [];
-
-  unsubs.push(
-    onSnapshot(
-      qOwned,
-      (qs) => {
-        state.owned.clear;
-        state.owned = new Map();
-        
-        qs.docs.forEach((d) => state.owned.set(d.id, docToStore(d)));
-        emit();
-      },
-      onError
-    )
+  const unsubOwned = onSnapshot(
+    qOwned,
+    (qs) => {
+      state.owned = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+      emit();
+    },
+    onError
   );
 
-  unsubs.push(
-    onSnapshot(
-      qMember,
-      (qs) => {
-        state.member = new Map();
-        state.member.clear();
-        qs.docs.forEach((d) => state.member.set(d.id, docToStore(d)));
-        emit();
-      },
-      onError
-    )
+  const unsubMember = onSnapshot(
+    qMember,
+    (qs) => {
+      state.member = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+      emit();
+    },
+    onError
   );
 
-  return () =>
-    unsubs.forEach((u) => {
-      try { u && u(); } catch {}
-    });
+  return () => {
+    try { unsubOwned && unsubOwned(); } catch {}
+    try { unsubMember && unsubMember(); } catch {}
+  };
+  
 }
-

@@ -1,9 +1,10 @@
-// src/pages/RegisterStore/RegisterStore.jsx
+// src/pages/register-store/CreateStore.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
-import { createStore } from "../../../../../../temp/services/stores";
+import { createStore } from "./stores";
 import s from "./register.module.css";
+
 /* --------------- Google Maps helpers (inline) --------------- */
 function loadGoogle(key) {
   if (window.__gmapsPromise) return window.__gmapsPromise;
@@ -20,6 +21,7 @@ function loadGoogle(key) {
   });
   return window.__gmapsPromise;
 }
+
 function extractFromPlace(place) {
   const out = {
     line1: "",
@@ -48,11 +50,14 @@ function extractFromPlace(place) {
   }
   return out;
 }
+
 function parseGmapsLink(url) {
   try {
     const u = new URL(url.trim());
-    const at = u.pathname.match(/@(-?\d+(\.\d+)?),(-?\d+(\.\d+)?)/);
-    if (at) return { lat: Number(at[1]), lng: Number(at[3]) };
+    // matches ".../@18.5204,73.8567,..." styles
+    const at = u.pathname.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    if (at) return { lat: Number(at[1]), lng: Number(at[2]) };
+    // matches "...?q=18.5204,73.8567" styles
     if (u.searchParams.has("q")) {
       const parts = u.searchParams.get("q").split(",");
       if (parts.length >= 2) return { lat: Number(parts[0]), lng: Number(parts[1]) };
@@ -80,12 +85,13 @@ function LocationEditor({ value, onChange }) {
   useEffect(() => {
     let mounted = true;
     loadGoogle(mapsKey).then((g) => mounted && setGoogleObj(g || null));
-    return () => (mounted = false);
+    return () => { mounted = false; };
   }, [mapsKey]);
 
   useEffect(() => {
     if (!googleObj) return;
 
+    /* Autocomplete */
     if (searchRef.current && !searchRef.current.__ac) {
       const ac = new googleObj.maps.places.Autocomplete(searchRef.current, {
         fields: ["address_components", "formatted_address", "geometry", "name", "place_id"],
@@ -113,9 +119,9 @@ function LocationEditor({ value, onChange }) {
       });
     }
 
+    /* Map + draggable pin */
     if (mapRef.current && !gmap.current) {
-      const center =
-        lat != null && lng != null ? { lat, lng } : { lat: 18.5204, lng: 73.8567 }; // Pune
+      const center = lat != null && lng != null ? { lat, lng } : { lat: 18.5204, lng: 73.8567 }; // Pune
       gmap.current = new googleObj.maps.Map(mapRef.current, {
         center,
         zoom: 15,
@@ -136,9 +142,7 @@ function LocationEditor({ value, onChange }) {
         setLat(nlat);
         setLng(nlng);
         try {
-          const { results } = await geocoder.current.geocode({
-            location: { lat: nlat, lng: nlng },
-          });
+          const { results } = await geocoder.current.geocode({ location: { lat: nlat, lng: nlng } });
           const best = results?.[0];
           const ex = extractFromPlace(best || {});
           ex.lat = nlat;
@@ -234,6 +238,7 @@ function LocationEditor({ value, onChange }) {
         ref={searchRef}
         style={input}
         placeholder={googleObj ? "Type and pick from suggestions…" : "Street, City, PIN"}
+        autoComplete="off"
         value={addr}
         onChange={(e) => {
           setAddr(e.target.value);
@@ -254,41 +259,6 @@ function LocationEditor({ value, onChange }) {
         <button type="button" style={ghost} onClick={useGPS}>
           Use my location
         </button>
-      </div>
-
-      <div style={row}>
-        <input
-          style={input}
-          placeholder="Latitude"
-          value={lat ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            const num = v === "" ? null : Number(v);
-            setLat(num);
-            onChange?.({ formatted: addr, lat: num, lng, placeId: "" });
-          }}
-        />
-        <input
-          style={input}
-          placeholder="Longitude"
-          value={lng ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            const num = v === "" ? null : Number(v);
-            setLng(num);
-            onChange?.({ formatted: addr, lat, lng: num, placeId: "" });
-          }}
-        />
-        {lat != null && lng != null ? (
-          <a
-            href={`https://maps.google.com/?q=${lat},${lng}`}
-            target="_blank"
-            rel="noreferrer"
-            style={ghost}
-          >
-            Open map
-          </a>
-        ) : null}
       </div>
 
       {googleObj ? (
@@ -323,18 +293,11 @@ function LocationEditor({ value, onChange }) {
           />
         </div>
       ) : null}
-
-      {!googleObj && (
-        <div style={{ marginTop: 8, color: "#475569" }}>
-          ⚠️ Autocomplete & draggable pin need a valid <code>VITE_GOOGLE_MAPS_API_KEY</code>.{" "}
-          Fallback still works (paste link / GPS / manual lat-lng).
-        </div>
-      )}
     </div>
   );
 }
 
-export default function RegisterStore() {
+export default function CreateStore() {
   const nav = useNavigate();
   const { user } = useAuth() || {};
 
@@ -397,7 +360,7 @@ export default function RegisterStore() {
         placeId: form.placeId || null,
         formatted: form.formatted || null,
       });
-      nav(`/verification-status/${id}`);
+      nav(`/upload-docs/${id}`); // next step
     } catch (e) {
       console.error(e);
       setErr("Failed to create store. Try again.");
@@ -409,8 +372,6 @@ export default function RegisterStore() {
   return (
     <div className={s.wrap}>
       <div className={s.card}>
-
-        {/* NEW: top bar with back */}
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
           <button
             onClick={() => nav(-1)}
@@ -433,7 +394,7 @@ export default function RegisterStore() {
 
         <div className={s.sub}>Basic details for onboarding & verification.</div>
 
-        <label className={s.label}>Store name*</label>
+        <label className={s.label}>Store name</label>
         <input
           className={s.input}
           placeholder="e.g., Gholap Pharmacy"
@@ -442,7 +403,7 @@ export default function RegisterStore() {
         />
 
         <div className={s.section}>
-          <label className={s.label}>Address*</label>
+          <label className={s.label}>Address</label>
           <div className={s.hint}>
             Search your address or drop the pin. You can also paste a Google Maps link or use your current location.
           </div>

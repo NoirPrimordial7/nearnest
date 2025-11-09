@@ -47,7 +47,8 @@ export default function ReviewSubmit() {
     setSubmitting(true);
     try {
       await submitStoreForVerification(id, user.uid);
-      nav(`/verification-status/${id}`, { replace: true });
+      // Important: replace = true to avoid a back/forward loop
+      nav(`/verification-status/${id}`, { replace: true, state: { from: "review" } });
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +79,25 @@ export default function ReviewSubmit() {
           gap: 18,
         }}
       >
-        <h1 style={{ margin: 0 }}>Review & Submit</h1>
+        {/* Top bar */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            onClick={() => nav(`/verification-status/${id}`)}
+            aria-label="Back to Status"
+            style={{
+              height: 36,
+              padding: "0 12px",
+              borderRadius: 10,
+              background: "#f2f4f7",
+              border: "1px solid #e6e9ef",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            ← Back
+          </button>
+          <h1 style={{ margin: 0 }}>Review & Submit</h1>
+        </div>
 
         {/* Summary card */}
         <div
@@ -152,6 +171,7 @@ export default function ReviewSubmit() {
           </div>
         </div>
 
+        {/* Confirmation */}
         <label style={{ display: "flex", alignItems: "center", gap: 10, color: "#1b1e23" }}>
           <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
           I confirm that the details and documents are correct and belong to this store.

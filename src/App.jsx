@@ -15,7 +15,8 @@ import UserHome from './pages/user/UserHome';
 import UserProfile from './pages/user/UserProfiles';
 
 // Store Onboarding
-import RegisterStore from './pages/register-store/RegisterStore';
+import CreateStore from "./pages/register-store/CreateStore";
+import UploadDocuments from "./pages/register-store/UploadDocuments";
 import ReviewSubmit from './pages/register-store/ReviewSubmit';
 import VerificationStatus from './pages/register-store/VerificationStatus';
 
@@ -27,94 +28,103 @@ import SupportTickets from './pages/Admin/Support/SupportTickets';
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          {/* 🔐 AUTH ROUTES */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* 🔁 ROOT REDIRECTS BASED ON ROLE */}
-          <Route path="/" element={<RoleRedirect />} />
+      <Routes>
+        {/* 🔐 AUTH ROUTES */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* 👤 USER ROUTES */}
-          <Route
-            path="/home"
-            element={
-              <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
-                <RequireProfile>
-                  <UserHome />
-                </RequireProfile>
-              </ProtectedRoute>
-            }
-          />
+        {/* 🔁 ROOT REDIRECTS BASED ON ROLE */}
+        <Route path="/" element={<RoleRedirect />} />
 
-          <Route
-            path="/setup-profile"
-            element={
-              <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
-                <UserProfile />
-              </ProtectedRoute>
-            }
-          />
+        {/* 👤 USER ROUTES */}
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+              <RequireProfile>
+                <UserHome />
+              </RequireProfile>
+            </ProtectedRoute>
+          }
+        />
 
-          {/* 🏪 STORE REGISTRATION FLOW */}
-          <Route
-            path="/register-store"
-            element={
-              <ProtectedRoute allowed={['user', 'storeAdmin']}>
-                <RegisterStore />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/setup-profile"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+              <UserProfile />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/verification-status/:id"
-            element={
-              <ProtectedRoute allowed={['user', 'storeAdmin']}>
-                <VerificationStatus />
-              </ProtectedRoute>
-            }
-          />
+        {/* 🏪 STORE REGISTRATION FLOW */}
+        <Route
+          path="/register-store"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+              <CreateStore />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/upload-docs/:id"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+              <UploadDocuments />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/review-submit/:id"
-            element={
-              <ProtectedRoute allowed={['user', 'storeAdmin']}>
-                <ReviewSubmit />
-              </ProtectedRoute>
-            }
-          />
 
-          {/* 🛠️ ADMIN ROUTES */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute allowed={['admin']}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/verification-status/:id"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+              <VerificationStatus />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/admin/verification"
-            element={
-              <ProtectedRoute allowed={['admin']}>
-                <DocumentVerification />
-              </ProtectedRoute>
-            }
-          />
+        <Route
+          path="/review-submit/:id"
+          element={
+            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+              <ReviewSubmit />
+            </ProtectedRoute>
+          }
+        />
 
-          <Route
-            path="/admin/support"
-            element={
-              <ProtectedRoute allowed={['admin']}>
-                <SupportTickets />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+        {/* 🛠️ ADMIN ROUTES */}
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute allowed={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/verification"
+          element={
+            <ProtectedRoute allowed={['admin']}>
+              <DocumentVerification />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/support"
+          element={
+            <ProtectedRoute allowed={['admin']}>
+              <SupportTickets />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+
     </AuthProvider>
   );
 }
