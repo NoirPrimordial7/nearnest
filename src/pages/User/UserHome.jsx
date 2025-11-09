@@ -42,19 +42,16 @@ function prettyAddress(addr) {
 export default function UserHome() {
   const nav = useNavigate();
   const { user } = useAuth();
-
-  const profState = useProfileComplete(user?.uid);
-  const prof = profState.data;
-  const profileLoading = profState.loading;
-
   const [stores, setStores] = useState(null);
   const [errMsg, setErrMsg] = useState("");
 
   const { open, setOpen, ref } = useAvatarMenu();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  // Tabs
   const [tab, setTab] = useState("verified"); // 'verified' | 'under'
 
+  // kebab
   const [menuFor, setMenuFor] = useState(null);
   const menuRef = useRef(null);
   useEffect(() => {
@@ -65,14 +62,17 @@ export default function UserHome() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  // Start store listener
+  const { data: prof } = useProfileComplete(user?.uid);
+
+  // await listener to get a real unsubscribe
   useEffect(() => {
     if (!user?.uid) return;
+
     setErrMsg("");
     setStores(null);
 
     let mounted = true;
-    let stop = () => {};
+    let stop = () => { };
 
     (async () => {
       try {
@@ -105,7 +105,7 @@ export default function UserHome() {
 
     return () => {
       mounted = false;
-      try { stop && stop(); } catch {}
+      try { stop && stop(); } catch { }
     };
   }, [user?.uid]);
 
@@ -128,15 +128,6 @@ export default function UserHome() {
   const under = (stores || []).filter(
     (x) => storeBucket(x.verificationStatus) !== "verified"
   );
-  const allStores = stores || [];
-  const noStores = stores !== null && allStores.length === 0;
-
-  const profileMissing =
-    !profileLoading &&
-    (!prof ||
-      !prof.profile ||
-      !prof.profile.fullName ||
-      !String(prof.profile.phone || "").trim());
 
   const openStore = (st) => {
     const bucket = storeBucket(st.verificationStatus);
@@ -147,19 +138,9 @@ export default function UserHome() {
     }
   };
 
-  // search (for State B)
-  const [q, setQ] = useState("");
-  const qlc = q.trim().toLowerCase();
-  const filtered = (tab === "verified" ? verified : under).filter((st) =>
-    (st.name || "Untitled store").toLowerCase().includes(qlc)
-  );
-
   return (
-    <div className={s.screen}>
-      {/* sheen */}
-      <div className={s.sheen} aria-hidden="true" />
-
-      <div className={s.container}>
+    <div className={s.screen} style={{ minHeight: "100vh" }}>
+      <div className={s.container} style={{ maxWidth: "1400px" }}>
         {/* Topbar */}
         <header className={s.topbar}>
           <div className={s.brandWrap}>
@@ -231,7 +212,7 @@ export default function UserHome() {
                   className={s.menuItemDanger}
                   onClick={async () => {
                     try {
-                      await (typeof signOut === "function" ? signOut() : Promise.resolve());
+                      await signOut();
                     } finally {
                       nav("/signin", { replace: true });
                     }
@@ -244,193 +225,222 @@ export default function UserHome() {
           </div>
         </header>
 
-        {/* Profile reminder */}
-        {!profileLoading && profileMissing && (
-          <div className={s.profileCallout}>
-            <div className={s.pcText}>
-              <strong>Complete your personal information</strong>
-              <span className={s.pcMuted}>
-                Add your name and phone to proceed smoothly with store verification.
-              </span>
+        {/* Full-width main */}
+        <main
+          className={s.layout}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "420px 1fr",
+            gap: 20,
+            alignItems: "start",
+          }}
+        >
+          {/* Left CTA */}
+          <section className={s.cardLeft}>
+            <div className={s.switchRow}>
+              <span className={s.switchActive}>Stores</span>
+              <span className={s.switchMuted}>Branding</span>
             </div>
-            <button className={s.pcBtn} onClick={() => nav("/setup-profile")}>
-              Complete Profile →
-            </button>
-          </div>
-        )}
 
-        {/* ======================= STATE A: NO STORES ======================= */}
-        {stores === null ? (
-          <section className={s.loadingWrap}>
-            <SkeletonGrid />
+            <h1 className={s.heroPrice}>
+              <span className={s.heroEm}>Register</span> a Store
+            </h1>
+
+            <div className={s.leftFooterRow}>
+              <div className={s.availDot} />
+              <span>Ready to onboard</span>
+            </div>
+
+            <button className={s.primaryCta} onClick={() => setConfirmOpen(true)}>
+              <span className={s.ctaIcon} />
+              Register a Store
+              <span className={s.ctaArrow}>→</span>
+            </button>
           </section>
-        ) : noStores ? (
-          <main className={s.firstTime}>
-            <div className={s.firstBox}>
-              <div className={s.ftBadge}>Onboarding • Step 1</div>
-              <h1 className={s.ftHello}>Hello, {displayName}</h1>
-              <h2 className={s.ftTitle}>Launch your pharmacy on NearNest.</h2>
-              <p className={s.ftSub}>
-                Register your first store to start managing inventory, orders, and access.
-              </p>
-              <button className={s.heroCTA} onClick={() => setConfirmOpen(true)}>
-                Register a Store <span className={s.ctaArrow}>→</span>
+
+          {/* Right: Tabs */}
+          <section className={s.cardRight} style={{ height: "100%" }}>
+            <div className={s.rightHeader}>
+              <h3>Projects & workspaces</h3>
+              <div className={s.legend}>
+                <span className={`${s.dot} ${s.dotGreen}`} /> Verified
+                <span className={`${s.dot} ${s.dotBlue}`} /> Pending
+                <span className={`${s.dot} ${s.dotRed}`} /> Rejected
+              </div>
+            </div>
+
+            {errMsg && (
+              <div className={s.errBanner} style={{ marginBottom: 10 }}>
+                {errMsg}
+              </div>
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                borderBottom: "1px solid #eee",
+                marginBottom: 12,
+              }}
+            >
+              <button
+                onClick={() => setTab("verified")}
+                style={{
+                  padding: "10px 14px",
+                  border: 0,
+                  background: tab === "verified" ? "#111" : "transparent",
+                  color: tab === "verified" ? "#fff" : "#111",
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Verified stores ({verified.length})
+              </button>
+              <button
+                onClick={() => setTab("under")}
+                style={{
+                  padding: "10px 14px",
+                  border: 0,
+                  background: tab === "under" ? "#111" : "transparent",
+                  color: tab === "under" ? "#fff" : "#111",
+                  borderRadius: 10,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Under verification ({under.length})
               </button>
             </div>
-          </main>
-        ) : (
-          /* ======================= STATE B: HAS STORES ======================= */
-          <main className={s.shell}>
-            {/* Left panel = Get started */}
-            <aside className={s.sidebar}>
-              <div className={s.sidebarHead}>
-                <div className={s.sidebarBrand}>
-                  <span className={s.logoDot} />
-                  Get started
-                </div>
-              </div>
 
-              <div className={s.startCard}>
-                <h3 className={s.startTitle}>Create a new store</h3>
-                <p className={s.startSub}>
-                  Add another pharmacy to your workspace and invite staff later.
-                </p>
-                <button className={s.addBtn} onClick={() => setConfirmOpen(true)}>
-                  + Register New Store
-                </button>
-              </div>
-
-              {under.length > 0 && (
-                <div className={s.startCard}>
-                  <h4 className={s.startSmall}>Pending verification</h4>
-                  <p className={s.startSubSmall}>
-                    {under.length} store{under.length > 1 ? "s" : ""} need your attention.
-                  </p>
-                  <button className={s.linkGhost} onClick={() => setTab("under")}>
-                    Review now →
-                  </button>
-                </div>
-              )}
-            </aside>
-
-            {/* Right panel = Stores list */}
-            <section className={s.main}>
-              <div className={s.mainTopRow}>
-                <div>
-                  <h2 className={s.h2}>Your stores</h2>
-                  <p className={s.subh}>Browse your verified and in-review stores.</p>
-                </div>
-                <div className={s.roleBadge}>
-                  {(prof?.role || prof?.roles?.[0] || "User")
-                    .toString()
-                    .replace(/^\w/, (c) => c.toUpperCase())}
-                </div>
-              </div>
-
-              {errMsg && <div className={s.errBanner}>{errMsg}</div>}
-
-              <div className={s.searchRow}>
-                <input
-                  className={s.searchInput}
-                  placeholder="Search stores…"
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                />
-                <div className={s.legend}>
-                  <span className={`${s.dot} ${s.dotGreen}`} /> Verified
-                  <span className={`${s.dot} ${s.dotBlue}`} /> Pending
-                  <span className={`${s.dot} ${s.dotRed}`} /> Rejected
-                </div>
-              </div>
-
-              <div className={s.tabRow}>
-                <button
-                  onClick={() => setTab("verified")}
-                  className={`${s.tabBtn} ${tab === "verified" ? s.tabActive : ""}`}
-                >
-                  Verified ({verified.length})
-                </button>
-                <button
-                  onClick={() => setTab("under")}
-                  className={`${s.tabBtn} ${tab === "under" ? s.tabActive : ""}`}
-                >
-                  Pending/Review ({under.length})
-                </button>
-              </div>
-
-              {(tab === "verified" ? filtered : filtered).length === 0 ? (
-                <Empty
-                  text={
-                    tab === "verified"
-                      ? "No verified stores yet."
-                      : "No applications in progress."
-                  }
-                />
+            {stores === null ? (
+              <SkeletonGrid />
+            ) : tab === "verified" ? (
+              verified.length === 0 ? (
+                <Empty text="No verified stores yet." />
               ) : (
                 <div className={s.grid}>
-                  {filtered.map((st) => {
-                    const status = (st.verificationStatus || "Pending").toLowerCase();
-                    const badge =
-                      storeBucket(st.verificationStatus) === "verified"
-                        ? s.badgeGreen
-                        : status === "rejected"
-                        ? s.badgeRed
-                        : s.badgeBlue;
-                    return (
-                      <StoreCard
-                        key={st.id}
-                        s={st}
-                        badgeClass={badge}
-                        onOpen={() => openStore(st)}
-                        onKebab={() => setMenuFor(st.id)}
-                        menuOpen={menuFor === st.id}
-                        menuRef={menuRef}
-                        onDelete={async () => {
-                          if (!window.confirm("Delete this store? This can’t be undone.")) return;
-                          await deleteStore(st.id);
-                          setMenuFor(null);
-                        }}
-                      />
-                    );
-                  })}
+                  {verified.map((st) => (
+                    <StoreCard
+                      key={st.id}
+                      s={st}
+                      badgeClass={s.badgeGreen}
+                      onOpen={() => openStore(st)}
+                      onKebab={() => setMenuFor(st.id)}
+                      menuOpen={menuFor === st.id}
+                      menuRef={menuRef}
+                      onDelete={async () => {
+                        if (!window.confirm("Delete this store? This can’t be undone.")) return;
+                        await deleteStore(st.id);
+                        setMenuFor(null);
+                      }}
+                    />
+                  ))}
                 </div>
-              )}
-            </section>
-          </main>
-        )}
-
-        {/* Confirm modal */}
-        {confirmOpen && (
-          <div onClick={() => setConfirmOpen(false)} className={s.modalOverlay}>
-            <div
-              role="dialog"
-              aria-modal="true"
-              onClick={(e) => e.stopPropagation()}
-              className={s.modal}
-            >
-              <h3 className={s.modalTitle}>Register a new store?</h3>
-              <p className={s.modalText}>
-                We’ll collect your store details and verification documents. You can
-                save progress and return anytime.
-              </p>
-              <div className={s.modalActions}>
-                <button onClick={() => setConfirmOpen(false)} className={s.btnGhost}>
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setConfirmOpen(false);
-                    nav("/register-store");
-                  }}
-                  className={s.btnPrimary}
-                >
-                  Continue
-                </button>
+              )
+            ) : under.length === 0 ? (
+              <Empty text="No applications in progress." />
+            ) : (
+              <div className={s.grid}>
+                {under.map((st) => {
+                  const status = (st.verificationStatus || "Pending").toLowerCase();
+                  const badge =
+                    status === "rejected" ? s.badgeRed :
+                      status === "draft" ? s.badgeBlue :
+                        s.badgeBlue;
+                  return (
+                    <StoreCard
+                      key={st.id}
+                      s={st}
+                      badgeClass={badge}
+                      onOpen={() => openStore(st)}
+                      onKebab={() => setMenuFor(st.id)}
+                      menuOpen={menuFor === st.id}
+                      menuRef={menuRef}
+                      onDelete={async () => {
+                        if (!window.confirm("Delete this application?")) return;
+                        await deleteStore(st.id);
+                        setMenuFor(null);
+                      }}
+                    />
+                  );
+                })}
               </div>
+            )}
+          </section>
+        </main>
+      </div>
+
+      {/* Confirm modal */}
+      {confirmOpen && (
+        <div
+          onClick={() => setConfirmOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,.45)",
+            backdropFilter: "blur(3px)",
+            display: "grid",
+            placeItems: "center",
+            zIndex: 50,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(560px,92vw)",
+              background: "#fff",
+              borderRadius: 20,
+              boxShadow: "0 50px 120px rgba(0,0,0,.25), 0 2px 0 rgba(255,255,255,.8) inset",
+              padding: "22px 22px 18px",
+            }}
+          >
+            <h3 style={{ margin: "6px 0 2px", fontWeight: 800, fontSize: 20 }}>
+              Register a new store?
+            </h3>
+            <p style={{ margin: "8px 0 18px", color: "#6a7079" }}>
+              We’ll collect your store details and verification documents. You can
+              save progress and return anytime.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setConfirmOpen(false)}
+                style={{
+                  height: 42,
+                  padding: "0 16px",
+                  borderRadius: 10,
+                  background: "#f2f4f7",
+                  border: "1px solid #e6e9ef",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  nav("/register-store");
+                }}
+                style={{
+                  height: 42,
+                  padding: "0 18px",
+                  borderRadius: 10,
+                  background: "#111",
+                  color: "#fff",
+                  border: 0,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Continue
+              </button>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -450,19 +460,19 @@ function Empty({ text }) {
   return <div className={s.empty}>{text}</div>;
 }
 
-function StoreCard({ s: store, badgeClass, onOpen, onKebab, menuOpen, menuRef, onDelete }) {
+function StoreCard({ s, badgeClass, onOpen, onKebab, menuOpen, menuRef, onDelete }) {
   return (
     <div className={s.storeCard} style={{ position: "relative" }}>
       <button className={s.cardClickLayer} onClick={onOpen} title="Open" />
       <div className={s.storeTopRow}>
-        <div className={s.storeName}>{store.name || "Untitled store"}</div>
+        <div className={s.storeName}>{s.name || "Untitled store"}</div>
         <span className={`${s.badge} ${badgeClass}`}>
-          {store.verificationStatus || "Pending"}
+          {s.verificationStatus || "Pending"}
         </span>
       </div>
-      <div className={s.storeAddr}>{prettyAddress(store.address)}</div>
+      <div className={s.storeAddr}>{prettyAddress(s.address)}</div>
       <div className={s.storeMeta}>
-        <span>ID: {String(store.id).slice(0, 8)}…</span>
+        <span>ID: {String(s.id).slice(0, 8)}…</span>
       </div>
 
       {/* kebab */}
@@ -472,14 +482,52 @@ function StoreCard({ s: store, badgeClass, onOpen, onKebab, menuOpen, menuRef, o
           onKebab?.();
         }}
         title="More"
-        className={s.kebabBtn}
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          border: "1px solid #eee",
+          background: "#fff",
+          display: "grid",
+          placeItems: "center",
+          cursor: "pointer",
+        }}
       >
         ⋮
       </button>
 
       {menuOpen && (
-        <div ref={menuRef} className={s.kebabMenu} onClick={(e) => e.stopPropagation()}>
-          <button onClick={onDelete} className={s.kebabDanger}>
+        <div
+          ref={menuRef}
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 8,
+            background: "#fff",
+            border: "1px solid #eee",
+            borderRadius: 10,
+            boxShadow: "0 10px 30px rgba(0,0,0,.08)",
+            minWidth: 160,
+            zIndex: 10,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={onDelete}
+            style={{
+              width: "100%",
+              textAlign: "left",
+              padding: "10px 12px",
+              background: "transparent",
+              border: 0,
+              cursor: "pointer",
+              color: "#c22",
+              fontWeight: 700,
+            }}
+          >
             Delete
           </button>
         </div>

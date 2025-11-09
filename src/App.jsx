@@ -4,7 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider, RoleRedirect } from "./pages/Auth/AuthContext";
 import RequireProfile from "./pages/user/RequireProfile";
 import ProtectedRoute from './pages/routes/ProtectedRoute';
-import storemange from './pages/Admin/Stores/StoresPage';
+// Store Admin
+import StoreAdminLayout from './pages/StoreAdmin/StoreAdminLayout';
+//import StoreDashboardPage from './pages/StoreAdmin/StoreAdminDashboard';
 // Auth
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
@@ -100,20 +102,25 @@ function App() {
         />
 
         {/* 🛠️ ADMIN ROUTES */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute allowed={['admin']}>
-                <AdminLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="stores" element={<AdminStores />} />
-            <Route path="verification" element={<AdminVerification />} />
-            <Route path="support" element={<AdminSupport />} />
-          </Route>
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowed={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminDashboard />} />
+          <Route path="stores" element={<AdminStores />} />
+          <Route path="verification" element={<AdminVerification />} />
+          <Route path="support" element={<AdminSupport />} />
+        </Route>
       </Routes>
+
+      <Route path="/store-admin" element={<StoreAdminLayout />}>
+                {/* etc… */}
+      </Route>
+
 
     </AuthProvider>
   );
