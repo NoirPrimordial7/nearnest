@@ -3,34 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function signedIn() { return request.auth != null; }
+    /* ---------- Common helpers ---------- */
+    function signedIn() {
+      return request.auth != null;
+    }
 
     function userDoc(uid) {
       return get(/databases/$(database)/documents/users/$(uid));
-    }
-
-    function isAdmin() {
-      return signedIn()
-        && userDoc(request.auth.uid).exists()
-        && userDoc(request.auth.uid).data.roles is list
-        && userDoc(request.auth.uid).data.roles.hasAny(['admin']);
     }
 
     function isOwner(ownerId) {
       return signedIn() && ownerId != null && request.auth.uid == ownerId;
     }
 
-    // allow members as map OR array
     function isMemberMapOrArray(members) {
       return signedIn()
         && members != null
         && (
-             (members[request.auth.uid] == true) ||
-             (members is list && members.hasAny([request.auth.uid]))
-           );
+          (members[request.auth.uid] == true) ||
+          (members is list && members.hasAny([request.auth.uid]))
+        );
     }
 
-    // also allow legacy membersArr array
     function isMemberPlus(members, membersArr) {
       return isMemberMapOrArray(members)
         || (signedIn() && membersArr is list && membersArr.hasAny([request.auth.uid]));
@@ -46,83 +40,134 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/stores/$(storeId));
     }
 
+    /** NEW: unified verifier permission
+     *  - true for admins (role)
+     *  - true for users whose /users/{uid}.permissions contains "VERIFY_DOCS"
+     *  - also supports legacy role "verifier" if you already store it in roles[]
+     */
+    function canVerifyDocs() {
+      return signedIn()
+        && userDoc(request.auth.uid).exists()
+        && (
+          // Admins
+          (
+            userDoc(request.auth.uid).data.roles is list
+            && userDoc(request.auth.uid).data.roles.hasAny(['admin'])
+          )
+          ||
+          // Explicit permission
+          (
+            userDoc(request.auth.uid).data.permissions is list
+            && userDoc(request.auth.uid).data.permissions.hasAny(['VERIFY_DOCS'])
+          )
+          ||
+          // Back-compat: "verifier" role if you use roles[] only
+          (
+            userDoc(request.auth.uid).data.roles is list
+            && userDoc(request.auth.uid).data.roles.hasAny(['verifier'])
+          )
+        );
+    }
+
     function canAccessStoreViaDoc(s) {
       return isOwner(s.data.ownerId)
-          || isMemberPlus(s.data.members, s.data.membersArr)
-          || isVisibleTo(s.data.visibleTo)
-          || isAdmin();
+        || isMemberPlus(s.data.members, s.data.membersArr)
+        || isVisibleTo(s.data.visibleTo)
+        || canVerifyDocs();  // <— verifier/admin access
     }
 
-    /* users */
+    /* ---------- USERS ---------- */
     match /users/{uid} {
-      allow read:  if (signedIn() && request.auth.uid == uid) || isAdmin();
-      allow write: if signedIn() && request.auth.uid == uid;
+      // Read own doc or any verifier/admin (needed for dashboards & moderation)
+      allow read: if (signedIn() && request.auth.uid == uid) || canVerifyDocs();
+
+      // Allow the user to update themselves; also allow verifier/admin to set verificationStatus etc.
+      allow update: if (signedIn() && request.auth.uid == uid) || canVerifyDocs();
+
+      allow create: if signedIn();
     }
 
-    /* stores */
+    /* ---------- ROLES (for AuthContext) ---------- */
+    match /roles/{roleId} {
+      allow read: if signedIn();
+    }
+
+    /* ---------- STORES ---------- */
     match /stores/{storeId} {
-      allow read: if
+      // listing stores for dashboards
+      allow list: if canVerifyDocs();
+
+      // read by owner/member/visible or verifier/admin
+      allow get, read: if
         isOwner(resource.data.ownerId) ||
         isMemberPlus(resource.data.members, resource.data.membersArr) ||
         isVisibleTo(resource.data.visibleTo) ||
-        isAdmin();
+        canVerifyDocs();
 
-      allow create: if signedIn() && (
-        request.resource.data.ownerId == request.auth.uid || isAdmin()
-      );
+      // anyone signed-in may create a store (adjust if needed)
+      allow create: if signedIn();
 
+      // UPDATE: owner/member or verifier/admin (approve/reject/flag store, set verificationStatus)
       allow update: if signedIn() && (
         isOwner(resource.data.ownerId) ||
         isMemberPlus(resource.data.members, resource.data.membersArr) ||
-        isAdmin()
+        canVerifyDocs()         // <— replaced isAdmin() with canVerifyDocs()
       );
 
+      // delete by owner or admin (keep strict)
       allow delete: if signedIn() && (
-        isOwner(resource.data.ownerId) || isAdmin()
+        isOwner(resource.data.ownerId) ||
+        (userDoc(request.auth.uid).data.roles is list
+          && userDoc(request.auth.uid).data.roles.hasAny(['admin']))
       );
 
-      /* verification docs */
+      /* ----- SUBCOLLECTION: documents ----- */
       match /documents/{docId} {
+        // read allowed if you can access the store or you are verifier/admin
         allow read: if canAccessStoreViaDoc(storeDoc(storeId));
 
+        // create by owner/uploader; verifier/admin also allowed when needed
         allow create: if canAccessStoreViaDoc(storeDoc(storeId))
           && request.resource.data.path is string
-          && request.resource.data.url  is string
+          && request.resource.data.url is string
           && request.resource.data.kind is string
           && request.resource.data.uploadedBy is string
           && (
-               request.resource.data.uploadedBy == request.auth.uid
-               || isAdmin()
-             );
+            request.resource.data.uploadedBy == request.auth.uid
+            || canVerifyDocs()          // <— replaced isAdmin()
+          );
 
+        // update by owner or original uploader; verifier/admin can moderate (approve/reject/flag)
         allow update: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           (resource.data.uploadedBy == request.auth.uid &&
-           request.resource.data.uploadedBy == resource.data.uploadedBy) ||
-          isAdmin()
+            request.resource.data.uploadedBy == resource.data.uploadedBy) ||
+          canVerifyDocs()               // <— replaced isAdmin()
         );
 
+        // delete by owner/uploader or verifier/admin
         allow delete: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           resource.data.uploadedBy == request.auth.uid ||
-          isAdmin()
+          canVerifyDocs()               // <— replaced isAdmin()
         );
       }
 
-      /* other store subcollections */
+      /* ----- OTHER store subcollections (e.g., verificationLogs) ----- */
       match /{sub=**}/{docId} {
-        allow read:  if canAccessStoreViaDoc(storeDoc(storeId));
+        allow read: if canAccessStoreViaDoc(storeDoc(storeId));
+        // writes allowed for owner/member or verifier/admin (log writes, etc.)
         allow write: if signedIn() && (
           isOwner(storeDoc(storeId).data.ownerId) ||
           isMemberPlus(storeDoc(storeId).data.members, storeDoc(storeId).data.membersArr) ||
-          isAdmin()
+          canVerifyDocs()               // <— replaced isAdmin()
         );
       }
     }
 
-    /* default deny */
+    /* ---------- Fallback readable to signed-in users ---------- */
     match /{document=**} {
-      allow read, write: if false;
+      allow read: if signedIn();
     }
   }
 }
