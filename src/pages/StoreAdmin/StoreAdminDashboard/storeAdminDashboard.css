@@ -1,0 +1,369 @@
+/* ================= Root Variables ================= */
+:root {
+  --bg-main: #0e1117;
+  --bg-card: #1b1f2a;
+  --bg-hover: #222632;
+  --accent: #3b82f6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --border: rgba(255, 255, 255, 0.08);
+  --radius: 14px;
+  --shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  --transition: 0.3s ease;
+  --sidebar-w: 260px;
+  --topbar-h: 60px;
+  font-family: "Inter", "Poppins", sans-serif;
+}
+
+/* ================= Base Layout ================= */
+.sa-root {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Topbar ---------- */
+.sa-topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.sa-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-hover);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.sa-hamburger:hover {
+  background: var(--accent);
+}
+.sa-h-line {
+  width: 18px;
+  height: 2px;
+  background: var(--text-primary);
+  margin: 3px 0;
+  border-radius: 1px;
+}
+
+.sa-brand {
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+
+.sa-topbar-right {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* ---------- Shell ---------- */
+.sa-shell {
+  display: flex;
+  flex: 1;
+  position: relative;
+  min-height: calc(100vh - var(--topbar-h));
+}
+
+/* ---------- Sidebar ---------- */
+.sa-left {
+  width: var(--sidebar-w);
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  transition: transform var(--transition);
+  overflow-y: auto;
+}
+.sa-left-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.sa-left ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.sa-left li {
+  padding: 14px 20px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+}
+.sa-left li:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateX(3px);
+}
+.sa-left li:active {
+  transform: translateX(1px);
+}
+
+/* ---------- Main ---------- */
+.sa-right {
+  flex: 1;
+  padding: 28px;
+  overflow-y: auto;
+}
+
+/* ---------- Dashboard Container ---------- */
+.dashboard-container {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.dashboard-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+}
+.dashboard-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+/* ---------- KPI Section ---------- */
+.kpi-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  padding: 18px;
+  border-radius: var(--radius);
+  text-align: center;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform var(--transition), background var(--transition);
+}
+.kpi-card:hover {
+  transform: translateY(-4px);
+  background: var(--bg-hover);
+}
+
+/* ---------- Charts ---------- */
+.charts-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: background var(--transition);
+}
+.chart-card:hover {
+  background: var(--bg-hover);
+}
+.chart-card h3 {
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* ---------- Activity Section ---------- */
+.activity-section {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 18px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+.activity-section h3 {
+  margin-bottom: 12px;
+}
+.activity-section ul {
+  list-style: none;
+  padding: 0;
+}
+.activity-section li {
+  padding: 10px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  transition: color var(--transition);
+}
+.activity-section li:hover {
+  color: var(--text-primary);
+}
+
+/* ---------- Actions ---------- */
+.actions-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+.action-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background var(--transition), transform var(--transition);
+}
+.action-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+}
+.action-btn:active {
+  transform: translateY(1px);
+}
+
+/* ---------- Popup ---------- */
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+.popup-window {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  width: 90%;
+  max-width: 340px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  animation: popIn 0.4s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.popup-input,
+.popup-file {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.popup-add-btn {
+  background: var(--accent-green);
+  border: none;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background var(--transition);
+}
+.popup-add-btn:hover {
+  background: #059669;
+}
+.popup-close-btn {
+  background: var(--accent-red);
+  border: none;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.popup-close-btn:hover {
+  background: #dc2626;
+}
+
+/* ---------- Confirmation ---------- */
+.confirmation {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--accent-green);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  animation: fadeInOut 2s ease;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(10px); }
+  20%, 80% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(10px); }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .sa-shell { flex-direction: column; }
+  .sa-left {
+    position: fixed;
+    top: var(--topbar-h);
+    left: 0;
+    height: calc(100vh - var(--topbar-h));
+    transform: translateX(-100%);
+    z-index: 80;
+  }
+  .sa-left.open { transform: translateX(0); }
+  .sa-right { padding: 18px; }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header h1 { font-size: 1.6rem; }
+  .action-btn { width: 100%; }
+}
+
+
+/* Sidebar container width + animation */
+.sa-left {
+  width: 260px;                 /* default wide */
+  transition: width 0.28s ease; /* animate */
+}
+
+.sa-left.collapsed {
+  width: 80px;                  /* collapsed width */
+}
+
+/* (Optional) nudge content for a premium feel */
+.sa-right {
+  transition: padding 0.28s ease;
+}
+.sa-right.shifted {
+  /* no extra padding needed if you use flex; keep for subtle effect if desired */
+}

@@ -1,0 +1,839 @@
+/* src/pages/StoreAdmin/help.css */
+
+/* ---------------------------------------------
+   Root theme
+---------------------------------------------- */
+
+.support-root {
+  --bg-root: radial-gradient(circle at top left, #0f172a 0, #020617 45%, #020617 100%);
+  --bg-card: rgba(10, 16, 30, 0.98);
+  --bg-card-soft: rgba(12, 19, 35, 0.98);
+  --border-soft: rgba(148, 163, 184, 0.22);
+  --border-strong: rgba(75, 85, 99, 0.9);
+  --text-main: #e5e7eb;
+  --text-soft: #9ca3af;
+  --text-mute: #6b7280;
+  --accent: #3b82f6;
+  --accent-soft: #2563eb;
+  --accent-alt: #4f46e5;
+  --shadow-strong: 0 18px 40px rgba(15, 23, 42, 0.9);
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+
+  background: var(--bg-root);
+  color: var(--text-main);
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Inter", sans-serif;
+}
+
+/* ---------------------------------------------
+   Layout
+---------------------------------------------- */
+
+.support-root .support-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 32px 40px;
+}
+
+.support-root .support-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.support-root .support-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.support-root .support-head p {
+  margin-top: 4px;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.support-root .head-right {
+  display: flex;
+  gap: 16px;
+}
+
+/* Metrics */
+
+.support-root .metric {
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.16),
+    rgba(9, 9, 15, 0.98)
+  );
+  border-radius: 12px;
+  padding: 8px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  text-align: right;
+  min-width: 86px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.7);
+}
+
+.support-root .metric-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.support-root .metric-value {
+  font-size: 1.08rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* ---------------------------------------------
+   Grid columns
+---------------------------------------------- */
+
+.support-root .support-grid {
+  display: grid;
+  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
+  gap: 24px;
+}
+
+.support-root .support-left,
+.support-root .support-right {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------------------------------------------
+   Cards
+---------------------------------------------- */
+
+.support-root .card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-strong);
+  overflow: hidden;
+}
+
+.support-root .card.secondary {
+  border-style: dashed;
+  border-color: rgba(148, 163, 184, 0.4);
+  background: radial-gradient(
+      circle at top left,
+      rgba(37, 99, 235, 0.26),
+      #020617
+    );
+}
+
+.support-root .card-head {
+  padding: 14px 16px 6px;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.98);
+}
+
+.support-root .card-head.small {
+  padding-bottom: 8px;
+}
+
+.support-root .card-head h3 {
+  font-size: 0.96rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.support-root .card-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-top: 3px;
+  padding-bottom: 4px;
+}
+
+.support-root .card-body {
+  padding: 12px 16px 14px;
+}
+
+/* Secondary tips */
+
+.support-root .card.secondary .tips ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 4px 0 0;
+}
+
+.support-root .card.secondary .tips li {
+  font-size: 0.78rem;
+  color: var(--text-main);
+  margin-bottom: 5px;
+}
+
+.support-root .card.secondary .tips strong {
+  color: #bfdbfe;
+}
+
+/* ---------------------------------------------
+   Form
+---------------------------------------------- */
+
+.support-root .form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px 14px;
+}
+
+.support-root .form-field.full {
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 1024px) {
+  .support-root .support-left .card .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .support-root .support-left .card .form-field.full {
+    grid-column: 1 / -1;
+  }
+}
+
+.support-root .support-left .form-field {
+  margin-bottom: 2px;
+}
+
+.support-root .support-left .form-field .label {
+  margin-bottom: 4px;
+}
+
+/* Labels & inputs */
+
+.support-root .label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-bottom: 3px;
+}
+
+.support-root .input,
+.support-root .textarea {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card-soft);
+  color: var(--text-main);
+  padding: 7px 9px;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+
+.support-root .input::placeholder,
+.support-root .textarea::placeholder {
+  color: var(--text-mute);
+}
+
+.support-root .input:focus,
+.support-root .textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.55);
+  background: #020817;
+}
+
+.support-root .textarea {
+  resize: vertical;
+}
+
+/* Select */
+
+.support-root .input-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-card-soft);
+  color: var(--text-main);
+}
+
+.support-root .input-select svg {
+  flex-shrink: 0;
+  color: var(--text-mute);
+}
+
+.support-root .input-select select {
+  flex: 1;
+  border: none;
+  background-color: transparent;
+  color: var(--text-main);
+  font-size: 0.82rem;
+  outline: none;
+}
+
+.support-root .input-select select option {
+  background-color: #020617;
+  color: var(--text-main);
+}
+
+/* Priority chips */
+
+.support-root .priority-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.support-root .priority-chip {
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  border: 1px solid rgba(75, 85, 99, 0.9);
+  background: var(--bg-card-soft);
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.support-root .priority-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+
+.support-root .priority-chip.active {
+  border-color: var(--accent);
+  background: radial-gradient(circle at top left, var(--accent-alt), #020817);
+  color: var(--text-main);
+}
+
+/* Badges & status pills */
+
+.support-root .badge-soft {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: var(--text-soft);
+}
+
+.support-root .status-pill {
+  font-size: 0.74rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(75, 85, 99, 0.9);
+  background: var(--bg-card-soft);
+  color: var(--text-soft);
+}
+
+.support-root .status-pill.open {
+  border-color: rgba(59, 130, 246, 0.88);
+  background: rgba(37, 99, 235, 0.14);
+  color: #bfdbfe;
+}
+
+.support-root .status-pill.pending {
+  border-color: rgba(234, 179, 8, 0.9);
+  background: rgba(234, 179, 8, 0.12);
+  color: #facc15;
+}
+
+.support-root .status-pill.resolved {
+  border-color: rgba(34, 197, 94, 0.9);
+  background: rgba(22, 163, 74, 0.12);
+  color: #bbf7d0;
+}
+
+.support-root .priority-pill {
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(75, 85, 99, 0.85);
+  color: var(--text-soft);
+}
+
+.support-root .priority-pill.high {
+  border-color: rgba(248, 113, 113, 0.95);
+  color: #fecaca;
+}
+
+.support-root .priority-pill.medium {
+  border-color: rgba(234, 179, 8, 0.95);
+  color: #facc15;
+}
+
+.support-root .priority-pill.low {
+  border-color: rgba(34, 197, 94, 0.95);
+  color: #bbf7d0;
+}
+
+/* Form footer */
+
+.support-root .form-footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  gap: 8px;
+}
+
+.support-root .hint-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-soft);
+}
+
+.support-root .hint-inline svg {
+  color: #fbbf24;
+}
+
+/* ---------------------------------------------
+   Buttons
+---------------------------------------------- */
+
+.support-root .btn {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.8rem;
+  padding: 7px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease,
+    transform 0.08s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+
+.support-root .btn.primary {
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent-alt));
+  border-color: rgba(37, 99, 235, 0.9);
+  color: #f9fafb;
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.35);
+}
+
+.support-root .btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8, #4338ca);
+  transform: translateY(-0.5px);
+}
+
+.support-root .btn.ghost {
+  background: transparent;
+  border-color: rgba(75, 85, 99, 0.95);
+  color: var(--text-main);
+}
+
+.support-root .btn.subtle {
+  background: var(--bg-card-soft);
+  border-color: rgba(55, 65, 81, 0.95);
+  color: var(--text-main);
+}
+
+.support-root .btn.small {
+  padding: 5px 10px;
+  font-size: 0.75rem;
+}
+
+.support-root .btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+/* ---------------------------------------------
+   Ticket list
+---------------------------------------------- */
+
+.support-root .ticket-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  min-height: 260px;
+  box-shadow: var(--shadow-strong);
+}
+
+.support-root .ticket-toolbar {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.98);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.support-root .search-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  background: var(--bg-card-soft);
+}
+
+.support-root .search-box svg {
+  color: var(--text-mute);
+}
+
+.support-root .search-box input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.78rem;
+  color: var(--text-main);
+}
+
+.support-root .status-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.support-root .filter-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  padding: 4px 9px;
+  font-size: 0.72rem;
+  background: var(--bg-card-soft);
+  color: var(--text-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.support-root .filter-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+
+.support-root .filter-chip.active {
+  border-color: var(--accent);
+  background: radial-gradient(circle at top left, var(--accent-soft), #020617);
+  color: var(--text-main);
+}
+
+.support-root .ticket-list {
+  padding: 6px 6px 10px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+/* subtle scrollbar */
+.support-root .ticket-list::-webkit-scrollbar {
+  width: 5px;
+}
+.support-root .ticket-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.support-root .ticket-list::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 999px;
+}
+.support-root .ticket-list::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+.support-root .ticket-item {
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 9px;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.support-root .ticket-item:hover {
+  background: rgba(9, 9, 15, 0.98);
+  border-color: rgba(55, 65, 81, 0.95);
+}
+
+.support-root .ticket-item.active {
+  border-color: var(--accent);
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.33), #020617);
+}
+
+.support-root .ticket-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.support-root .ticket-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.support-root .ticket-id {
+  font-size: 0.74rem;
+  color: var(--text-soft);
+}
+
+.support-root .ticket-subject {
+  font-size: 0.82rem;
+  color: var(--text-main);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.support-root .ticket-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.support-root .ticket-category {
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.support-root .ticket-time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.68rem;
+  color: var(--text-soft);
+}
+
+.support-root .ticket-time svg {
+  color: var(--text-mute);
+}
+
+/* ---------------------------------------------
+   Chat (ticket conversation)
+---------------------------------------------- */
+
+.support-root .chat-panel {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+  box-shadow: var(--shadow-strong);
+}
+
+.support-root .chat-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(31, 41, 55, 0.98);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.support-root .chat-header h3 {
+  font-size: 0.94rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.support-root .chat-subtitle {
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.support-root .chat-subtitle .dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--text-mute);
+}
+
+.support-root .chat-body {
+  padding: 10px 12px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.support-root .chat-body::-webkit-scrollbar {
+  width: 5px;
+}
+.support-root .chat-body::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 999px;
+}
+
+.support-root .message-row {
+  display: flex;
+}
+
+.support-root .message-row.incoming {
+  justify-content: flex-start;
+}
+
+.support-root .message-row.outgoing {
+  justify-content: flex-end;
+}
+
+.support-root .message-bubble {
+  max-width: 72%;
+  border-radius: 14px;
+  padding: 7px 9px;
+  background: #020817;
+  border: 1px solid rgba(55, 65, 81, 0.95);
+  font-size: 0.78rem;
+  color: var(--text-main);
+}
+
+.support-root .message-row.outgoing .message-bubble {
+  background: linear-gradient(135deg, var(--accent-soft), var(--accent-alt));
+  border-color: rgba(59, 130, 246, 0.96);
+  color: #eef2ff;
+}
+
+.support-root .message-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 0.68rem;
+  opacity: 0.9;
+}
+
+.support-root .message-role {
+  font-weight: 500;
+}
+
+.support-root .message-time {
+  color: #9ca3af;
+}
+
+.support-root .message-row.outgoing .message-time {
+  color: #cbd5f5;
+}
+
+.support-root .message-text p {
+  margin: 0;
+}
+
+.support-root .chat-footer {
+  border-top: 1px solid rgba(31, 41, 55, 0.98);
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.support-root .chat-footer .textarea {
+  font-size: 0.78rem;
+}
+
+.support-root .chat-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---------------------------------------------
+   Empty states & toast
+---------------------------------------------- */
+
+.support-root .empty-state,
+.support-root .empty-chat {
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
+.support-root .empty-state svg,
+.support-root .empty-chat svg {
+  margin-bottom: 8px;
+  color: var(--text-mute);
+}
+
+.support-root .support-toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(9, 9, 15, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-main);
+  z-index: 60;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+}
+
+.support-root .support-toast svg {
+  color: #22c55e;
+}
+
+/* ---------------------------------------------
+   Responsive
+---------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .support-root .support-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .support-root .support-container {
+    padding: 20px 16px 32px;
+  }
+
+  .support-root .support-head {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .support-root .head-right {
+    justify-content: flex-start;
+  }
+
+  .support-root .ticket-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .support-root .status-filters {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
