@@ -1,8 +1,13 @@
-// e.g. src/pages/Admin/Stores/StoresPage.jsx
+// src/pages/Admin/Stores/StoresPage.jsx
 
 import { useEffect, useState } from "react";
-import { listStores, setStoreStatus, deleteStore } from "./storeService";
-
+import {
+  listStores,
+  setStoreStatus,
+  deleteStore,
+  getStoreDocuments,
+  getStoreVerificationLogs,
+} from "./storeService";
 import styles from "./stores.module.css";
 
 /* Small stroke icon */
@@ -35,6 +40,7 @@ function StatusPill({ status }) {
     pending: styles.stPending,
     rejected: styles.stRejected,
     suspended: styles.stSuspended,
+    flagged: styles.stPending,
   };
   return (
     <span className={`${styles.stPill} ${map[status] || ""}`}>{status}</span>
@@ -108,11 +114,7 @@ function Pagination({
 
       {range.map((it, i) =>
         it === "…" ? (
-          <span
-            key={`dots-${i}`}
-            className={styles.dots}
-            aria-hidden
-          >
+          <span key={`dots-${i}`} className={styles.dots} aria-hidden>
             …
           </span>
         ) : (
@@ -145,7 +147,8 @@ function Pagination({
 
 export default function StoresPage() {
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  // default to approved stores
+  const [status, setStatus] = useState("approved");
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -154,6 +157,13 @@ export default function StoresPage() {
   const [total, setTotal] = useState(0);
 
   const [selected, setSelected] = useState(null);
+
+  // docs & activity for selected store
+  const [docs, setDocs] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
 
   const load = async (targetPage = 1) => {
     setLoading(true);
@@ -207,6 +217,7 @@ export default function StoresPage() {
     setRows((r) => r.filter((x) => x.id !== id));
   };
 
+  // Close drawer with Esc
   useEffect(() => {
     if (!selected) return;
     const onKey = (e) => e.key === "Escape" && setSelected(null);
@@ -214,8 +225,72 @@ export default function StoresPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selected]);
 
+  // Load documents from /stores/{id}/documents
+  useEffect(() => {
+    if (!selected?.id) {
+      setDocs([]);
+      setDocsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setDocsLoading(true);
+
+    (async () => {
+      try {
+        const list = await getStoreDocuments(selected.id);
+        if (!cancelled) setDocs(list);
+      } catch (e) {
+        console.error("[StoresPage] getStoreDocuments error:", e);
+        if (!cancelled) setDocs([]);
+      } finally {
+        if (!cancelled) setDocsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.id]);
+
+  // Load verification logs from /stores/{id}/verificationLogs
+  useEffect(() => {
+    if (!selected?.id) {
+      setLogs([]);
+      setLogsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLogsLoading(true);
+
+    (async () => {
+      try {
+        const list = await getStoreVerificationLogs(selected.id);
+        if (!cancelled) setLogs(list);
+      } catch (e) {
+        console.error("[StoresPage] getStoreVerificationLogs error:", e);
+        if (!cancelled) setLogs([]);
+      } finally {
+        if (!cancelled) setLogsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.id]);
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const openDrawer = (s) => setSelected(s);
+
+  const handleViewDoc = (doc) => {
+    if (!doc.url) {
+      alert("No file URL found for this document.");
+      return;
+    }
+    window.open(doc.url, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className={styles.page}>
@@ -252,6 +327,7 @@ export default function StoresPage() {
           <label>Status</label>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="all">All</option>
+            <option value="approved">Approved</option>
             <option value="active">Active</option>
             <option value="suspended">Suspended</option>
             <option value="pending">Pending</option>
@@ -392,6 +468,7 @@ export default function StoresPage() {
             </header>
 
             <div className={styles.drawerBody}>
+              {/* Store info */}
               <section className={styles.infoCard}>
                 <div className={styles.infoGrid}>
                   <div>
@@ -421,37 +498,59 @@ export default function StoresPage() {
                 </div>
               </section>
 
+              {/* Documents */}
               <section className={styles.docsCard}>
                 <h4>Documents</h4>
                 <ul className={styles.docList}>
-                  {(selected.docs || []).map((d) => (
-                    <li key={d.id} className={styles.docItem}>
-                      <div className={styles.docThumb} />
-                      <div className={styles.docMeta}>
-                        <div className={styles.docName}>{d.name}</div>
-                        <StatusPill status={d.status} />
-                      </div>
-                      <div className={styles.docBtns}>
-                        <button className={styles.ghost}>View</button>
-                      </div>
-                    </li>
-                  ))}
-                  {(selected.docs || []).length === 0 && (
+                  {docsLoading && (
+                    <li className={styles.empty}>Loading documents…</li>
+                  )}
+
+                  {!docsLoading &&
+                    docs.map((d) => (
+                      <li key={d.id} className={styles.docItem}>
+                        <div className={styles.docThumb} />
+                        <div className={styles.docMeta}>
+                          <div className={styles.docName}>{d.name}</div>
+                          <StatusPill status={d.status} />
+                        </div>
+                        <div className={styles.docBtns}>
+                          <button
+                            className={styles.ghost}
+                            type="button"
+                            onClick={() => handleViewDoc(d)}
+                          >
+                            View
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+
+                  {!docsLoading && docs.length === 0 && (
                     <li className={styles.empty}>No documents uploaded.</li>
                   )}
                 </ul>
               </section>
 
+              {/* Activity log from verificationLogs */}
               <section className={styles.activity}>
                 <h4>Activity Log</h4>
                 <ul className={styles.timeline}>
-                  {(selected.activity || []).map((a, i) => (
-                    <li key={i}>
-                      <span>{new Date(a.ts).toLocaleString()}</span>
-                      <b>{a.text}</b>
-                    </li>
-                  ))}
-                  {(selected.activity || []).length === 0 && (
+                  {logsLoading && (
+                    <li className={styles.empty}>Loading activity…</li>
+                  )}
+
+                  {!logsLoading &&
+                    logs.map((a) => (
+                      <li key={a.id}>
+                        <span>
+                          {a.ts ? new Date(a.ts).toLocaleString() : "—"}
+                        </span>
+                        <b>{a.text || "—"}</b>
+                      </li>
+                    ))}
+
+                  {!logsLoading && logs.length === 0 && (
                     <li className={styles.empty}>No activity yet.</li>
                   )}
                 </ul>

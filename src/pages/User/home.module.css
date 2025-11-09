@@ -503,55 +503,167 @@
   color: #fff;
 }
 
-/* ===== Store Cards ===== */
+/* ========== Stores list: one row per store ========== */
+
+/* Container for all stores – now a vertical list */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* Each store row */
 .storeCard {
-  background: #fff;
-  border-radius: var(--radius);
-  padding: 16px;
+  position: relative;
+  width: 100%;
+  text-align: left;
+  background: #ffffff;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  padding: 14px 56px 12px 18px; /* extra space on right for kebab */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition:
+    transform 0.18s var(--ease),
+    box-shadow 0.18s var(--ease),
+    border-color 0.18s var(--ease),
+    background 0.18s var(--ease);
 }
 
 .storeCard:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 40px rgba(22, 24, 28, 0.1);
+  border-color: #dde5f0;
+  background: #fdfefe;
+}
+
+/* Skeleton loading row (same shape as storeCard) */
+.skel {
+  background: linear-gradient(90deg, #f6f7fb, #eef1f6, #f6f7fb);
+  height: 88px;
+  border-radius: var(--radius-lg);
+  animation: skel 1.6s linear infinite;
+}
+
+/* Top row: store name + status badge */
+.storeTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 .storeName {
-  font-weight: 700;
+  font-weight: 800;
+  color: #1c2026;
   font-size: 15px;
+  line-height: 1.3;
 }
 
+/* Address + metadata line up like a professional list */
 .storeAddr {
+  margin-top: 2px;
+  color: var(--muted);
   font-size: 13px;
-  color: var(--muted);
-  margin-top: 6px;
+  line-height: 1.4;
 }
 
-.badgeGreen {
-  background: #dcfce7;
-  color: #166534;
-  padding: 4px 8px;
-  border-radius: 999px;
-  font-weight: 700;
+.storeMeta {
+  margin-top: 4px;
+  color: #98a0ab;
   font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-/* ===== Empty State ===== */
-.empty {
-  padding: 40px;
-  text-align: center;
-  color: var(--muted);
-  border: 1px dashed var(--line);
-  border-radius: var(--radius);
+/* Full–row click layer so the whole card is clickable */
+.cardClickLayer {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  z-index: 1;
 }
+
+/* 3-dot menu button */
+.kebabBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  z-index: 2; /* above click layer */
+  transition:
+    background 0.12s var(--ease),
+    transform 0.12s var(--ease),
+    box-shadow 0.12s var(--ease);
+  font-size: 18px;
+  line-height: 0;
+}
+
+.kebabBtn:hover {
+  background: #f6f8fb;
+  box-shadow: var(--shadow-sm);
+}
+
+.kebabBtn:active {
+  transform: translateY(1px);
+}
+
+/* Dropdown menu for kebab */
+.kebabMenu {
+  position: absolute;
+  top: 42px;
+  right: 10px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  min-width: 170px;
+  z-index: 3;
+  padding: 6px;
+}
+
+.kebabDanger {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  color: #b91c1c;
+  font-weight: 800;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.kebabDanger:hover {
+  background: #fff3f3;
+}
+
+/* Empty state still looks clean inside the new layout */
+.empty {
+  color: var(--muted);
+  padding: 24px;
+  background: #f7f8fb;
+  border: 1px dashed var(--line);
+  border-radius: 16px;
+  text-align: center;
+  font-size: 14px;
+}
+
 
 /* ===== Responsive ===== */
 @media (max-width: 980px) {
