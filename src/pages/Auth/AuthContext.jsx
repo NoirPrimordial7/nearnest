@@ -1,6 +1,8 @@
+// src/pages/Auth/AuthContext.jsx
+
 import { createContext, useContext, useEffect, useState } from "react";
+import { auth, db, onAuthStateChanged, doc, getDoc } from "./firebase";
 import { Navigate } from "react-router-dom";
-import { onAuthStateChanged, auth, db, doc, getDoc } from "./firebase";
 
 const AuthContext = createContext();
 
@@ -13,64 +15,63 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setAuthLoading(true);
-
       if (firebaseUser) {
         setUser(firebaseUser);
         try {
+          // Fetch user document to get roles
           const userRef = doc(db, "users", firebaseUser.uid);
           const userSnap = await getDoc(userRef);
-
           if (userSnap.exists()) {
             const userData = userSnap.data();
             const userRoles = userData.roles || [];
             setRoles(userRoles);
 
-            // ⛏️ Load permissions from roles/{role}/{role} format
-            let mergedPerms = [];
-            for (const role of userRoles) {
-              try {
-                const roleDoc = doc(db, `roles/${role}/${role}`);
-                const roleSnap = await getDoc(roleDoc);
-                if (roleSnap.exists()) {
-                  const roleData = roleSnap.data();
-                  mergedPerms = [...mergedPerms, ...(roleData.permissions || [])];
-                } else {
-                  console.warn(`Role '${role}' not found at roles/${role}/${role}`);
+            // Fetch permissions for each role
+            const permsSet = new Set();
+            // Use Promise.all to fetch all role docs in parallel
+            const permPromises = userRoles.map((roleId) =>
+              getDoc(doc(db, "roles", roleId))
+            );
+            const roleDocs = await Promise.all(permPromises);
+            roleDocs.forEach((roleDoc) => {
+              if (roleDoc.exists()) {
+                const roleData = roleDoc.data();
+                if (Array.isArray(roleData.permissions)) {
+                  roleData.permissions.forEach((p) => permsSet.add(p));
                 }
-              } catch (err) {
-                console.error(`Error fetching role '${role}':`, err);
               }
-            }
-
-            setPermissions(mergedPerms);
+            });
+            setPermissions(Array.from(permsSet));
           } else {
-            console.warn("User document not found");
+            // No user document found
             setRoles([]);
             setPermissions([]);
           }
-        } catch (err) {
-          console.error("Error loading user/role info:", err);
+        } catch (error) {
+          console.error("Error fetching roles/permissions:", error);
           setRoles([]);
           setPermissions([]);
         }
       } else {
+        // Not logged in
         setUser(null);
         setRoles([]);
         setPermissions([]);
       }
-
       setAuthLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const hasPermission = (perm) => permissions.includes(perm);
+  // Helper to check a permission string (exact match)
+  const hasPermission = (perm) => {
+    // Ensure case-sensitive match as stored in Firestore
+    return permissions.includes(perm);
+  };
 
   return (
-    <AuthContext.Provider
-      value={{ user, roles, permissions, authLoading, hasPermission }}
-    >
+    <AuthContext.Provider value={{ user, roles, permissions, authLoading, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );
@@ -82,8 +83,8 @@ export const RoleRedirect = () => {
   const { user, roles, authLoading } = useAuth();
 
   if (authLoading) return null;
-  if (!user) return <Navigate to="/signin" replace />;
 
+  if (!user) return <Navigate to="/signin" replace />;
   if (roles.includes("admin")) return <Navigate to="/admin" replace />;
   if (roles.includes("storeAdmin")) return <Navigate to="/store-admin/home" replace />;
   if (roles.includes("storeStaff")) return <Navigate to="/store-staff/home" replace />;

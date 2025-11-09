@@ -1,94 +1,75 @@
+// src/pages/Admin/Verification/DocumentVerification.jsx
+
 import React, { useEffect, useState, useMemo } from "react";
-import { useAuth } from "../../Auth/AuthContext";  // ensure AuthContext provides user info
+import { useAuth } from "../../Auth/AuthContext";
 import {
-  auth, db, collection, query, where, getDocs, updateDoc, addDoc, doc, serverTimestamp
+  auth, db, collection, query, where, getDocs,
+  updateDoc, addDoc, doc, serverTimestamp,
+  orderBy, limit
 } from "../../Auth/firebase";
-import styles from "./DocumentVerification.module.css"; // CSS module for styling
+import styles from "./DocumentVerification.module.css";
 
-
-// Reusable Icon component
 function Icon({ d, size = 18, className }) {
   return (
-    <svg
-      width={size} height={size} viewBox="0 0 24 24" fill="none"
-      className={className} aria-hidden="true"
-    >
-      <path
-        d={d}
-        stroke="currentColor" strokeWidth="2"
-        strokeLinecap="round" strokeLinejoin="round"
-      />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path d={d} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-// Status pill (Pending/Approved/Rejected)
 function Pill({ value }) {
   const v = (value || "").toLowerCase();
   const cls =
     v === "approved" ? styles.pApproved :
-      v === "rejected" ? styles.pRejected :
-        styles.pPending;
+    v === "rejected" ? styles.pRejected :
+    styles.pPending;
   return <span className={`${styles.pill} ${cls}`}>{v.charAt(0).toUpperCase() + v.slice(1)}</span>;
 }
 
 export default function DocumentVerification() {
-  // State for filters and data
+  const { hasPermission, authLoading } = useAuth();
+
   const [statusFilter, setStatusFilter] = useState("all");
   const [queryText, setQueryText] = useState("");
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Pagination (optional)
   const [page, setPage] = useState(1);
-  const pageSize = 10; // or desired page size
+  const pageSize = 10;
 
-  // Selected store and its documents
   const [selectedStore, setSelectedStore] = useState(null);
   const [docs, setDocs] = useState([]);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("documents");
 
-  // Current user (for approvals/logging)
   const currentUser = auth.currentUser;
 
-  // Helper to capitalize status for queries
   const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
-  // Load stores from Firestore whenever filter or page changes
   async function loadStores() {
     setLoading(true);
     try {
-      const parts = [];
+      const filters = [];
       if (statusFilter !== "all") {
-        // Use capitalized status to match stored values (e.g. "Pending", "Approved")
-        parts.push(where("verificationStatus", "==", capitalize(statusFilter)));
+        filters.push(where("verificationStatus", "==", capitalize(statusFilter)));
       }
       if (queryText.trim()) {
-        // Example: filter by store name (implement text-search as needed)
-        parts.push(where("name", ">=", queryText));
-        parts.push(where("name", "<=", queryText + "\uf8ff"));
+        filters.push(where("name", ">=", queryText));
+        filters.push(where("name", "<=", queryText + "\uf8ff"));
       }
-      // Order by creation date
-      parts.push(query(collection(db, "stores"), orderBy("createdAt", "desc"), limit(pageSize)));
-      // Build query
-      const q = parts.length > 1 ? query(collection(db, "stores"), ...parts) : parts[0];
+      const q = query(collection(db, "stores"), ...filters, orderBy("createdAt", "desc"), limit(pageSize));
       const snap = await getDocs(q);
       const items = [];
-      // Resolve owner info for each store
       for (const docSnap of snap.docs) {
         const data = docSnap.data();
         const store = { id: docSnap.id, ...data };
-        // Fetch owner email/name
         if (data.ownerId) {
-          try {
-            const userSnap = await getDocs(query(collection(db, "users"), where("__name__", "==", data.ownerId)));
-            if (!userSnap.empty) {
-              const userData = userSnap.docs[0].data();
-              store.ownerName = userData.name || "";
-              store.ownerEmail = userData.email || "";
-            }
-          } catch { }
+          const userSnap = await getDocs(query(collection(db, "users"), where("__name__", "==", data.ownerId)));
+          if (!userSnap.empty) {
+            const userData = userSnap.docs[0].data();
+            store.ownerName = userData.name || "";
+            store.ownerEmail = userData.email || "";
+          }
         }
         items.push(store);
       }
@@ -101,18 +82,12 @@ export default function DocumentVerification() {
     }
   }
 
-  // Initial load and on filter change
-  useEffect(() => {
-    loadStores();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  useEffect(() => { loadStores(); }, [statusFilter]);
 
-  // Open slide-over for a store
   const openModal = async (store) => {
     setSelectedStore(store);
     setOpen(true);
     setTab("documents");
-    // Fetch this store's documents
     try {
       const docsSnap = await getDocs(query(
         collection(db, "stores", store.id, "documents"),
@@ -120,7 +95,6 @@ export default function DocumentVerification() {
       ));
       const docsList = docsSnap.docs.map(d => {
         const docData = d.data();
-        // normalize status to lowercase for UI
         return { id: d.id, status: docData.status.toLowerCase(), ...docData };
       });
       setDocs(docsList);
@@ -135,7 +109,6 @@ export default function DocumentVerification() {
     setDocs([]);
   };
 
-  // Approve a document
   const onApproveDoc = async (docId) => {
     if (!selectedStore) return;
     try {
@@ -143,9 +116,7 @@ export default function DocumentVerification() {
         status: "Approved",
         updatedAt: serverTimestamp()
       });
-      // Update local state
       setDocs(docs.map(d => d.id === docId ? { ...d, status: "approved" } : d));
-      // Log event
       await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
         action: `Document ${docId} approved`,
         timestamp: serverTimestamp(),
@@ -156,7 +127,6 @@ export default function DocumentVerification() {
     }
   };
 
-  // Reject a document with optional reason
   const onRejectDoc = async (docId, reason = "") => {
     if (!selectedStore) return;
     const txt = reason || prompt("Enter rejection reason (optional):", "");
@@ -177,10 +147,8 @@ export default function DocumentVerification() {
     }
   };
 
-  // Check if all required documents are approved
   const allDocsApproved = useMemo(() => docs.every(d => d.status === "approved"), [docs]);
 
-  // Approve the entire store
   const onApproveStore = async () => {
     if (!selectedStore || !allDocsApproved) return;
     try {
@@ -201,7 +169,6 @@ export default function DocumentVerification() {
     }
   };
 
-  // Reject the entire store
   const onRejectStore = async () => {
     if (!selectedStore) return;
     const reason = prompt("Reason for rejecting this store:");
@@ -225,12 +192,8 @@ export default function DocumentVerification() {
     }
   };
 
-  // If user is not admin, do not render (optionally handle redirect)
-  const { hasPermission, authLoading } = useAuth();
-
   if (authLoading) return null;
-  if (!hasPermission("VERIFY_DOCS")) return <div>Access Denied</div>;
-
+  if (!hasPermission("VERIFY_DOCS")) return <div className={styles.page}>Access Denied</div>;
 
   return (
     <div className={styles.page}>
