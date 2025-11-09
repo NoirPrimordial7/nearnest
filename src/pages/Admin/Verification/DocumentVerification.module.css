@@ -125,3 +125,11 @@
   .docRow{grid-template-columns:1fr;align-items:flex-start}
   .docActions{justify-self:start}
 }
+
+/* NEW: pill + button styles for 'flagged' */
+.pFlagged { color: #b45309; border-color: rgba(245, 158, 11, .35); background: linear-gradient(180deg, rgba(251, 191, 36, .08), transparent 60%), #fff; }
+
+.warnBtn{
+  display:inline-flex;gap:8px;align-items:center;height:34px;padding:0 12px;border-radius:10px;
+  background:#fff;border:1px solid rgba(245, 158, 11,.35); color:#b45309; font-weight:700;
+}

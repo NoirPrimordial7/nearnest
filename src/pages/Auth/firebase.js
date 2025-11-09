@@ -69,5 +69,6 @@ export {
   ref,
   uploadBytes,
   getDownloadURL,
-  deleteObject
+  deleteObject,
+  
 };

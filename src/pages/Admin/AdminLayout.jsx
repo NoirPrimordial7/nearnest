@@ -1,6 +1,21 @@
-import { useEffect, useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../Auth/AuthContext";
 import styles from "./AdminLayout.module.css";
+
+/** click-outside helper */
+function useClickAway(onAway) {
+  const ref = useRef(null);
+  useEffect(() => {
+    function onDoc(e) {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target)) onAway?.();
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [onAway]);
+  return ref;
+}
 
 /** Thin SVG icon helper */
 function Icon({ path, size = 18, className }) {
@@ -32,17 +47,17 @@ const NAV = {
   platform: [
     { label: "Stores", to: "/admin/stores", icon: "M4 6h16v12H4z" },
     { label: "Verification", to: "/admin/verification", icon: "M7 7h10M7 12h10M7 17h6" },
-    //{ label: "Roles & Permissions", to: "/admin/roles", icon: "M12 3v18M3 12h18" },
-    //{ label: "Admins", to: "/admin/admins", icon: "M16 11a4 4 0 1 0-8 0v6h8v-6zM4 21h16" },
     { label: "Support / Tickets", to: "/admin/support", icon: "M3 8l9 6 9-6M5 19h14" },
-    //{ label: "Analytics", to: "/admin/analytics", icon: "M3 17h3v-6H3v6zm5 0h3V7H8v10zm5 0h3V11h-3v6zm5 0h3V5h-3v12z" },
-    //{ label: "Settings", to: "/admin/settings", icon: "M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1" },
-    //{ label: "Schema", to: "/admin/schema", icon: "M4 7h16M4 12h16M4 17h10" },
   ],
 };
 
 export default function AdminLayout() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false); // mobile drawer
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const { user, signOut } = useAuth() || {};
+  const navigate = useNavigate();
 
   // lock scroll when drawer is open (mobile)
   useEffect(() => {
@@ -50,21 +65,65 @@ export default function AdminLayout() {
     return () => document.body.classList.remove("body--lock");
   }, [open]);
 
+  // close dropdowns on route/content click
+  const closeAllMenus = () => {
+    setNotifOpen(false);
+    setProfileOpen(false);
+  };
+
+  const notifRef = useClickAway(() => setNotifOpen(false));
+  const profileRef = useClickAway(() => setProfileOpen(false));
+
   const closeIfMobile = () => setOpen(false);
 
+  // derive initials & email safely
+  const displayName = user?.displayName || user?.name || user?.email?.split("@")[0] || "Admin";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join("") || "A";
+
+  // handle actions
+  const onEditProfile = () => {
+    setProfileOpen(false);
+    navigate("/admin/profile"); // keep your route; change if your repo uses another path
+  };
+
+  const onSignOut = async () => {
+    setProfileOpen(false);
+    try {
+      if (typeof signOut === "function") {
+        await signOut();
+      }
+      navigate("/signin");
+    } catch (e) {
+      console.error("Sign out failed:", e);
+    }
+  };
+
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} onClick={closeAllMenus}>
       {/* ===== SIDEBAR ===== */}
-      <aside className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}>
+      <aside
+        className={`${styles.sidebar} ${open ? styles.sidebarOpen : ""}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className={styles.brandRow}>
           <button
             className={`${styles.hamburger} ${styles.onlyMobile}`}
             onClick={() => setOpen(false)}
             aria-label="Close menu"
           >
-            {/* X icon (black lines) */}
             <svg className={styles.hIcon} width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d="M6 6L18 18M6 18L18 6"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
 
@@ -126,7 +185,7 @@ export default function AdminLayout() {
       />
 
       {/* ===== MAIN ===== */}
-      <main className={styles.main}>
+      <main className={styles.main} onClick={(e) => e.stopPropagation()}>
         <div className={styles.sheen} aria-hidden />
         <header className={styles.topbar}>
           <div className={styles.leftTop}>
@@ -135,19 +194,121 @@ export default function AdminLayout() {
               onClick={() => setOpen(true)}
               aria-label="Open menu"
             >
-              {/* Hamburger (black lines) */}
               <svg className={styles.hIcon} width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M3 6h18M3 12h18M3 18h18"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
             <div className={styles.crumb}>Admin</div>
           </div>
 
           <div className={styles.topActions}>
-            <button className={`${styles.ghostBtn} ${styles.hideMobile}`} title="Notifications">
-              <Icon path="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2z" />
-            </button>
-            <div className={styles.avatar} />
+            {/* Notifications */}
+            <div className={styles.actionWrap} ref={notifRef}>
+              <button
+                className={`${styles.ghostBtn} ${styles.hideMobile}`}
+                title="Notifications"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setNotifOpen((v) => !v);
+                  setProfileOpen(false);
+                }}
+              >
+                <Icon path="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2z" />
+                <span className={styles.badge} aria-hidden>
+                  {/* replace with unread count */}
+                </span>
+              </button>
+
+              <div
+                className={`${styles.menu} ${styles.menuRight} ${
+                  notifOpen ? styles.menuOpen : ""
+                }`}
+                role="menu"
+                aria-label="Notifications"
+              >
+                <div className={styles.menuHeader}>Notifications</div>
+                <div className={styles.menuBody}>
+                  {/* Replace these placeholders with your live notification list */}
+                  <div className={styles.emptyState}>
+                    <Icon
+                      path="M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2h16l-2-2z"
+                      size={22}
+                    />
+                    <p>No new notifications</p>
+                  </div>
+                </div>
+                <div className={styles.menuFooter}>
+                  <button className={styles.linkBtn} onClick={() => navigate("/admin/support")}>
+                    Go to Support
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile */}
+            <div className={styles.actionWrap} ref={profileRef}>
+              <button
+                className={styles.avatarBtn}
+                title={displayName}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setProfileOpen((v) => !v);
+                  setNotifOpen(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={profileOpen}
+              >
+                <div className={styles.avatar}>{initials}</div>
+              </button>
+
+              <div
+                className={`${styles.menu} ${styles.menuRight} ${
+                  profileOpen ? styles.menuOpen : ""
+                }`}
+                role="menu"
+                aria-label="Profile menu"
+              >
+                <div className={styles.menuHeader}>
+                  <div className={styles.menuUserRow}>
+                    <div className={styles.avatarSm}>{initials}</div>
+                    <div className={styles.userMeta}>
+                      <div className={styles.userName}>{displayName}</div>
+                      <div className={styles.userSub}>{user?.email || "—"}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={styles.menuBody}>
+                  <button className={styles.menuItem} onClick={onEditProfile}>
+                    <Icon path="M12 20h9" />
+                    <span>Edit profile</span>
+                  </button>
+                  <button
+                    className={styles.menuItem}
+                    onClick={() => {
+                      setProfileOpen(false);
+                      navigate("/admin/settings");
+                    }}
+                  >
+                    <Icon path="M12 3v3M12 18v3M3 12h3M18 12h3" />
+                    <span>Admin settings</span>
+                  </button>
+                </div>
+
+                <div className={styles.menuFooter}>
+                  <button className={styles.dangerBtn} onClick={onSignOut}>
+                    <Icon path="M16 17l5-5-5-5M21 12H9" />
+                    <span>Sign out</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </header>
 
