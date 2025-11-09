@@ -1,21 +1,19 @@
 // src/pages/Admin/Verification/DocumentVerification.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../../Auth/AuthContext";
-
-/**
- * NOTE: You asked to keep these paths. This assumes your "../../Auth/firebase"
- * re-exports initialized `auth`, `db`, and Firestore helpers.
- */
 import {
   auth, db,
   collection, query, where, getDoc, getDocs, doc,
   updateDoc, addDoc, serverTimestamp,
   orderBy, limit
 } from "../../Auth/firebase";
-
 import styles from "./DocumentVerification.module.css";
 
-/* ------------------------- small UI helpers ------------------------- */
+
+
+const PAGE_SIZE = 50; // or 20, depending on how many results you want per page
+
+/* UI helpers */
 function Icon({ d, size = 18, className }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
@@ -23,7 +21,6 @@ function Icon({ d, size = 18, className }) {
     </svg>
   );
 }
-
 function Pill({ value }) {
   const v = (value || "").toLowerCase();
   const cls =
@@ -32,26 +29,24 @@ function Pill({ value }) {
     styles.pPending;
   return <span className={`${styles.pill} ${cls}`}>{v ? v[0].toUpperCase()+v.slice(1) : "Pending"}</span>;
 }
-
-/* ---------------------------- constants ---------------------------- */
-const PAGE_SIZE = 10;
-
-/** fallback pretty label from doc id/kind */
-const prettyLabel = (idOrKind) => {
-  switch ((idOrKind || "").toLowerCase()) {
+/* Pretty labels for known document types */
+const prettyLabel = (id) => {
+  switch ((id || "").toLowerCase()) {
     case "aadhaar": return "Aadhaar";
     case "pan": return "PAN";
     case "druglicense":
-    case "drug_license": return "Drug License";
+    case "drug_license":
+    case "druglicense": return "Drug License";
     case "rentagreement":
-    case "rent_agreement": return "Rent Agreement";
+    case "rent_agreement":
+    case "property": return "Property Document";
     case "storefrontphoto":
-    case "store_front_photo": return "Store Front Photo";
-    default: return idOrKind || "Document";
+    case "store_front_photo":
+    case "storephoto": return "Store Front Photo";
+    default: return id || "Document";
   }
 };
-
-/** tolerant read of Timestamp/number/string into Date */
+/* Convert Firestore timestamp or number to JS Date */
 const toDate = (ts) => {
   if (!ts) return null;
   if (typeof ts?.toMillis === "function") return new Date(ts.toMillis());
@@ -60,46 +55,35 @@ const toDate = (ts) => {
   return isNaN(d.getTime()) ? null : d;
 };
 
-/* ------------------------------ main ------------------------------- */
 export default function DocumentVerification() {
   const { hasPermission, authLoading } = useAuth();
   const currentUser = auth.currentUser;
-
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("submitted");  // default to Submitted
   const [queryText, setQueryText] = useState("");
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  const [page] = useState(1); // placeholder for future pagination
-
   const [selectedStore, setSelectedStore] = useState(null);
   const [docs, setDocs] = useState([]);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("documents");
 
-  const normalizeStatus = (s) => (s || "pending").toLowerCase();
+  const normalizeStatus = (s) => (s || "").toLowerCase();
   const cap = (s) => s ? s[0].toUpperCase()+s.slice(1).toLowerCase() : s;
 
-  /* ------------------------- load stores list ------------------------- */
+  /* Load list of stores matching filter (e.g. Submitted) */
   async function loadStores() {
     setLoading(true);
     try {
       const filters = [];
-
-      // If status filter chosen, we normalize against *top-level* verificationStatus
       if (statusFilter !== "all") {
         filters.push(where("verificationStatus", "==", cap(statusFilter)));
       }
-
-      // Build base collection
+      // Always start from "stores" collection
       const base = collection(db, "stores");
-
       let q;
-
-      // For name search we must orderBy("name") when using range on name
       const text = queryText.trim();
       if (text) {
-        // Use range with \uf8ff and orderBy name; secondary order for stability
+        // Search by name prefix (requires orderBy("name"))
         q = query(
           base,
           where("name", ">=", text),
@@ -110,7 +94,7 @@ export default function DocumentVerification() {
           limit(PAGE_SIZE)
         );
       } else {
-        // No text filter: order by createdAt desc
+        // No search text: just filter/status and order by creation time
         q = query(
           base,
           ...filters,
@@ -119,9 +103,8 @@ export default function DocumentVerification() {
         );
       }
 
-      const snap = await getDocs(q);
+      const snap = await getDocs(q);  // fetch documents (Firestore getDocs example:contentReference[oaicite:9]{index=9})
       const items = [];
-
       for (const d of snap.docs) {
         const data = d.data();
         const store = {
@@ -129,8 +112,7 @@ export default function DocumentVerification() {
           ...data,
           verificationStatus: (data.verificationStatus || data?.verification?.status || "pending")
         };
-
-        // Owner lookup by doc id (faster/cheaper than where "__name__" ==)
+        // Lookup owner name/email if needed
         if (data.ownerId) {
           try {
             const uSnap = await getDoc(doc(db, "users", data.ownerId));
@@ -139,12 +121,10 @@ export default function DocumentVerification() {
               store.ownerName = u.name || "";
               store.ownerEmail = u.email || "";
             }
-          } catch (_) {}
+          } catch {}
         }
-
         items.push(store);
       }
-
       setStores(items);
     } catch (err) {
       console.error("[DocumentVerification] loadStores error:", err);
@@ -152,15 +132,13 @@ export default function DocumentVerification() {
       setLoading(false);
     }
   }
+  useEffect(() => { loadStores(); /* eslint-disable-line */ }, [statusFilter]);
 
-  useEffect(() => { loadStores(); /* eslint-disable-next-line */ }, [statusFilter]);
-
-  /* -------------------- open / close slide-over -------------------- */
+  /* Open modal for a store: fetch its documents */
   const openModal = async (store) => {
     setSelectedStore(store);
     setOpen(true);
     setTab("documents");
-
     try {
       const ds = await getDocs(
         query(
@@ -175,7 +153,8 @@ export default function DocumentVerification() {
           label: v.label || prettyLabel(d.id),
           status: normalizeStatus(v.status),
           url: v.url || null,
-          uploadedAt: v.uploadedAt || v.createdAt || v.timestamp
+          uploadedAt: v.uploadedAt || v.createdAt || v.timestamp,
+          rejectionReason: v.rejectionReason || ""
         };
       });
       setDocs(list);
@@ -183,14 +162,13 @@ export default function DocumentVerification() {
       console.error("[DocumentVerification] fetch docs error:", e);
     }
   };
-
   const closeModal = () => {
     setOpen(false);
     setSelectedStore(null);
     setDocs([]);
   };
 
-  /* ---------------------- approve / reject doc ---------------------- */
+  /* Approve a single document */
   const onApproveDoc = async (docId) => {
     if (!selectedStore) return;
     try {
@@ -199,9 +177,10 @@ export default function DocumentVerification() {
         updatedAt: serverTimestamp(),
         updatedBy: currentUser?.uid || null
       });
-
-      setDocs((prev) => prev.map((d) => d.id === docId ? { ...d, status: "approved" } : d));
-
+      setDocs((prev) => prev.map((d) =>
+        d.id === docId ? { ...d, status: "approved" } : d
+      ));
+      // Add a log entry
       await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
         action: `Document ${docId} approved`,
         timestamp: serverTimestamp(),
@@ -212,51 +191,73 @@ export default function DocumentVerification() {
     }
   };
 
-  const onRejectDoc = async (docId, reason = "") => {
+  /* Reject a single document (with optional reason); also mark store Rejected */
+  const onRejectDoc = async (docId) => {
     if (!selectedStore) return;
-    const txt = reason || prompt("Enter rejection reason (optional):", "") || "";
+    const reason = prompt("Enter rejection reason (optional):", "") || "";
     try {
+      // Update the document status
       await updateDoc(doc(db, "stores", selectedStore.id, "documents", docId), {
         status: "rejected",
-        rejectionReason: txt,
+        rejectionReason: reason,
         updatedAt: serverTimestamp(),
         updatedBy: currentUser?.uid || null
       });
-
-      setDocs((prev) => prev.map((d) => d.id === docId ? { ...d, status: "rejected" } : d));
-
+      setDocs((prev) => prev.map((d) =>
+        d.id === docId ? { ...d, status: "rejected", rejectionReason: reason } : d
+      ));
+      // Log the document rejection
       await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
-        action: `Document ${docId} rejected${txt ? `. Reason: ${txt}` : ""}`,
+        action: `Document ${docId} rejected${reason ? `. Reason: ${reason}` : ""}`,
         timestamp: serverTimestamp(),
         performedBy: currentUser?.uid || null
       });
+      // **Immediately mark the whole store as Rejected** because a doc was rejected
+      await updateDoc(doc(db, "stores", selectedStore.id), {
+        verificationStatus: "Rejected",
+        "verification.status": "rejected",
+        "verification.reason": reason,
+        updatedAt: serverTimestamp(),
+        updatedBy: currentUser?.uid || null
+      });
+      // Log the store rejection
+      await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
+        action: `Store rejected due to document ${docId} rejection${reason ? `. Reason: ${reason}` : ""}`,
+        timestamp: serverTimestamp(),
+        performedBy: currentUser?.uid || null
+      });
+      // Close and refresh
+      closeModal();
+      loadStores();
     } catch (e) {
       console.error("Reject doc error:", e);
     }
   };
 
-  /* --------------------- approve / reject store --------------------- */
-  const allDocsApproved = useMemo(() => docs.length > 0 && docs.every(d => d.status === "approved"), [docs]);
+  /* Determine if all documents have been approved */
+  const allDocsApproved = useMemo(
+    () => docs.length > 0 && docs.every(d => d.status === "approved"),
+    [docs]
+  );
 
+  /* Approve the entire store (only if all docs approved) */
   const onApproveStore = async () => {
     if (!selectedStore || !allDocsApproved) return;
     try {
       const sref = doc(db, "stores", selectedStore.id);
       await updateDoc(sref, {
-        verificationStatus: "Approved",           // top-level for list/table
-        "verification.status": "approved",        // nested for compatibility
+        verificationStatus: "Approved",            // top-level status
+        "verification.status": "approved",         // nested path (if used)
         "verification.approvedAt": serverTimestamp(),
         "verification.approvedBy": currentUser?.uid || null,
         updatedAt: serverTimestamp(),
         updatedBy: currentUser?.uid || null
       });
-
       await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
         action: `Store approved`,
         timestamp: serverTimestamp(),
         performedBy: currentUser?.uid || null
       });
-
       closeModal();
       loadStores();
     } catch (e) {
@@ -264,6 +265,7 @@ export default function DocumentVerification() {
     }
   };
 
+  /* Reject the store outright (admin can do this if desired) */
   const onRejectStore = async () => {
     if (!selectedStore) return;
     const reason = prompt("Reason for rejecting this store:") || "";
@@ -277,13 +279,11 @@ export default function DocumentVerification() {
         updatedAt: serverTimestamp(),
         updatedBy: currentUser?.uid || null
       });
-
       await addDoc(collection(db, "stores", selectedStore.id, "verificationLogs"), {
         action: `Store rejected${reason ? `. Reason: ${reason}` : ""}`,
         timestamp: serverTimestamp(),
         performedBy: currentUser?.uid || null
       });
-
       closeModal();
       loadStores();
     } catch (e) {
@@ -291,24 +291,24 @@ export default function DocumentVerification() {
     }
   };
 
-  /* ------------------------------ guard ----------------------------- */
+  /* Access control */
   if (authLoading) return null;
-  if (!hasPermission("VERIFY_DOCS")) return <div className={styles.page}>Access Denied</div>;
+  if (!hasPermission("VERIFY_DOCS")) {
+    return <div className={styles.page}>Access Denied</div>;
+  }
 
-  /* ------------------------------ UI ------------------------------- */
+  /* UI Rendering */
   return (
     <div className={styles.page}>
-      {/* Search and filter */}
-      <form className={styles.filters} onSubmit={(e) => { e.preventDefault(); loadStores(); }}>
+      {/* Filters */}
+      <form className={styles.filters} onSubmit={e => { e.preventDefault(); loadStores(); }}>
         <div className={styles.searchWrap}>
-          <span className={styles.searchIcon}>
-            <Icon d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" />
-          </span>
+          <span className={styles.searchIcon}><Icon d="M21 21l-4.35-4.35M10 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z" /></span>
           <input
             className={styles.input}
             placeholder="Search by store name…"
             value={queryText}
-            onChange={(e) => setQueryText(e.target.value)}
+            onChange={e => setQueryText(e.target.value)}
           />
           <button className={styles.searchBtn} type="submit">Search</button>
         </div>
@@ -316,7 +316,7 @@ export default function DocumentVerification() {
           <label>Status</label>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
             <option value="all">All</option>
-            <option value="pending">Pending</option>
+            <option value="submitted">Submitted</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
@@ -367,136 +367,106 @@ export default function DocumentVerification() {
             </tbody>
           </table>
         </div>
-        {/* pagination controls can be added later */}
       </section>
 
-      {/* Slide-over Details */}
+      {/* Slide-over for selected store */}
       {open && selectedStore && (
         <>
           <div className={styles.backdrop} onClick={closeModal} />
-          <section className={styles.sheet} role="dialog" aria-modal="true">
-            {/* Header */}
+          <section className={styles.sheet}>
             <header className={styles.sheetHead}>
-              <div className={styles.sheetTitle}>
-                <div className={styles.logo}>{(selectedStore.name || "NN").slice(0, 2)}</div>
-                <div>
-                  <h3>{selectedStore.name || "—"}</h3>
-                  <div className={styles.smallMuted}>
-                    {selectedStore.category || "—"} • {selectedStore.ownerName || "—"}
-                  </div>
-                </div>
-              </div>
-              <button className={styles.iconBtn} onClick={closeModal} aria-label="Close">
-                <Icon d="M6 6l12 12M6 18L18 6" />
+              <h3>Store: {selectedStore.name || selectedStore.id}</h3>
+              <button className={styles.closeBtn} onClick={closeModal}>
+                <Icon size={24} d="M18 6L6 18M6 6l12 12" />
               </button>
             </header>
-
-            {/* Tabs */}
             <nav className={styles.tabs}>
-              {["documents", "store", "activity", "location"].map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setTab(t)}
-                  className={`${styles.tab} ${tab === t ? styles.tabActive : ""}`}
-                >
-                  {t === "store" ? "Store Info" : t[0].toUpperCase() + t.slice(1)}
-                </button>
-              ))}
+              <button className={tab==="documents"?styles.active:""} onClick={() => setTab("documents")}>Documents</button>
+              <button className={tab==="activity"?styles.active:""} onClick={() => setTab("activity")}>Activity</button>
+              <button className={tab==="location"?styles.active:""} onClick={() => setTab("location")}>Location</button>
             </nav>
 
-            <div className={styles.sheetBody}>
-              {tab === "store" && (
-                <div className={styles.infoGrid}>
-                  <div className={styles.infoItem}><span>Category</span><b>{selectedStore.category || "—"}</b></div>
-                  <div className={styles.infoItem}><span>Phone</span><b>{selectedStore.phone || "—"}</b></div>
-                  <div className={styles.infoItem}><span>License No.</span><b>{selectedStore.licenseNo || "—"}</b></div>
-                  <div className={styles.infoItemWide}>
-                    <span>Address</span>
-                    <b>
-                      {selectedStore.address?.line1 || "—"}
-                      {selectedStore.address?.city ? `, ${selectedStore.address.city}` : ""}
-                      {selectedStore.address?.pin ? ` ${selectedStore.address.pin}` : ""}
-                    </b>
-                  </div>
-                </div>
-              )}
-
-              {tab === "documents" && (
-                <div className={styles.docList}>
-                  {docs.map((d) => {
-                    const up = toDate(d.uploadedAt);
-                    return (
-                      <div key={d.id} className={styles.docRow}>
-                        <div className={styles.docMeta}>
-                          <div className={styles.docThumb} />
-                          <div className={styles.docText}>
-                            <b>{d.label || prettyLabel(d.id)}</b>
-                            <span className={styles.smallMuted}>
-                              {up ? `Uploaded ${up.toLocaleString()}` : "—"}
-                            </span>
-                          </div>
-                        </div>
-                        <Pill value={d.status} />
-                        <div className={styles.docActions}>
-                          {d.url ? (
-                            <a className={styles.ghostBtn} href={d.url} target="_blank" rel="noreferrer">
-                              <Icon d="M15 10l4.553-4.553a3.182 3.182 0 00-4.5-4.5L10.5 6" /> Preview
-                            </a>
-                          ) : (
-                            <button className={styles.ghostBtn} disabled title="No file">Preview</button>
-                          )}
-                          {d.status !== "approved" && (
-                            <button className={styles.mintBtn} onClick={() => onApproveDoc(d.id)}>
-                              <Icon d="M5 12l4 4L19 6" /> Approve
-                            </button>
-                          )}
-                          {d.status !== "rejected" && (
-                            <button className={styles.roseBtn} onClick={() => onRejectDoc(d.id)}>
-                              <Icon d="M6 18L18 6M6 6l12 12" /> Reject
-                            </button>
+            {/* Documents List */}
+            {tab === "documents" && (
+              <div className={styles.docList}>
+                {docs.map((d) => {
+                  const uploaded = toDate(d.uploadedAt);
+                  return (
+                    <div key={d.id} className={styles.docRow}>
+                      <div className={styles.docMeta}>
+                        <div className={styles.docThumb}></div>
+                        <div className={styles.docText}>
+                          <b>{d.label || prettyLabel(d.id)}</b>
+                          <span className={styles.smallMuted}>
+                            {uploaded ? `Uploaded ${uploaded.toLocaleString()}` : "—"}
+                          </span>
+                          {d.status === "rejected" && d.rejectionReason && (
+                            <span className={styles.smallMuted}>Reason: {d.rejectionReason}</span>
                           )}
                         </div>
                       </div>
-                    );
-                  })}
+                      <Pill value={d.status} />
+                      <div className={styles.docActions}>
+                        {d.url ? (
+                          <a className={styles.ghostBtn} href={d.url} target="_blank" rel="noreferrer">
+                            <Icon d="M15 10l4.553-4.553a3.182 3.182 0 00-4.5-4.5L10.5 6" /> Preview
+                          </a>
+                        ) : (
+                          <button className={styles.ghostBtn} disabled title="No file">Preview</button>
+                        )}
+                        {d.status !== "approved" && (
+                          <button className={styles.mintBtn} onClick={() => onApproveDoc(d.id)}>
+                            <Icon d="M5 12l4 4L19 6" /> Approve
+                          </button>
+                        )}
+                        {d.status !== "rejected" && (
+                          <button className={styles.roseBtn} onClick={() => onRejectDoc(d.id)}>
+                            <Icon d="M6 18L18 6M6 6l12 12" /> Reject
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Activity Log */}
+            {tab === "activity" && (
+              <ul className={styles.timeline}>
+                {(selectedStore.verificationLogs || []).map((a, i) => {
+                  const t = toDate(a.timestamp);
+                  return (
+                    <li key={i}>
+                      <span>{t ? t.toLocaleString() : "—"}</span>
+                      <b>{a.action}</b>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+
+            {/* Map/Location */}
+            {tab === "location" && (
+              <div className={styles.mapCard}>
+                <div className={styles.mapPlaceholder}>Map Preview</div>
+                <div className={styles.mapMeta}>
+                  <span>Lat: <b>{selectedStore.geo?.lat ?? "—"}</b></span>
+                  <span>Lng: <b>{selectedStore.geo?.lng ?? "—"}</b></span>
+                  {(selectedStore.geo?.lat && selectedStore.geo?.lng) && (
+                    <a
+                      className={styles.openMaps}
+                      href={`https://www.google.com/maps?q=${selectedStore.geo.lat},${selectedStore.geo.lng}`}
+                      target="_blank" rel="noreferrer"
+                    >
+                      Open in Maps
+                    </a>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
 
-              {tab === "activity" && (
-                <ul className={styles.timeline}>
-                  {(selectedStore.verificationLogs || []).map((a, i) => {
-                    const t = toDate(a.timestamp);
-                    return (
-                      <li key={i}>
-                        <span>{t ? t.toLocaleString() : "—"}</span>
-                        <b>{a.action}</b>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-
-              {tab === "location" && (
-                <div className={styles.mapCard}>
-                  <div className={styles.mapPlaceholder}>Map Preview</div>
-                  <div className={styles.mapMeta}>
-                    <span>Lat: <b>{selectedStore.geo?.lat ?? "—"}</b></span>
-                    <span>Lng: <b>{selectedStore.geo?.lng ?? "—"}</b></span>
-                    {(selectedStore.geo?.lat && selectedStore.geo?.lng) && (
-                      <a
-                        className={styles.openMaps}
-                        href={`https://www.google.com/maps?q=${selectedStore.geo.lat},${selectedStore.geo.lng}`}
-                        target="_blank" rel="noreferrer"
-                      >
-                        Open in Maps
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Footer with approve/reject */}
+            {/* Footer with final approve/reject */}
             <footer className={styles.sheetFoot}>
               <div className={styles.footNote}>
                 Approve all required documents to enable final approval.
