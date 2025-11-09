@@ -1,15 +1,18 @@
 // src/services/userProfile.js
 import { useEffect, useState } from "react";
-import { db, storage } from "../Auth/firebase";
 import {
+  db,
+  storage,
   doc,
   getDoc,
   onSnapshot,
   setDoc,
   updateDoc,
   serverTimestamp,
+  ref,
+  uploadBytes,
+  getDownloadURL,
 } from "../Auth/firebase";
-import { ref, uploadBytes, getDownloadURL } from "../Auth/firebase";
 
 /** One-shot read of the signed-in user's profile (Firestore) */
 export async function getProfile(uid) {
@@ -49,8 +52,7 @@ export async function saveProfile(uid, profile, avatarFile) {
   // 1) Upload avatar if provided
   let uploadedPhotoURL = null;
   if (avatarFile) {
-    const safeName =
-      (avatarFile.name || "avatar.png").replace(/[^\w.\-]+/g, "_");
+    const safeName = (avatarFile.name || "avatar.png").replace(/[^\w.\-]+/g, "_");
     const path = `avatars/${uid}/${Date.now()}-${safeName}`;
     const fileRef = ref(storage, path);
     await uploadBytes(fileRef, avatarFile, {
@@ -69,7 +71,6 @@ export async function saveProfile(uid, profile, avatarFile) {
     role: "user",
     roles: ["user"],
     hasProfile: true,
-    // keep your nested shape…
     profile: {
       fullName: (profile?.fullName || "").trim(),
       age: ageNum,
@@ -77,7 +78,6 @@ export async function saveProfile(uid, profile, avatarFile) {
       gender: profile?.gender || null,
       ...(uploadedPhotoURL ? { avatarUrl: uploadedPhotoURL } : {}),
     },
-    // …and also a convenient top-level URL
     ...(uploadedPhotoURL ? { photoURL: uploadedPhotoURL } : {}),
     updatedAt: now,
   };
@@ -91,7 +91,10 @@ export async function saveProfile(uid, profile, avatarFile) {
 
   // 4) Return the fresh doc
   const fresh = await getDoc(userRef);
-  return { photoURL: uploadedPhotoURL || fresh.data()?.photoURL || null, data: fresh.data() };
+  return {
+    photoURL: uploadedPhotoURL || fresh.data()?.photoURL || null,
+    data: fresh.data(),
+  };
 }
 
 /** Hook: tell if the user's profile doc exists (and surface rule errors) */
@@ -110,7 +113,7 @@ export function useProfileComplete(uid) {
     }
     const unsub = onProfile(
       uid,
-      (data) => 
+      (data) =>
         setState({
           loading: false,
           exists: !!data,

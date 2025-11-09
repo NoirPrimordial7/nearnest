@@ -5,7 +5,7 @@ import { useAuth } from "../Auth/AuthContext";
 import { createStore } from "./stores";
 import s from "./register.module.css";
 
-/* --------------- Google Maps helpers (inline) --------------- */
+/* --------------- Google Maps helpers --------------- */
 function loadGoogle(key) {
   if (window.__gmapsPromise) return window.__gmapsPromise;
   window.__gmapsPromise = new Promise((resolve) => {
@@ -23,25 +23,20 @@ function loadGoogle(key) {
 }
 
 function extractFromPlace(place) {
+  // Parses a Google Place into our address fields and coordinates
   const out = {
-    line1: "",
-    city: "",
-    state: "",
-    pin: "",
-    country: "",
+    line1: "", city: "", state: "", pin: "", country: "",
     formatted: place?.formatted_address || place?.name || "",
-    placeId: place?.place_id || "",
-    lat: null,
-    lng: null,
+    placeId: place?.place_id || "", lat: null, lng: null,
   };
   const comps = place?.address_components || [];
   for (const c of comps) {
     if (c.types.includes("street_number")) out.line1 = c.long_name + " " + out.line1;
-    if (c.types.includes("route")) out.line1 = (out.line1 + c.long_name).trim();
-    if (c.types.includes("locality")) out.city = c.long_name;
+    if (c.types.includes("route"))         out.line1 = (out.line1 + c.long_name).trim();
+    if (c.types.includes("locality"))     out.city   = c.long_name;
     if (c.types.includes("administrative_area_level_1")) out.state = c.long_name;
-    if (c.types.includes("country")) out.country = c.short_name || c.long_name;
-    if (c.types.includes("postal_code")) out.pin = c.long_name;
+    if (c.types.includes("country"))      out.country = c.short_name || c.long_name;
+    if (c.types.includes("postal_code"))  out.pin    = c.long_name;
   }
   const loc = place?.geometry?.location;
   if (loc) {
@@ -54,10 +49,10 @@ function extractFromPlace(place) {
 function parseGmapsLink(url) {
   try {
     const u = new URL(url.trim());
-    // matches ".../@18.5204,73.8567,..." styles
+    // Pattern ".../@lat,lng,..." 
     const at = u.pathname.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
     if (at) return { lat: Number(at[1]), lng: Number(at[2]) };
-    // matches "...?q=18.5204,73.8567" styles
+    // Pattern "...?q=lat,lng"
     if (u.searchParams.has("q")) {
       const parts = u.searchParams.get("q").split(",");
       if (parts.length >= 2) return { lat: Number(parts[0]), lng: Number(parts[1]) };
@@ -66,15 +61,15 @@ function parseGmapsLink(url) {
   return null;
 }
 
-/* --------------- LocationEditor --------------- */
+/* --------------- LocationEditor Component --------------- */
 function LocationEditor({ value, onChange }) {
   const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   const [googleObj, setGoogleObj] = useState(null);
-
   const [addr, setAddr] = useState(value?.formatted || "");
   const [lat, setLat] = useState(value?.lat ?? null);
   const [lng, setLng] = useState(value?.lng ?? null);
   const [link, setLink] = useState("");
+  const [linkError, setLinkError] = useState("");
 
   const searchRef = useRef(null);
   const mapRef = useRef(null);
@@ -82,35 +77,34 @@ function LocationEditor({ value, onChange }) {
   const gmarker = useRef(null);
   const geocoder = useRef(null);
 
+  // Load Google Maps API
   useEffect(() => {
     let mounted = true;
     loadGoogle(mapsKey).then((g) => mounted && setGoogleObj(g || null));
     return () => { mounted = false; };
   }, [mapsKey]);
 
+  // Initialize Autocomplete and Map
   useEffect(() => {
     if (!googleObj) return;
-
-    /* Autocomplete */
+    // Autocomplete input
     if (searchRef.current && !searchRef.current.__ac) {
       const ac = new googleObj.maps.places.Autocomplete(searchRef.current, {
-        fields: ["address_components", "formatted_address", "geometry", "name", "place_id"],
+        fields: ["address_components", "formatted_address", "geometry", "place_id"],
       });
       searchRef.current.__ac = ac;
       ac.addListener("place_changed", () => {
         const place = ac.getPlace();
         const ex = extractFromPlace(place);
-        setAddr(ex.formatted || "");
+        setAddr(ex.formatted);
         setLat(ex.lat);
         setLng(ex.lng);
         onChange?.({
           ...ex,
-          line1: ex.line1 || "",
-          city: ex.city || "",
-          state: ex.state || "",
-          pin: ex.pin || "",
-          country: ex.country || "IN",
+          line1: ex.line1 || "", city: ex.city || "",
+          state: ex.state || "", pin: ex.pin || "", country: ex.country || "IN",
         });
+        // Move map to the selection
         if (gmap.current && ex.lat != null && ex.lng != null) {
           const p = { lat: ex.lat, lng: ex.lng };
           gmap.current.setCenter(p);
@@ -118,23 +112,19 @@ function LocationEditor({ value, onChange }) {
         }
       });
     }
-
-    /* Map + draggable pin */
+    // Initialize map and marker
     if (mapRef.current && !gmap.current) {
-      const center = lat != null && lng != null ? { lat, lng } : { lat: 18.5204, lng: 73.8567 }; // Pune
+      const center = (lat != null && lng != null)
+        ? { lat, lng }
+        : { lat: 18.5204, lng: 73.8567 }; // default to Pune
       gmap.current = new googleObj.maps.Map(mapRef.current, {
-        center,
-        zoom: 15,
-        disableDefaultUI: true,
-        clickableIcons: false,
+        center, zoom: 15, disableDefaultUI: true, clickableIcons: false,
       });
       gmarker.current = new googleObj.maps.Marker({
-        position: center,
-        map: gmap.current,
-        draggable: true,
+        position: center, map: gmap.current, draggable: true,
       });
       geocoder.current = new googleObj.maps.Geocoder();
-
+      // On pin drag end: reverse geocode
       gmarker.current.addListener("dragend", async () => {
         const p = gmarker.current.getPosition();
         const nlat = p.lat();
@@ -143,30 +133,30 @@ function LocationEditor({ value, onChange }) {
         setLng(nlng);
         try {
           const { results } = await geocoder.current.geocode({ location: { lat: nlat, lng: nlng } });
-          const best = results?.[0];
-          const ex = extractFromPlace(best || {});
-          ex.lat = nlat;
-          ex.lng = nlng;
-          setAddr(ex.formatted || addr);
-          onChange?.({
-            ...ex,
-            line1: ex.line1 || "",
-            city: ex.city || "",
-            state: ex.state || "",
-            pin: ex.pin || "",
-            country: ex.country || "IN",
-          });
+          if (results && results[0]) {
+            const ex = extractFromPlace(results[0]);
+            ex.lat = nlat; ex.lng = nlng;
+            setAddr(ex.formatted);
+            onChange?.({
+              ...ex,
+              line1: ex.line1 || "", city: ex.city || "",
+              state: ex.state || "", pin: ex.pin || "", country: ex.country || "IN",
+            });
+          } else {
+            onChange?.({
+              formatted: addr || "Pinned location",
+              lat: nlat, lng: nlng, placeId: "",
+            });
+          }
         } catch {
           onChange?.({
             formatted: addr || "Pinned location",
-            lat: nlat,
-            lng: nlng,
-            placeId: "",
+            lat: nlat, lng: nlng, placeId: "",
           });
         }
       });
     }
-  }, [googleObj]); // eslint-disable-line
+  }, [googleObj]); // run once after googleObj loads
 
   const useGPS = () => {
     if (!navigator.geolocation) return;
@@ -174,8 +164,7 @@ function LocationEditor({ value, onChange }) {
       (pos) => {
         const nlat = pos.coords.latitude;
         const nlng = pos.coords.longitude;
-        setLat(nlat);
-        setLng(nlng);
+        setLat(nlat); setLng(nlng);
         if (googleObj && gmap.current) {
           const p = { lat: nlat, lng: nlng };
           gmap.current.setCenter(p);
@@ -183,109 +172,124 @@ function LocationEditor({ value, onChange }) {
         }
         onChange?.({
           formatted: addr || "Current location",
-          lat: nlat,
-          lng: nlng,
-          placeId: "",
+          lat: nlat, lng: nlng, placeId: "",
         });
       },
       () => {}
     );
   };
 
-  const applyLink = () => {
-    const parsed = parseGmapsLink(link);
-    if (!parsed) return;
-    setLat(parsed.lat);
-    setLng(parsed.lng);
-    if (googleObj && gmap.current) {
-      const p = { lat: parsed.lat, lng: parsed.lng };
-      gmap.current.setCenter(p);
-      gmarker.current.setPosition(p);
+  // Parse pasted link or address and geocode
+  const applyLink = async () => {
+    setLinkError("");
+    const trimmed = link.trim();
+    // Try parsing as Google Maps URL
+    const parsed = parseGmapsLink(trimmed);
+    if (parsed) {
+      const nlat = parsed.lat, nlng = parsed.lng;
+      setLat(nlat); setLng(nlng);
+      if (googleObj && gmap.current) {
+        const p = { lat: nlat, lng: nlng };
+        gmap.current.setCenter(p);
+        gmarker.current.setPosition(p);
+      }
+      // Try reverse geocoding to get address
+      if (geocoder.current) {
+        try {
+          const { results } = await geocoder.current.geocode({ location: { lat: nlat, lng: nlng } });
+          if (results && results[0]) {
+            const ex = extractFromPlace(results[0]);
+            ex.lat = nlat; ex.lng = nlng;
+            setAddr(ex.formatted);
+            onChange?.({
+              ...ex,
+              line1: ex.line1 || "", city: ex.city || "",
+              state: ex.state || "", pin: ex.pin || "", country: ex.country || "IN",
+            });
+            return;
+          }
+        } catch {
+          // fall through to fallback
+        }
+      }
+      // Fallback if geocoder not available or no results
+      onChange?.({
+        formatted: addr || "Pinned location",
+        lat: nlat, lng: nlng, placeId: "",
+      });
+      return;
     }
-    onChange?.({
-      formatted: addr || "Pinned location",
-      lat: parsed.lat,
-      lng: parsed.lng,
-      placeId: "",
-    });
+    // Otherwise treat input as an address to geocode
+    if (geocoder.current) {
+      try {
+        const { results } = await geocoder.current.geocode({ address: trimmed });
+        if (results && results[0]) {
+          const ex = extractFromPlace(results[0]);
+          setAddr(ex.formatted);
+          setLat(ex.lat);
+          setLng(ex.lng);
+          onChange?.({
+            ...ex,
+            line1: ex.line1 || "", city: ex.city || "",
+            state: ex.state || "", pin: ex.pin || "", country: ex.country || "IN",
+          });
+          if (gmap.current) {
+            const p = { lat: ex.lat, lng: ex.lng };
+            gmap.current.setCenter(p);
+            gmarker.current.setPosition(p);
+          }
+          return;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    setLinkError("Unable to parse address or link.");
   };
-
-  const row = { display: "flex", gap: 8, marginTop: 8 };
-  const input = {
-    flex: 1,
-    height: 40,
-    border: "1px solid #e5e7eb",
-    borderRadius: 10,
-    padding: "0 10px",
-    background: "#f8fafc",
-  };
-  const btn = {
-    height: 40,
-    borderRadius: 10,
-    border: "1px solid #111",
-    background: "#111",
-    color: "#fff",
-    fontWeight: 800,
-    padding: "0 12px",
-    cursor: "pointer",
-  };
-  const ghost = { ...btn, background: "#fff", color: "#111" };
 
   return (
-    <div style={{ marginTop: 10 }}>
-      <label className={s.label}>Search or enter address</label>
-      <input
-        ref={searchRef}
-        style={input}
-        placeholder={googleObj ? "Type and pick from suggestions…" : "Street, City, PIN"}
-        autoComplete="off"
-        value={addr}
-        onChange={(e) => {
-          setAddr(e.target.value);
-          onChange?.({ formatted: e.target.value, lat, lng, placeId: "" });
-        }}
-      />
-
-      <div style={row}>
+    <div className={s["lp-wrap"]}>
+      <label className={s["lp-label"]}>Search or enter address</label>
+      <div className={s["lp-row"]}>
         <input
-          style={input}
-          placeholder="Paste a Google Maps link (optional)"
+          ref={searchRef}
+          className={s["lp-input"]}
+          placeholder={googleObj ? "Type and pick from suggestions…" : "Street, City, PIN"}
+          autoComplete="off"
+          value={addr}
+          onChange={(e) => {
+            setAddr(e.target.value);
+            onChange?.({ formatted: e.target.value, lat, lng, placeId: "" });
+          }}
+        />
+      </div>
+      <div className={s["lp-row"]}>
+        <input
+          className={s["lp-input"]}
+          placeholder="Paste Google Maps link or address (optional)"
           value={link}
           onChange={(e) => setLink(e.target.value)}
         />
-        <button type="button" style={btn} onClick={applyLink}>
+        <button type="button" className={s["lp-btn"]} onClick={applyLink}>
           Parse link
         </button>
-        <button type="button" style={ghost} onClick={useGPS}>
+        <button type="button" className={`${s["lp-btn"]} ${s.ghost}`} onClick={useGPS}>
           Use my location
         </button>
       </div>
-
+      {linkError && (
+        <div style={{ color: 'red', fontSize: 12, marginTop: 4 }}>
+          {linkError}
+        </div>
+      )}
       {googleObj ? (
-        <div
-          ref={mapRef}
-          style={{
-            height: 260,
-            marginTop: 8,
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            overflow: "hidden",
-          }}
-        />
+        <div ref={mapRef} className={s["lp-map"]} style={{ height: 260 }} />
       ) : lat != null && lng != null ? (
-        <div
-          style={{
-            height: 260,
-            marginTop: 8,
-            borderRadius: 12,
-            border: "1px solid #e5e7eb",
-            overflow: "hidden",
-          }}
-        >
+        <div className={s["lp-map"]} style={{ height: 260 }}>
           <iframe
             title="map"
             width="100%"
-            height="260"
+            height="100%"
             frameBorder="0"
             style={{ border: 0 }}
             src={`https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`}
@@ -293,10 +297,16 @@ function LocationEditor({ value, onChange }) {
           />
         </div>
       ) : null}
+      {lat != null && lng != null && (
+        <div className={s["lp-meta"]}>
+          Coordinates: {lat.toFixed(6)}, {lng.toFixed(6)}
+        </div>
+      )}
     </div>
   );
 }
 
+/* --------------- CreateStore Component --------------- */
 export default function CreateStore() {
   const nav = useNavigate();
   const { user } = useAuth() || {};
@@ -309,11 +319,14 @@ export default function CreateStore() {
     geo: null,
     formatted: "",
     placeId: "",
+    category: "",
+    tagsInput: ""
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
   function onPick(addr) {
+    // Update form state when LocationEditor gives a new address object
     setForm((f) => ({
       ...f,
       address: {
@@ -325,22 +338,27 @@ export default function CreateStore() {
       },
       formatted: addr.formatted || "",
       placeId: addr.placeId || "",
-      geo:
-        addr.lat != null && addr.lng != null
-          ? { lat: Number(addr.lat), lng: Number(addr.lng) }
-          : null,
+      geo: addr.lat != null && addr.lng != null
+        ? { lat: Number(addr.lat), lng: Number(addr.lng) }
+        : null,
     }));
   }
 
   async function submit() {
     if (!user?.uid) return setErr("You must be signed in.");
     if (!form.name.trim()) return setErr("Please enter a store name.");
-    if (!form.formatted && !form.address.line1 && !form.geo)
-      return setErr("Pick the store location (search, pin, paste link or GPS).");
+    // Validate location has formatted address, coordinates, and city
+    if (!form.formatted || !form.geo || form.geo.lat == null || form.geo.lng == null || !form.address.city) {
+      return setErr("Please select a valid location using the map or search.");
+    }
+    if (!form.category) return setErr("Please select a store category.");
 
     setErr("");
     setBusy(true);
     try {
+      const tagsArray = form.tagsInput
+        ? form.tagsInput.split(",").map((t) => t.trim()).filter((t) => t)
+        : [];
       const id = await createStore(user.uid, {
         name: form.name.trim(),
         address: {
@@ -352,7 +370,8 @@ export default function CreateStore() {
         },
         phone: form.phone || "",
         licenseNo: form.licenseNo || "",
-        category: "Pharmacy",
+        category: form.category,
+        tags: tagsArray,
         gstin: null,
         hours: null,
         geo: form.geo,
@@ -360,7 +379,7 @@ export default function CreateStore() {
         placeId: form.placeId || null,
         formatted: form.formatted || null,
       });
-      nav(`/upload-docs/${id}`); // next step
+      nav(`/upload-docs/${id}`); // proceed to next step
     } catch (e) {
       console.error(e);
       setErr("Failed to create store. Try again.");
@@ -373,20 +392,10 @@ export default function CreateStore() {
     <div className={s.wrap}>
       <div className={s.card}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-          <button
-            onClick={() => nav(-1)}
-            aria-label="Go back"
-            style={{
-              height: 36,
-              padding: "0 12px",
-              borderRadius: 10,
-              background: "#f2f4f7",
-              border: "1px solid #e6e9ef",
-              fontWeight: 700,
-              cursor: "pointer",
-              marginRight: 8,
-            }}
-          >
+          <button onClick={() => nav(-1)} aria-label="Go back"
+                  style={{ height: 36, padding: "0 12px", borderRadius: 10,
+                           background: "#f2f4f7", border: "1px solid #e6e9ef",
+                           fontWeight: 700, cursor: "pointer", marginRight: 8 }}>
             ← Back
           </button>
           <h2 className={s.h1} style={{ margin: 0 }}>Register a Store</h2>
@@ -416,8 +425,9 @@ export default function CreateStore() {
             onChange={onPick}
           />
           {form.formatted ? (
-            <div className={s.hint} style={{ marginTop: 6 }}>
-              Selected: {form.formatted}
+            <div className={s.hint} style={{ marginTop: 6, color: form.geo && form.address.city ? "green" : undefined }}>
+              {form.geo && form.address.city ? "✅ Location saved: " : "Selected: "}
+              {form.formatted}
             </div>
           ) : null}
         </div>
@@ -443,18 +453,39 @@ export default function CreateStore() {
           </div>
         </div>
 
+        <div className={`${s.section} ${s.grid2}`}>
+          <div>
+            <label className={s.label}>Category</label>
+            <select
+              className={s.input}
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+            >
+              <option value="">Select category</option>
+              <option>Pharmacy</option>
+              <option>Medical Store</option>
+              <option>Clinic</option>
+              <option>Diagnostic / Lab</option>
+              <option>Pet Pharmacy</option>
+              <option>Wellness & Essentials</option>
+            </select>
+          </div>
+          <div>
+            <label className={s.label}>Tags (optional)</label>
+            <input
+              className={s.input}
+              placeholder="e.g. 24x7, Prescription"
+              value={form.tagsInput}
+              onChange={(e) => setForm((f) => ({ ...f, tagsInput: e.target.value }))}
+            />
+          </div>
+        </div>
+
         {err && (
-          <div
-            style={{
-              marginTop: 12,
-              padding: "10px 12px",
-              border: "1px solid #fecaca",
-              background: "#fee2e2",
-              color: "#991B1B",
-              borderRadius: 12,
-              fontWeight: 600,
-            }}
-          >
+          <div style={{
+            marginTop: 12, padding: "10px 12px", border: "1px solid #fecaca",
+            background: "#fee2e2", color: "#991B1B", borderRadius: 12, fontWeight: 600
+          }}>
             {err}
           </div>
         )}

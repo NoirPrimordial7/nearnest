@@ -93,12 +93,12 @@ function Pagination({
 
   return (
     <nav
-      className={`${pagerStyles.pager} ${className}`}
+      className={`${styles.pager} ${className}`}
       role="navigation"
       aria-label="Pagination"
     >
       <button
-        className={pagerStyles.ctrl}
+        className={styles.ctrl}
         onClick={() => go(current - 1)}
         disabled={current === 1}
         aria-label="Previous page"
@@ -110,7 +110,7 @@ function Pagination({
         it === "…" ? (
           <span
             key={`dots-${i}`}
-            className={pagerStyles.dots}
+            className={styles.dots}
             aria-hidden
           >
             …
@@ -118,8 +118,8 @@ function Pagination({
         ) : (
           <button
             key={it}
-            className={`${pagerStyles.page} ${
-              it === current ? pagerStyles.active : ""
+            className={`${styles.page} ${
+              it === current ? styles.active : ""
             }`}
             onClick={() => go(it)}
             aria-current={it === current ? "page" : undefined}
@@ -130,7 +130,7 @@ function Pagination({
       )}
 
       <button
-        className={pagerStyles.ctrl}
+        className={styles.ctrl}
         onClick={() => go(current + 1)}
         disabled={current === total}
         aria-label="Next page"
