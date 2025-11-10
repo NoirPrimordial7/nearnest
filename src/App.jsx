@@ -1,12 +1,29 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+import NearnestHome from "./pages/NearnestHome";
+
+
 import { AuthProvider, RoleRedirect } from "./pages/Auth/AuthContext";
 import RequireProfile from "./pages/user/RequireProfile";
 import ProtectedRoute from './pages/routes/ProtectedRoute';
+
+
 // Store Admin
-import StoreAdminLayout from './pages/StoreAdmin/StoreAdminLayout';
-//import StoreDashboardPage from './pages/StoreAdmin/StoreAdminDashboard';
+import { useParams } from "react-router-dom";
+
+
+
+import StoreAdminLayout from "./pages/StoreAdmin/StoreAdminLayout";
+import StoreAdminDashboard from "./pages/StoreAdmin/StoreAdminDashboard/StoreAdminDashboard";
+import StoreInventory from "./pages/StoreAdmin/Inventory/Inventory";
+//import StoreAnalytics from "../pages/StoreAdmin/StoreAnalytics";
+//import StoreAdvertisement from "../pages/StoreAdmin/StoreAdvertisement";
+import StoreSettings from "./pages/StoreAdmin/storeSettings/storeSettings";
+//import StoreSupport from "../pages/StoreAdmin/StoreSupport";
+
+
+
 // Auth
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
@@ -41,7 +58,8 @@ function App() {
         <Route path="/verify-email" element={<VerifyEmail />} />
 
         {/* 🔁 ROOT REDIRECTS BASED ON ROLE */}
-        <Route path="/" element={<RoleRedirect />} />
+        <Route path="/" element={<NearnestHome />} />
+
 
         {/* 👤 USER ROUTES */}
         <Route
@@ -115,11 +133,24 @@ function App() {
           <Route path="verification" element={<AdminVerification />} />
           <Route path="support" element={<AdminSupport />} />
         </Route>
-      </Routes>
 
-      <Route path="/store-admin" element={<StoreAdminLayout />}>
-                {/* etc… */}
-      </Route>
+
+
+
+        {/* 👤 Store Admin Routes (protected) */}
+        <Route path="/store-admin/:storeId" element={<StoreAdminLayout />}>
+          
+          <Route path="dashboard" element={<StoreAdminDashboard />} />
+          <Route path="inventory" element={<StoreInventory />} />
+          <Route path="settings" element={<StoreSettings />} />
+          {/*
+          <Route path="analytics" element={<StoreAnalytics />} />
+          <Route path="advertisement" element={<StoreAdvertisement />} />
+          
+          <Route path="support" element={<StoreSupport />} />  */}
+        </Route>
+
+      </Routes>
 
 
     </AuthProvider>

@@ -129,5 +129,8 @@ service cloud.firestore {
     match /{document=**} {
       allow read: if signedIn();
     }
+
+    
+
   }
 }
