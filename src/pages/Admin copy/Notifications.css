@@ -1,0 +1,284 @@
+/* Dark Theme */
+.notifications-container.dark {
+background-color: #121212;
+color: #f5f5f5;
+height: 100vh;
+display: flex;
+flex-direction: column;
+font-family: "Poppins", sans-serif;
+}
+
+.notifications-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 15px 25px;
+border-bottom: 1px solid #333;
+background-color: #1e1e1e;
+}
+
+.notifications-header h2 {
+color: #ffffff;
+}
+
+.header-controls {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.header-controls input,
+.header-controls select {
+background: #222;
+color: #eee;
+border: 1px solid #444;
+padding: 5px 8px;
+border-radius: 6px;
+}
+
+.header-controls button {
+background: #007bff;
+color: white;
+border: none;
+border-radius: 6px;
+padding: 6px 12px;
+cursor: pointer;
+}
+
+/* Bulk actions */
+.bulk-actions {
+display: flex;
+align-items: center;
+padding: 10px 20px;
+background: #181818;
+border-bottom: 1px solid #333;
+}
+
+.bulk-actions label {
+color: #ccc;
+margin-right: 10px;
+}
+
+.bulk-buttons button {
+margin-right: 8px;
+background: #333;
+border: none;
+padding: 5px 10px;
+border-radius: 5px;
+color: #eee;
+cursor: pointer;
+}
+
+.bulk-buttons button:hover {
+background: #444;
+}
+
+/* Notification list */
+.notifications-body {
+display: flex;
+flex: 1;
+overflow: hidden;
+}
+
+.notifications-list {
+flex: 0.4;
+border-right: 1px solid #333;
+overflow-y: auto;
+background-color: #1a1a1a;
+position: relative;
+}
+
+.notification-item {
+display: flex;
+align-items: flex-start;
+padding: 15px;
+border-bottom: 1px solid #333;
+cursor: pointer;
+position: relative;
+transition: background 0.2s;
+}
+
+.notification-item:hover {
+background-color: #222;
+}
+
+.notification-item.active {
+background-color: #2a2a2a;
+border-left: 4px solid #007bff;
+}
+
+.notification-content {
+flex: 1;
+margin-left: 10px;
+}
+
+.notification-header {
+display: flex;
+justify-content: space-between;
+margin-bottom: 6px;
+}
+
+.sender-name {
+font-weight: 600;
+color: #f5f5f5;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.unread-dot {
+width: 8px;
+height: 8px;
+background-color: #007bff;
+border-radius: 50%;
+display: inline-block;
+}
+
+/* Role labels */
+.sender-role {
+font-size: 0.8rem;
+padding: 2px 6px;
+border-radius: 8px;
+color: white;
+}
+
+.sender-role.user {
+background-color: #4caf50;
+}
+
+.sender-role.support {
+background-color: #2196f3;
+}
+
+.sender-role.system {
+background-color: #9c27b0;
+}
+
+.notification-date {
+font-size: 0.75rem;
+color: #888;
+}
+
+.notification-subject {
+font-weight: 500;
+color: #fff;
+}
+
+.notification-preview {
+font-size: 0.9rem;
+color: #aaa;
+}
+
+/* Flag icon */
+.flag-icon {
+color: orange;
+margin-right: 5px;
+}
+
+/* Menu Icon and Dropdown */
+.menu-icon {
+cursor: pointer;
+padding: 5px;
+font-size: 1.2rem;
+color: #aaa;
+}
+
+.context-menu {
+position: absolute;
+top: 40px;
+right: 15px;
+background: #2c2c2c;
+border: 1px solid #444;
+border-radius: 8px;
+z-index: 1000;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+width: 140px;
+}
+
+
+.context-menu div {
+padding: 10px;
+cursor: pointer;
+color: #eee;
+transition: background 0.2s;
+}
+
+.context-menu div:hover {
+background-color: #333;
+}
+
+/* Right Pane */
+.notification-detail {
+flex: 0.6;
+padding: 20px;
+background-color: #121212;
+overflow-y: auto;
+}
+
+.detail-header h3 {
+font-size: 1.3rem;
+color: #fff;
+}
+
+.detail-meta {
+display: flex;
+justify-content: space-between;
+color: #aaa;
+font-size: 0.9rem;
+margin-top: 8px;
+}
+
+.detail-message {
+margin-top: 20px;
+line-height: 1.6;
+color: #ddd;
+background-color: #1e1e1e;
+padding: 20px;
+border-radius: 10px;
+}
+
+/* No selection text */
+.no-selection {
+color: #888;
+text-align: center;
+margin-top: 40px;
+}
+
+/* Scrollbars */
+.notifications-list::-webkit-scrollbar,
+.notification-detail::-webkit-scrollbar {
+width: 8px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb,
+.notification-detail::-webkit-scrollbar-thumb {
+background-color: #333;
+border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+.notifications-body {
+flex-direction: column;
+}
+
+.notifications-list {
+flex: none;
+height: 45%;
+}
+
+.notification-detail {
+flex: none;
+height: 55%;
+}
+}
+
+.unread-dot {
+display: inline-block;
+width: 8px;
+height: 8px;
+background-color: #007bff;
+border-radius: 50%;
+margin-left: 8px;
+vertical-align: middle;
+}

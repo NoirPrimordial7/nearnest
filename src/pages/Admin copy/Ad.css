@@ -1,0 +1,335 @@
+/* ad.css - Advertisement Management (Admin) */
+/* Dark admin theme consistent with your dashboard */
+
+.ad-page-container {
+  font-family: "Poppins", sans-serif;
+  color: #f4f4f4;
+  background: #0f0f0f;
+  min-height: 100vh;
+  padding: 22px;
+  box-sizing: border-box;
+}
+
+/* Header */
+.ad-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.ad-header-left h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.ad-sub {
+  margin: 3px 0 0 0;
+  color: #bdbdbd;
+  font-size: 13px;
+}
+
+.ad-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-card {
+  background: #151515;
+  border: 1px solid #222;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-align: right;
+  min-width: 120px;
+}
+
+.stat-title {
+  font-size: 12px;
+  color: #cfcfcf;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* Buttons */
+.btn {
+  background: #262626;
+  color: #fff;
+  border: 1px solid #2e2e2e;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn:hover { filter: brightness(1.05); }
+
+.btn.primary {
+  background: linear-gradient(90deg,#0066ff,#0052d4);
+  border: none;
+}
+
+.btn.export {
+  background: linear-gradient(90deg,#0ea5a4,#0b8790);
+  border: none;
+}
+
+/* Controls section */
+.ad-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 20px 0;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: #101010;
+  border: 1px solid #222;
+  border-radius: 8px;
+  color: #eee;
+  margin-right: 12px;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.filters select {
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #101010;
+  border: 1px solid #222;
+  color: #eee;
+}
+
+/* Table */
+.ad-table-wrap {
+  background: #0e0e0e;
+  border: 1px solid #1f1f1f;
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.ad-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ad-table thead th {
+  text-align: left;
+  padding: 12px 10px;
+  color: #cfcfcf;
+  font-weight: 600;
+  border-bottom: 1px solid #222;
+  background: rgba(255,255,255,0.02);
+}
+
+.ad-table tbody td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #171717;
+  vertical-align: top;
+  color: #ddd;
+}
+
+.ad-table tbody tr:hover td {
+  background: rgba(255,255,255,0.01);
+}
+
+/* Title column */
+.ad-title {
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Status pill */
+.status-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-block;
+  min-width: 74px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.status-pill.active { background: rgba(16,163,127,0.12); color: #10a37f; border: 1px solid rgba(16,163,127,0.18); }
+.status-pill.expired { background: rgba(255,165,0,0.08); color: #ffb020; border: 1px solid rgba(255,165,0,0.12); }
+.status-pill.removed { background: rgba(255,0,64,0.06); color: #ff4d6d; border: 1px solid rgba(255,0,64,0.08); }
+
+/* Actions column & three-dot menu */
+.actions-cell {
+  position: relative;
+  width: 56px;
+  text-align: center;
+}
+
+.menu-trigger {
+  background: transparent;
+  border: none;
+  color: #bdbdbd;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.row-menu {
+  position: absolute;
+  right: 6px;
+  top: 28px;
+  background: #141414;
+  border: 1px solid #232323;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  z-index: 60;
+  overflow: hidden;
+
+  /* snappy animation */
+  transform-origin: top right;
+  animation: menuIn 120ms cubic-bezier(.2,.9,.28,1);
+}
+
+@keyframes menuIn {
+  from { transform: translateY(-6px) scale(.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.row-menu-item {
+  padding: 10px 12px;
+  color: #e9e9e9;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  position: relative;
+}
+
+.row-menu-item:last-child { border-bottom: none; }
+
+.row-menu-item:hover { background: rgba(255,255,255,0.02); color: #fff; }
+
+.row-menu-item.danger { color: #ff6b6b; font-weight: 700; }
+
+/* Extend submenu */
+.row-menu-item.has-sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.extend-submenu {
+  position: absolute;
+  right: 100%;
+  top: -6px;
+  background: #141414;
+  border: 1px solid #242424;
+  border-radius: 8px;
+  min-width: 140px;
+  padding: 6px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+  opacity: 0;
+  transform: translateX(6px) scale(.98);
+  pointer-events: none;
+  transition: all 100ms ease;
+  z-index: 70;
+}
+
+.extend-submenu.open {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+  pointer-events: auto;
+}
+
+.extend-option {
+  padding: 8px 10px;
+  color: #e9e9e9;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.extend-option:hover { background: rgba(255,255,255,0.02); color: #fff; }
+
+/* Empty state */
+.empty {
+  text-align: center;
+  color: #9a9a9a;
+  padding: 40px 0;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,4,6,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+
+.modal {
+  background: #0b0b0b;
+  border: 1px solid #222;
+  padding: 18px;
+  border-radius: 12px;
+  width: 820px;
+  max-width: calc(100% - 40px);
+  color: #eaeaea;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+}
+
+.modal.small { width: 480px; }
+
+.modal h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.modal-grid label { display: flex; flex-direction: column; font-size: 13px; color: #cfcfcf; }
+.modal-grid input, .modal-grid textarea {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: #0f0f0f;
+  border: 1px solid #222;
+  color: #eee;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.modal-grid textarea { min-height: 90px; resize: vertical; }
+
+.modal-actions {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* responsive */
+@media (max-width: 900px) {
+  .ad-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .ad-header-right { width: 100%; display: flex; justify-content: space-between; }
+  .modal { width: 95%; }
+  .modal-grid { grid-template-columns: 1fr; }
+  .actions-cell { width: 44px; }
+}

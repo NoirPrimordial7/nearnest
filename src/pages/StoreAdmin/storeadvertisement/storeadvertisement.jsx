@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import Sidebar from "../../components/Sidebar";
+
 import "./storeadvertisement.css";
 import {
   UploadCloud, Trash2, Link as LinkIcon, CalendarDays, Clock, Target,

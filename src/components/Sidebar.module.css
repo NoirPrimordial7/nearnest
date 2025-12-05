@@ -1,0 +1,73 @@
+/* ===== Sidebar Header ===== */
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- Professional 3-line icon (Instagram style) --- */
+.menu-toggle-icon {
+  background: none;         /* No background */
+  border: none;             /* No border */
+  color: #d1d5db;           /* Soft gray like Instagram */
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.menu-toggle-icon:hover {
+  color: #ffffff;           /* Brighter white on hover */
+  transform: scale(1.05);
+}
+
+/* Sidebar brand text */
+.sidebar-logo {
+  color: #f5f5f5;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  display: none;
+}
+
+/* Optional: Add subtle fade for icon on hover */
+.menu-toggle-icon svg {
+  transition: opacity 0.2s ease;
+}
+.menu-toggle-icon:hover svg {
+  opacity: 0.9;
+}
+
+.sidebar-header {
+  justify-content: flex-start;
+  gap: 16px;
+}
+
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    transform: translateX(0);
+  }
+  .sidebar.collapsed {
+    width: 80px;
+  }
+}
+
+
