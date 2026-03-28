@@ -1,4 +1,4 @@
-// src/pages/StoreAdmin/StoreAdminDashboard.jsx
+/ src/pages/StoreAdmin/StoreAdminDashboard.jsx
 import React, { useRef, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
