@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
+import { auth, signOut as firebaseSignOut } from "../Auth/firebase";
 import styles from "./AdminLayout.module.css";
 
 /** click-outside helper */
@@ -56,7 +57,7 @@ export default function AdminLayout() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
-  const { user, signOut } = useAuth() || {};
+  const { user } = useAuth() || {};
   const navigate = useNavigate();
 
   // lock scroll when drawer is open (mobile)
@@ -94,9 +95,7 @@ export default function AdminLayout() {
   const onSignOut = async () => {
     setProfileOpen(false);
     try {
-      if (typeof signOut === "function") {
-        await signOut();
-      }
+      await firebaseSignOut(auth);
       navigate("/signin");
     } catch (e) {
       console.error("Sign out failed:", e);

@@ -186,3 +186,18 @@
     grid-template-columns: 1fr;
   }
 }
+
+.emptyChart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.emptyState {
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 12px 0;
+}

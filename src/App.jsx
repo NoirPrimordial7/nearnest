@@ -44,8 +44,7 @@ import AdminSupport from './pages/Admin/Support/SupportTickets';
 
 function App() {
   return (
-    <AuthProvider>
-      <Routes>
+    <Routes>
         {/* 🔐 AUTH ROUTES */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
@@ -142,7 +141,6 @@ function App() {
           */}
         </Route>
       </Routes>
-    </AuthProvider>
   );
 }
 
