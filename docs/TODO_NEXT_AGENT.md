@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after Medifind entry/auth design specs)
+## Next up (as of 2026-04-24, after Medifind Expo scaffold)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -21,15 +21,16 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit the Medifind entry/auth design specs.** Include `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`. Note: `docs/MOBILE_APP_PLAN.md` may already have unrelated Claude changes; do not overwrite them. Suggested message: `docs(mobile): expand Medifind auth screen specs`.
-2. **Next docs-only design pass:** finish Email Verification, Forgot Password, Profile Setup, Location Permission, and Address/Search-Area Picker with the same level of detail.
-3. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` only after future code changes. Documentation-only changes do not require a graph rebuild unless requested.
-4. **If scaffold is approved later, build only discovery MVP routes:** auth, profile setup, location/search-area picker, home list, home map, search, search results, store detail, medicine detail, contact store, navigation handoff, profile.
-5. **Do not scaffold Phone OTP in MVP.** The design now exists as a Phase 2 reference only. MVP auth remains email/password plus Google sign-in.
-6. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-7. **Backend readiness for MVP now means discovery endpoints first:** `searchMedicines`, `nearbyStores`, Places/geocode proxy functions, store public contact fields, store coordinates, and inventory freshness metadata.
-8. **Do not edit protected areas during planning.** No edits to `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, package files, env files, `serviceAccountKey.json`, or `apps/mobile/**` without explicit user authorization.
-9. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+1. **Commit the Medifind Expo scaffold.** Include `apps/mobile/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): scaffold Medifind Expo app`.
+2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`. `graphify update .` should be run after future code changes when `graphify-out/**` is allowed in the edit scope.
+3. **Next mobile implementation pass:** add Email Verification and Forgot Password placeholder routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
+4. **Keep backend wiring deferred.** Firebase JS SDK is installed, but there is no `initializeApp`, env config, callable Functions usage, or real auth flow yet.
+5. **Build only discovery MVP routes:** auth shell, profile setup, location/search-area picker, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile.
+6. **Do not add Phone OTP in MVP.** The design exists as a Phase 2 reference only. MVP auth remains email/password plus Google sign-in.
+7. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+8. **Backend readiness for MVP still means discovery endpoints first:** `searchMedicines`, `nearbyStores`, Places/geocode proxy functions, store public contact fields, store coordinates, and inventory freshness metadata.
+9. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, env files, or `serviceAccountKey.json` without explicit authorization.
+10. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 
@@ -40,8 +41,9 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 - Phase 2 commerce backlog only: `orders/`, `prescriptions/`, `payments/`, `deliveries/` schemas, rules, indexes, and functions.
 - Do not treat Razorpay, Rx approval, cart, checkout, or delivery as blockers for the discovery MVP.
 
-### Mobile app (after scaffold approval)
-- Auth screens (sign in / sign up / email verify / forgot password)
+### Mobile app
+- Scaffold exists in `apps/mobile/` with placeholder Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
+- Add auth placeholders not yet present: Email Verification and Forgot Password.
 - Profile setup + saved search area/address
 - Location permission + address/search-area picker
 - Home list + Home map

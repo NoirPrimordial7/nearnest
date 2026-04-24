@@ -1,9 +1,11 @@
 # Nearnest Session State
 
-Last updated: 2026-04-24 (Medifind auth/onboarding design specs expanded)
+Last updated: 2026-04-24 (Medifind Expo scaffold created)
 
 ## Current phase
-Mobile MVP planning is documentation-only. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
+Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
+
+**Scaffold status (2026-04-24):** `apps/mobile/` now contains an Expo managed workflow app using TypeScript and expo-router. Firebase is present as the Firebase JS SDK dependency only; there is no Firebase initialization, no env wiring, no backend calls, and no real auth implementation yet. Placeholder routes exist for Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
 
 **Design progress (2026-04-24):** Splash, Welcome/onboarding, Sign In, Sign Up, and the future Phone OTP flow now have detailed screen specs covering layout, hierarchy, exact copy, button styles, spacing, loading/error states, interactions, and transitions. Phone OTP remains Phase 2 and must not be enabled or scaffolded for MVP unless explicitly approved.
 
@@ -20,7 +22,7 @@ Mobile MVP planning is documentation-only. Graphify coordination is installed an
 
 **Rx doctrine (MVP, clarified 2026-04-24):** Rx-required medicines are shown during discovery with a strong "Prescription required" badge and warning. Discovery and navigation are NOT blocked. No reserve/order/delivery path exists in MVP. No medical advice, dosage, usage, side-effects, or substitution guidance is shown anywhere in MVP — even if the canonical `medicines/{id}` doc carries those fields, mobile does not render them.
 
-No app source, Cloud Functions, Firebase rules, package files, env files, or mobile scaffold files should be edited in this phase.
+No root app source, Cloud Functions, Firebase rules, root package files, env files, or secrets should be edited from mobile work. Mobile edits are currently scoped to `apps/mobile/**`.
 
 ## Graphify status
 - Python package installed: `graphifyy==0.4.23`.
@@ -38,11 +40,11 @@ No app source, Cloud Functions, Firebase rules, package files, env files, or mob
 - `graphify claude install` created `.claude/settings.json`; that file was removed because it was outside the allowed edit list for this session.
 
 ## Current allowed next work
-1. Commit the Medifind entry/auth design specs.
-2. Continue documentation-only screen design with Email Verification, Forgot Password, Profile Setup, Location Permission, and Address/Search-Area Picker.
-3. If scaffold is approved later, implement only discovery MVP surfaces: auth, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
-4. Keep `apps/mobile/**` untouched until the user explicitly authorizes Expo scaffolding.
-5. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile-planning sessions.
+1. Commit the Medifind Expo scaffold and handoff docs.
+2. Next mobile implementation pass: add placeholder Email Verification and Forgot Password routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
+3. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
+4. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.
+5. Do not add Firebase config/env values until an approved mobile config plan exists.
 6. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
 7. Do not add Phone OTP to MVP unless the user explicitly changes the auth scope.
 
@@ -50,7 +52,6 @@ No app source, Cloud Functions, Firebase rules, package files, env files, or mob
 - `src/**`
 - `functions/**`
 - `dataconnect/**`
-- `apps/mobile/**`
 - `package.json`, `package-lock.json`
 - `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
 - `.env`, `.env.local`, `.env.example`

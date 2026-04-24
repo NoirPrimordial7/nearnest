@@ -4,6 +4,68 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Scaffold Medifind Expo app
+**Agent:** Codex
+**Session goal:** Start Medifind mobile development by scaffolding an Expo managed TypeScript app in `apps/mobile` with expo-router, Firebase JS SDK dependency only, and placeholder MVP entry screens.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/SESSION_STATE.md`
+- `docs/MOBILE_UI_SCREEN_SPECS.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DECISIONS.md`
+- `docs/TODO_NEXT_AGENT.md`
+- existing `apps/mobile/README.md`
+
+**Commands run:**
+1. `node -v` - succeeded: `v20.20.0`.
+2. `npm -v` - failed in sandbox with `EPERM: operation not permitted, lstat 'C:\Users\Aditya'`; reran with approval and succeeded: `11.6.0`.
+3. `npx create-expo-app@latest apps/mobile --template blank-typescript --yes` - failed because npm applied the root web package override: `EOVERRIDE Override for vite@npm:rolldown-vite@^7.1.14 conflicts with direct dependency`.
+4. `npx create-expo-app@latest C:\projects\nearnest\web-portal\apps\mobile --template blank-typescript --yes` from `C:\projects` - succeeded.
+5. `npx expo install expo-router react-native-safe-area-context react-native-screens expo-linking expo-constants` - succeeded.
+6. `npm install firebase` - initially failed with `ERESOLVE` around optional `react-dom` peer resolution.
+7. `npx expo install react-dom react-native-web` - succeeded with Expo-compatible versions.
+8. `npm install firebase` - succeeded.
+9. `npm run typecheck` - failed in sandbox with the same `EPERM` user-profile path issue; reran with approval and passed.
+10. `npm ls firebase expo-router @react-native-firebase/app --depth=0` - confirmed `expo-router@6.0.23`, `firebase@12.12.1`, and no `@react-native-firebase/app`.
+
+**Files created / updated:**
+- `apps/mobile/package.json` - Expo SDK 54 app, `expo-router/entry`, TypeScript scripts, Firebase JS SDK dependency.
+- `apps/mobile/package-lock.json` - mobile-local dependency lockfile.
+- `apps/mobile/app.json` - Medifind app name/slug/scheme and Expo Router plugin.
+- `apps/mobile/app/_layout.tsx` - root expo-router stack.
+- `apps/mobile/app/index.tsx` - Splash placeholder.
+- `apps/mobile/app/welcome.tsx` - Welcome/onboarding placeholder.
+- `apps/mobile/app/sign-in.tsx` - Sign In placeholder.
+- `apps/mobile/app/sign-up.tsx` - Sign Up placeholder.
+- `apps/mobile/app/profile-setup.tsx` - Profile Setup placeholder.
+- `apps/mobile/app/home.tsx` - Home placeholder.
+- `apps/mobile/components/ActionButton.tsx`, `InfoCard.tsx`, `Screen.tsx` - lightweight scaffold UI.
+- `apps/mobile/theme/tokens.ts` - mobile tokens mirrored from `docs/DESIGN_SYSTEM.md`.
+- `apps/mobile/README.md` - scaffold notes and guardrails.
+- Expo default assets and `.gitignore` under `apps/mobile/`.
+- `docs/SESSION_STATE.md` - current phase updated from planning to scaffolded development.
+- `docs/TODO_NEXT_AGENT.md` - next steps rewritten for post-scaffold mobile work.
+- `docs/AGENT_LOG.md` - this entry.
+
+**Scope notes:**
+- Firebase is a dependency only. No `initializeApp`, env config, callable Functions, Firestore reads/writes, or real auth flow were added.
+- Phone OTP, delivery, cart, checkout, payment, orders, and prescription upload remain out of MVP.
+- `graphify update .` was not run because it would modify `graphify-out/**`, which was outside this session's allowed edit list.
+
+**Files intentionally NOT touched:**
+- root `src/**`, `public/**`, `functions/**`, `dataconnect/**`
+- root `package.json`, root `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`feat(mobile): scaffold Medifind Expo app`
+
+---
+
 ## 2026-04-24 - Expand Medifind entry/auth screen designs
 **Agent:** Codex
 **Session goal:** Continue Claude's Medifind design work and complete documentation-only screen specs for Splash, Welcome/onboarding, Sign In, Sign Up, and Phone OTP.
