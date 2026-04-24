@@ -4,6 +4,54 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 — Resolve 8 open mobile architecture decisions
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Close every open architectural decision surfaced in `docs/MOBILE_APP_PLAN.md` §8.1 so the mobile MVP has a firm technical baseline before any scaffold.
+
+**Skills invoked:** `repo-understanding` (reused), `project-memory`, `firebase-architect`, `mobile-product-planner`.
+
+**Files inspected (read-only):**
+- `docs/MOBILE_APP_PLAN.md` (§8 open questions)
+- `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/PROJECT_MAP.md` (memory)
+- No source code files re-inspected — state unchanged from earlier this day.
+
+**Decisions added (D-007 … D-014):**
+- **D-007** — Navigation: **expo-router** (React Navigation fallback).
+- **D-008** — Mobile Firebase client: **Firebase JS SDK** + `expo-notifications` (RNFirebase fallback).
+- **D-009** — Roles: migrate to **Firebase Auth custom claims** with `users.roles[]` as a mirror during a 3-phase rollout.
+- **D-010** — Payments: **Razorpay** for India MVP (Cashfree fallback).
+- **D-011** — Places + Maps proxy: **same `functions/` codebase**, callables with per-uid rate limiting + App Check.
+- **D-012** — **Data Connect deferred** past MVP; re-evaluate 3 months post-launch.
+- **D-013** — Search: **Firestore `searchTokens[]`** behind a `searchMedicines` callable (Typesense fallback).
+- **D-014** — Prescriptions: **per-store scope** for MVP; cross-store variant reserved for Phase 2.
+
+Each `D-NNN` entry includes Recommendation, Why-best-for-MVP, Impact on mobile, Impact on web/backend, Risks, Fallback.
+
+**Files created / edited:**
+- `docs/DECISIONS.md` — appended D-007 … D-014. (Temporarily got reordered during editing; final order is D-001 → D-014, verified with `grep`.)
+- `docs/ARCHITECTURE.md` — §8 rewritten from an open-questions list to a resolution table linking each question to its `D-NNN` decision.
+- `docs/AGENT_LOG.md` — this entry.
+- `docs/TODO_NEXT_AGENT.md` — "Next up" rewritten.
+
+**Files intentionally NOT touched:**
+- `src/`, `public/`, `functions/`, `dataconnect/`
+- `package.json`, `package-lock.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `vite.config.js`, `eslint.config.js`, `.env*`, `README.md`, `.firebaserc`, `cors.json`, `apphosting.emulator.yaml`, `main.jsx` (root), `serviceAccountKey.json`
+- `apps/mobile/` — no scaffold or file changes
+- `docs/MOBILE_APP_PLAN.md` — unchanged; §8.1 now points to the resolved decisions via `ARCHITECTURE.md`
+
+**Warnings for next agent:**
+- These decisions are the contract. If implementation discovers a blocker, escalate and add a new `D-NNN` that *supersedes* the old one — never silently re-litigate.
+- Expo scaffold still requires explicit user go-ahead. D-007 + D-008 determine the commands to run when that happens.
+- D-009's Phase A (new `setUserRole` + new rules using token claims) is a backend task for the website team before mobile writes any role-gated flow. Mobile can build against the token-claim shape from day one.
+- D-013 implies a Firestore trigger that maintains `searchTokens[]`; backend team should stub this alongside `searchMedicines`.
+- Previously-flagged committed secrets (`serviceAccountKey.json`, `.env`, `.env.local`) remain unfixed. Still flagged.
+
+**Suggested commit message:**
+`docs(decisions): resolve 8 open mobile architecture decisions (D-007…D-014)`
+
+---
+
 ## 2026-04-24 — Full mobile app product & system design
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Expand `docs/MOBILE_APP_PLAN.md` into a complete product-ready design covering vision, per-module feature breakdown, navigation architecture, user flows, Firebase data model, Cloud Functions, MVP vs Phase 2, and risks.

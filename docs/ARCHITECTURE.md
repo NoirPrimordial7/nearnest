@@ -186,10 +186,19 @@ delivery confirmed ──► order.status = delivered
 
 Every transition writes to `orders/{id}/events` with actor uid + timestamp for audit.
 
-## 8. Open architecture questions
-- Custom claims vs. `users.roles[]` — migrate or keep hybrid?
-- expo-router vs. React Navigation.
-- Firebase JS SDK vs. `@react-native-firebase` for mobile.
-- Payments provider (Razorpay vs. Stripe India vs. Cashfree).
-- Where to host the Places proxy — same `functions/` codebase or a separate one?
-- Data Connect adoption timeline.
+## 8. Open architecture questions — RESOLVED 2026-04-24
+
+The eight questions previously tracked here were resolved and recorded in `docs/DECISIONS.md` (D-007 … D-014). Summary:
+
+| # | Question | Decision | Ref |
+|---|----------|----------|-----|
+| 1 | Navigation library | **expo-router** | D-007 |
+| 2 | Firebase client on mobile | **Firebase JS SDK** (+ `expo-notifications` for FCM) | D-008 |
+| 3 | Role authority | **Custom claims** (canonical) + `users.roles[]` mirror during 3-phase rollout | D-009 |
+| 4 | India payment provider | **Razorpay** (Cashfree fallback) | D-010 |
+| 5 | Places / Maps proxy hosting | **Same `functions/` codebase**, per-uid rate-limited callables, App Check enforced | D-011 |
+| 6 | Data Connect timeline | **Deferred past MVP**, re-evaluate at 3 months post-launch | D-012 |
+| 7 | Search backend for MVP | **Firestore `searchTokens[]` prefix index**, exposed via `searchMedicines` callable so it's swappable to Typesense / Algolia later | D-013 |
+| 8 | Prescription scope | **Per-store** for MVP; cross-store variant reserved for Phase 2 pending legal review | D-014 |
+
+Any new open questions discovered while implementing should be re-opened here and tracked until they become a `D-NNN` decision in `DECISIONS.md`.

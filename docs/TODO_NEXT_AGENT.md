@@ -4,33 +4,31 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after full mobile plan)
+## Next up (as of 2026-04-24, after decisions D-007…D-014)
 
-The full mobile app product + system design now lives in `docs/MOBILE_APP_PLAN.md`. Use that as the blueprint from here on. Nothing else has changed in the repo.
+All 8 open mobile architecture decisions are now resolved in `docs/DECISIONS.md` (D-007 … D-014). `docs/ARCHITECTURE.md` §8 points to each. Use those decisions as binding contract.
 
-1. **Read memory first.** Load `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, **the rewritten `docs/MOBILE_APP_PLAN.md`**, `docs/DESIGN_SYSTEM.md`, and this file. Use `project-memory`.
-2. **Run `repo-understanding`.** Confirm nothing in `src/`, `functions/`, `dataconnect/`, or root config has drifted from `PROJECT_MAP.md` since 2026-04-24. Update the map if it has.
-3. **Resolve the 8 open architectural decisions in `MOBILE_APP_PLAN.md` §8.1** with the user — these gate the scaffold:
-   - expo-router vs React Navigation
-   - Firebase JS SDK vs `@react-native-firebase`
-   - Custom claims migration plan
-   - Payments provider (Razorpay / Cashfree / Stripe India)
-   - Places proxy location (same `functions/` codebase or separate)
-   - Data Connect timeline (deferred — confirm)
-   - Search backend for MVP (Firestore prefix vs Algolia/Typesense)
-   - Prescription scope (per-store vs cross-store)
-   Each resolution should be recorded as a new `D-NNN` entry in `DECISIONS.md`.
-4. **Hand off the Cloud Functions contract in `MOBILE_APP_PLAN.md` §6 to the website/backend team.** Mobile cannot ship ahead of these. Ask them to at minimum stub the signatures in `functions/` so rules + schemas can be authored.
-5. **Coordinate with the website team on new Firestore collections + rules** (`inventory`, `orders`, `payments`, `deliveries`, `prescriptions`, `medicines`, `carts`, `notifications`, `users/*/addresses`, `users/*/fcmTokens`). Do NOT edit `firestore.rules` or `functions/` from the mobile side.
-6. **Review `apps/mobile/`.** Still just `README.md`. Confirm nobody has scaffolded.
-7. **Do NOT run `expo init` or `npm install` until the user explicitly says go.** When they do:
+1. **Read memory first.** Load `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (especially D-007…D-014), `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`, and this file. Use `project-memory`.
+2. **Run `repo-understanding`.** Confirm nothing in `src/`, `functions/`, `dataconnect/`, or root config has drifted since 2026-04-24.
+3. **Hand off the backend contract to the website team.** Share these specific asks, all derived from the new decisions:
+   - **D-009 Phase A:** add `setUserRole` callable in `functions/` (writes token claims + mirrors `users.roles[]`). New rules for future mobile collections must read `request.auth.token.role` — no new `users.roles[]` reads.
+   - **D-011:** stub `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode` callables in `functions/places.js` with App Check enforcement + a Firestore-backed token-bucket rate limiter.
+   - **D-013:** stub `searchMedicines` callable and a Firestore trigger that maintains `searchTokens[]` on `medicines/{id}` and `stores/{storeId}/inventory/{sku}` writes.
+   - **D-010:** stub `createPaymentOrder`, `paymentsWebhook` (HMAC-verified), `refundPayment` against Razorpay.
+   - **D-014:** `prescriptions/{id}` schema must carry `storeId`; `uploadPrescription` + `reviewPrescription` enforce per-store scope.
+   - All of the above require `firestore.rules` edits by the website team — do NOT edit from the mobile side.
+4. **Coordinate on new Firestore collections + rules + indexes** (`inventory`, `orders`, `payments`, `deliveries`, `prescriptions`, `medicines`, `carts`, `notifications`, `users/*/addresses`, `users/*/fcmTokens`). The shapes are in `MOBILE_APP_PLAN.md` §5.
+5. **Review `apps/mobile/`.** Still just `README.md`. Confirm nobody has scaffolded.
+6. **Do NOT run `expo init` or `npm install` until the user explicitly says go.** When they do, per D-007 and D-008:
    - Use the `react-native-expo-builder` skill.
-   - Scaffold with `create-expo-app` (managed workflow, TypeScript, routing per decision in step 3).
+   - Scaffold with `create-expo-app@latest` — **TypeScript + `expo-router` template**.
+   - Add `firebase` (JS SDK, v12 to match web), `expo-notifications`, `expo-location`, `expo-image-picker`, `expo-image-manipulator`, `expo-secure-store`, `react-native-maps`, `@tanstack/react-query`, `zustand`, `react-hook-form`, `zod`, `date-fns`, `lucide-react-native`.
+   - Do not add `@react-native-firebase/*` (per D-008).
    - Commit the scaffold in a **single** commit before any feature work.
-8. **Once scaffolded, build the MVP checklist from `MOBILE_APP_PLAN.md` §7.** One screen per commit. Order of screens: Auth → Profile setup → Home (list+map) → Store detail → Product detail → Search → Cart → Prescription upload → Checkout → Order detail → Notifications inbox → Support.
-9. **Before any prescription / payment / order code runs in prod:** invoke `security-compliance-reviewer` (checks against `MOBILE_APP_PLAN.md` §8.3 risks).
-10. **Raise (again) with the user:** `serviceAccountKey.json`, `.env`, `.env.local` are still committed at repo root and are a credential leak. Not our file to fix, but keep flagging until rotated + gitignored.
-11. **End every session with `agent-handoff-logger`** — append to `AGENT_LOG.md`, rewrite this section.
+7. **Once scaffolded, build the MVP checklist from `MOBILE_APP_PLAN.md` §7.** One screen per commit. Order: Auth → Profile setup → Home (list+map) → Store detail → Product detail → Search → Cart → Prescription upload → Checkout → Order detail → Notifications inbox → Support.
+8. **Before any prescription / payment / order code runs in prod:** invoke `security-compliance-reviewer` against the risks in `MOBILE_APP_PLAN.md` §8.3 and the Rx rules implied by D-006 + D-014.
+9. **Raise (again) with the user:** `serviceAccountKey.json`, `.env`, `.env.local` are still committed at repo root. Credential-leak risk. Not our files to fix, but keep flagging until rotated + gitignored.
+10. **End every session with `agent-handoff-logger`** — append to `AGENT_LOG.md`, rewrite this section.
 
 ---
 
