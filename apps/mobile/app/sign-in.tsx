@@ -1,11 +1,53 @@
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
+type LoadingAction = 'email' | 'google' | 'phone' | null;
+
 export default function SignInScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [formError, setFormError] = useState('');
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
+
+  function handleEmailSignIn() {
+    if (!email.trim()) {
+      setFormError('Enter your email address.');
+      return;
+    }
+
+    if (!password) {
+      setFormError('Enter your password.');
+      return;
+    }
+
+    setFormError('');
+    setLoadingAction('email');
+    setTimeout(() => {
+      setLoadingAction(null);
+      router.replace('/home');
+    }, 600);
+  }
+
+  function handleProviderPress(provider: 'google' | 'phone') {
+    setFormError('');
+    setLoadingAction(provider);
+    setTimeout(() => {
+      setLoadingAction(null);
+      setFormError(
+        provider === 'google'
+          ? 'Google sign-in UI is ready. Provider wiring will be added later.'
+          : 'Phone login is a UI placeholder and remains outside MVP auth for now.',
+      );
+    }, 450);
+  }
+
+  const isBusy = loadingAction !== null;
+
   return (
     <Screen
       eyebrow="Sign in"
@@ -13,16 +55,33 @@ export default function SignInScreen() {
       description="Sign in to keep your saved areas and recent medicine searches."
       footer={
         <>
-          <ActionButton label="Sign in" onPress={() => router.replace('/profile-setup')} />
           <ActionButton
-            label="Continue with Google"
-            variant="secondary"
-            onPress={() => router.replace('/profile-setup')}
+            label="Sign in"
+            loading={loadingAction === 'email'}
+            loadingLabel="Signing in"
+            onPress={handleEmailSignIn}
           />
           <ActionButton
+            label="Continue with Google"
+            leadingLabel="G"
+            loading={loadingAction === 'google'}
+            loadingLabel="Connecting to Google"
+            onPress={() => handleProviderPress('google')}
+            variant="secondary"
+          />
+          <ActionButton
+            label="Continue with phone"
+            leadingLabel="Ph"
+            loading={loadingAction === 'phone'}
+            loadingLabel="Checking phone"
+            onPress={() => handleProviderPress('phone')}
+            variant="secondary"
+          />
+          <ActionButton
+            disabled={isBusy}
             label="New to Medifind? Create account"
-            variant="ghost"
             onPress={() => router.push('/sign-up')}
+            variant="ghost"
           />
         </>
       }
@@ -32,23 +91,38 @@ export default function SignInScreen() {
           <Text style={styles.label}>Email address</Text>
           <TextInput
             autoCapitalize="none"
+            editable={!isBusy}
             keyboardType="email-address"
+            onChangeText={setEmail}
             placeholder="you@example.com"
             placeholderTextColor={colors.textSoft}
             style={styles.input}
+            value={email}
           />
         </View>
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Password</Text>
           <TextInput
+            editable={!isBusy}
+            onChangeText={setPassword}
             placeholder="Enter your password"
             placeholderTextColor={colors.textSoft}
             secureTextEntry
             style={styles.input}
+            value={password}
           />
         </View>
-        <Text style={styles.helper}>Forgot password?</Text>
-        <Text style={styles.note}>Firebase Auth actions are placeholders until backend config is added.</Text>
+        <Text style={styles.forgotLink}>Forgot password?</Text>
+        {formError ? (
+          <View style={styles.errorPanel}>
+            <Text style={styles.errorTitle}>Action needed</Text>
+            <Text style={styles.errorText}>{formError}</Text>
+          </View>
+        ) : (
+          <View style={styles.infoPanel}>
+            <Text style={styles.infoText}>No backend calls yet. Sign in temporarily opens Home.</Text>
+          </View>
+        )}
       </View>
     </Screen>
   );
@@ -76,13 +150,37 @@ const styles = StyleSheet.create({
     fontSize: typography.body,
     paddingHorizontal: spacing.lg,
   },
-  helper: {
+  forgotLink: {
     alignSelf: 'flex-end',
     color: colors.primary700,
     fontSize: typography.bodySm,
     fontWeight: '500',
+    minHeight: 18,
   },
-  note: {
+  errorPanel: {
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    gap: spacing.xs,
+  },
+  errorTitle: {
+    color: colors.danger,
+    fontSize: typography.bodySm,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: colors.textMuted,
+    fontSize: typography.bodySm,
+    lineHeight: 18,
+  },
+  infoPanel: {
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
+    padding: spacing.lg,
+  },
+  infoText: {
     color: colors.textSoft,
     fontSize: typography.caption,
     lineHeight: 16,

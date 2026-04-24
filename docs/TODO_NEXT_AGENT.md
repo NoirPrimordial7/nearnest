@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after Medifind Expo scaffold)
+## Next up (as of 2026-04-24, after Medifind auth UI screens)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -21,10 +21,10 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit the Medifind Expo scaffold.** Include `apps/mobile/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): scaffold Medifind Expo app`.
-2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`. `graphify update .` should be run after future code changes when `graphify-out/**` is allowed in the edit scope.
+1. **Commit the Medifind auth UI work.** Include `apps/mobile/**`, `graphify-out/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): implement Medifind auth UI screens`.
+2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; it was refreshed after this code pass.
 3. **Next mobile implementation pass:** add Email Verification and Forgot Password placeholder routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
-4. **Keep backend wiring deferred.** Firebase JS SDK is installed, but there is no `initializeApp`, env config, callable Functions usage, or real auth flow yet.
+4. **Keep backend wiring deferred.** Firebase JS SDK is installed, but there is no `initializeApp`, env config, callable Functions usage, provider sign-in, or real auth flow yet.
 5. **Build only discovery MVP routes:** auth shell, profile setup, location/search-area picker, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile.
 6. **Do not add Phone OTP in MVP.** The design exists as a Phase 2 reference only. MVP auth remains email/password plus Google sign-in.
 7. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
@@ -43,6 +43,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ### Mobile app
 - Scaffold exists in `apps/mobile/` with placeholder Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
+- Splash, Welcome, Sign In, and Sign Up have polished UI-only implementations with temporary navigation.
 - Add auth placeholders not yet present: Email Verification and Forgot Password.
 - Profile setup + saved search area/address
 - Location permission + address/search-area picker

@@ -4,6 +4,51 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Implement Medifind auth UI screens
+**Agent:** Codex
+**Session goal:** Implement the first Medifind auth/onboarding UI screens in Expo without backend or Firebase wiring.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/MOBILE_UI_SCREEN_SPECS.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/SESSION_STATE.md`
+- current `apps/mobile` scaffold files
+
+**Files updated:**
+- `apps/mobile/components/ActionButton.tsx` - added disabled/loading UI and optional leading label support for Google/phone buttons.
+- `apps/mobile/app/index.tsx` - polished Splash with Medifind mark, loading dots, status text, and timed navigation to Welcome.
+- `apps/mobile/app/welcome.tsx` - implemented onboarding pager UI with correct copy, spacing, dots, and Sign In/Sign Up navigation.
+- `apps/mobile/app/sign-in.tsx` - implemented email/password form UI, inline errors, loading state, Google button UI, phone button UI, and temporary navigation to Home.
+- `apps/mobile/app/sign-up.tsx` - implemented account form UI, terms checkbox, inline errors, loading state, Google button UI, phone button UI, and temporary navigation to Profile Setup.
+- `docs/SESSION_STATE.md` - recorded the auth UI implementation state.
+- `docs/TODO_NEXT_AGENT.md` - updated next steps for the next mobile pass.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, `graphify-out/graph.html` - refreshed by `graphify update .` after code changes.
+
+**Commands run:**
+1. `npm run typecheck` in `apps/mobile` - passed.
+2. `graphify update .` - passed; graph now reports 228 nodes, 217 edges, and 60 communities.
+
+**Scope notes:**
+- No Firebase initialization, provider auth, env config, Firestore, Functions, or backend calls were added.
+- Google and phone login buttons are UI-only.
+- Phone login remains outside MVP auth scope unless explicitly approved.
+- Sign In temporarily routes to Home; Sign Up temporarily routes to Profile Setup.
+
+**Files intentionally NOT touched:**
+- root `src/**`, `public/**`, `functions/**`, `dataconnect/**`
+- root `package.json`, root `package-lock.json`
+- Firebase rules/config files
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`feat(mobile): implement Medifind auth UI screens`
+
+---
+
 ## 2026-04-24 - Scaffold Medifind Expo app
 **Agent:** Codex
 **Session goal:** Start Medifind mobile development by scaffolding an Expo managed TypeScript app in `apps/mobile` with expo-router, Firebase JS SDK dependency only, and placeholder MVP entry screens.

@@ -1,23 +1,51 @@
 import { router } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 
-import { ActionButton } from '../components/ActionButton';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 export default function SplashScreen() {
+  const opacity = useRef(new Animated.Value(0.92)).current;
+  const scale = useRef(new Animated.Value(0.96)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        duration: 320,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        duration: 320,
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const timer = setTimeout(() => {
+      router.replace('/welcome');
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [opacity, scale]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.brandMark}>
-        <Text style={styles.brandInitial}>M</Text>
+      <Animated.View style={[styles.brandGroup, { opacity, transform: [{ scale }] }]}>
+        <View style={styles.brandMark}>
+          <Text style={styles.brandInitial}>M</Text>
+        </View>
+        <Text style={styles.wordmark}>Medifind</Text>
+        <Text style={styles.tagline}>Find nearby medicines faster.</Text>
+      </Animated.View>
+      <View style={styles.statusGroup}>
+        <View style={styles.dots} accessibilityLabel="Loading Medifind">
+          <View style={[styles.dot, styles.dotStrong]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </View>
+        <Text style={styles.status}>Getting Medifind ready</Text>
       </View>
-      <Text style={styles.wordmark}>Medifind</Text>
-      <Text style={styles.tagline}>Find nearby medicines faster.</Text>
-      <Text style={styles.status}>Placeholder splash. Backend bootstrapping is not wired yet.</Text>
-      <ActionButton
-        label="Continue"
-        style={styles.action}
-        onPress={() => router.replace('/welcome')}
-      />
     </View>
   );
 }
@@ -29,6 +57,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.bg,
     padding: spacing.xxl,
+  },
+  brandGroup: {
+    alignItems: 'center',
   },
   brandMark: {
     width: 72,
@@ -56,15 +87,33 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginTop: spacing.sm,
   },
+  statusGroup: {
+    position: 'absolute',
+    right: spacing.xxl,
+    bottom: spacing.xxxl,
+    left: spacing.xxl,
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  dots: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary300,
+    opacity: 0.48,
+  },
+  dotStrong: {
+    opacity: 1,
+  },
   status: {
     color: colors.textSoft,
     fontSize: typography.caption,
+    fontWeight: '500',
     lineHeight: 16,
-    marginTop: spacing.xxxl,
     textAlign: 'center',
-  },
-  action: {
-    alignSelf: 'stretch',
-    marginTop: spacing.xxl,
   },
 });

@@ -1,11 +1,13 @@
 # Nearnest Session State
 
-Last updated: 2026-04-24 (Medifind Expo scaffold created)
+Last updated: 2026-04-24 (Medifind auth UI implemented)
 
 ## Current phase
 Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
 
 **Scaffold status (2026-04-24):** `apps/mobile/` now contains an Expo managed workflow app using TypeScript and expo-router. Firebase is present as the Firebase JS SDK dependency only; there is no Firebase initialization, no env wiring, no backend calls, and no real auth implementation yet. Placeholder routes exist for Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
+
+**Implementation progress (2026-04-24):** Splash, Welcome, Sign In, and Sign Up now have polished Expo UI using `components/Screen.tsx`, `components/ActionButton.tsx`, and `theme/tokens.ts`. Sign In and Sign Up include UI-only loading/error states plus Google and phone login buttons with no provider/backend logic. Temporary navigation is Splash -> Welcome, Welcome -> Sign In/Sign Up, Sign In -> Home, Sign Up -> Profile Setup.
 
 **Design progress (2026-04-24):** Splash, Welcome/onboarding, Sign In, Sign Up, and the future Phone OTP flow now have detailed screen specs covering layout, hierarchy, exact copy, button styles, spacing, loading/error states, interactions, and transitions. Phone OTP remains Phase 2 and must not be enabled or scaffolded for MVP unless explicitly approved.
 
@@ -40,11 +42,11 @@ No root app source, Cloud Functions, Firebase rules, root package files, env fil
 - `graphify claude install` created `.claude/settings.json`; that file was removed because it was outside the allowed edit list for this session.
 
 ## Current allowed next work
-1. Commit the Medifind Expo scaffold and handoff docs.
+1. Commit the Medifind auth UI screens and handoff docs.
 2. Next mobile implementation pass: add placeholder Email Verification and Forgot Password routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
 3. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
 4. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.
-5. Do not add Firebase config/env values until an approved mobile config plan exists.
+5. Do not add Firebase config/env values, `initializeApp`, provider wiring, or real auth calls until an approved mobile config plan exists.
 6. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
 7. Do not add Phone OTP to MVP unless the user explicitly changes the auth scope.
 

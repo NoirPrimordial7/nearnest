@@ -1,12 +1,12 @@
 # Graph Report - C:\projects\nearnest\web-portal  (2026-04-24)
 
 ## Corpus Check
-- 77 files · ~86,143 words
+- 87 files · ~110,709 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 208 nodes · 207 edges · 50 communities detected
-- Extraction: 92% EXTRACTED · 8% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.8)
+- 228 nodes · 217 edges · 60 communities detected
+- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -60,6 +60,16 @@
 - [[_COMMUNITY_Community 47|Community 47]]
 - [[_COMMUNITY_Community 48|Community 48]]
 - [[_COMMUNITY_Community 49|Community 49]]
+- [[_COMMUNITY_Community 50|Community 50]]
+- [[_COMMUNITY_Community 51|Community 51]]
+- [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useAuth()` - 14 edges
@@ -74,16 +84,16 @@
 10. `setStoreStatus()` - 3 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `VerificationStatus()` --calls--> `useAuth()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\register-store\VerificationStatus.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
+- `useAuth()` --calls--> `VerificationStatus()`  [INFERRED]
+  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\VerificationStatus.jsx
 - `AdminLayout()` --calls--> `useAuth()`  [INFERRED]
   C:\projects\nearnest\web-portal\src\pages\Admin copy\AdminLayout.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
 - `SupportTickets()` --calls--> `useAuth()`  [INFERRED]
   C:\projects\nearnest\web-portal\src\pages\Admin copy\Support\SupportTickets.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
 - `DocumentVerification()` --calls--> `useAuth()`  [INFERRED]
   C:\projects\nearnest\web-portal\src\pages\Admin copy\Verification\DocumentVerification.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
-- `CreateStore()` --calls--> `useAuth()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\register-store\CreateStore.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
+- `useAuth()` --calls--> `CreateStore()`  [INFERRED]
+  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\CreateStore.jsx
 
 ## Communities
 
@@ -96,28 +106,28 @@ Cohesion: 0.16
 Nodes (7): RequireProfile(), initials(), prettyAddress(), StoreCard(), useAvatarMenu(), UserHome(), useProfileComplete()
 
 ### Community 2 - "Community 2"
-Cohesion: 0.18
-Nodes (3): ReviewSubmit(), UploadDocuments(), hasAllRequired()
-
-### Community 3 - "Community 3"
 Cohesion: 0.27
 Nodes (7): createStore(), docToStore(), ensureAddressShape(), getStore(), isAdmin(), listenUserStores(), toArrayMaybe()
 
-### Community 4 - "Community 4"
-Cohesion: 0.31
-Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
+### Community 3 - "Community 3"
+Cohesion: 0.18
+Nodes (3): ReviewSubmit(), UploadDocuments(), hasAllRequired()
 
-### Community 5 - "Community 5"
+### Community 4 - "Community 4"
 Cohesion: 0.31
 Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
 
-### Community 6 - "Community 6"
-Cohesion: 0.39
-Nodes (5): DocumentVerification(), Icon(), Pill(), prettyLabel(), toDate()
+### Community 5 - "Community 5"
+Cohesion: 0.31
+Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
 
-### Community 7 - "Community 7"
+### Community 6 - "Community 6"
 Cohesion: 0.46
 Nodes (6): buildRange(), formatDate(), Icon(), Pagination(), StatusPill(), StoresPage()
+
+### Community 7 - "Community 7"
+Cohesion: 0.39
+Nodes (5): DocumentVerification(), Icon(), Pill(), prettyLabel(), toDate()
 
 ### Community 8 - "Community 8"
 Cohesion: 0.4
@@ -141,7 +151,7 @@ Nodes (2): buildDayBuckets(), StoreAdminDashboard()
 
 ### Community 13 - "Community 13"
 Cohesion: 0.4
-Nodes (0): 
+Nodes (0):
 
 ### Community 14 - "Community 14"
 Cohesion: 0.5
@@ -149,7 +159,7 @@ Nodes (2): getNow(), SupportDashboard()
 
 ### Community 15 - "Community 15"
 Cohesion: 0.5
-Nodes (0): 
+Nodes (0):
 
 ### Community 16 - "Community 16"
 Cohesion: 0.67
@@ -165,71 +175,71 @@ Nodes (2): formatBytes(), StoreAdvertisement()
 
 ### Community 19 - "Community 19"
 Cohesion: 0.5
-Nodes (0): 
+Nodes (0):
 
 ### Community 20 - "Community 20"
 Cohesion: 0.67
-Nodes (1): MainContent()
+Nodes (0):
 
 ### Community 21 - "Community 21"
 Cohesion: 0.67
-Nodes (1): NavBar()
+Nodes (0):
 
 ### Community 22 - "Community 22"
 Cohesion: 0.67
-Nodes (1): Sidebar()
+Nodes (1): MainContent()
 
 ### Community 23 - "Community 23"
 Cohesion: 0.67
-Nodes (0): 
+Nodes (1): NavBar()
 
 ### Community 24 - "Community 24"
 Cohesion: 0.67
-Nodes (1): StoreSupportHelp()
+Nodes (1): Sidebar()
 
 ### Community 25 - "Community 25"
 Cohesion: 0.67
-Nodes (1): StoreAdminHome()
+Nodes (0):
 
 ### Community 26 - "Community 26"
 Cohesion: 0.67
-Nodes (1): StoreSettings()
+Nodes (1): StoreSupportHelp()
 
 ### Community 27 - "Community 27"
 Cohesion: 0.67
-Nodes (0): 
+Nodes (1): StoreAdminHome()
 
 ### Community 28 - "Community 28"
-Cohesion: 1.0
-Nodes (0): 
+Cohesion: 0.67
+Nodes (1): StoreSettings()
 
 ### Community 29 - "Community 29"
-Cohesion: 1.0
-Nodes (0): 
+Cohesion: 0.67
+Nodes (0):
 
 ### Community 30 - "Community 30"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 31 - "Community 31"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 32 - "Community 32"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 33 - "Community 33"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 34 - "Community 34"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 35 - "Community 35"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 36 - "Community 36"
 Cohesion: 1.0
@@ -281,67 +291,123 @@ Nodes (0):
 
 ### Community 48 - "Community 48"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
 
 ### Community 49 - "Community 49"
 Cohesion: 1.0
-Nodes (0): 
+Nodes (0):
+
+### Community 50 - "Community 50"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 51 - "Community 51"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 52 - "Community 52"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 53 - "Community 53"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 54 - "Community 54"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 55 - "Community 55"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 56 - "Community 56"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 57 - "Community 57"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 58 - "Community 58"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 59 - "Community 59"
+Cohesion: 1.0
+Nodes (0):
 
 ## Knowledge Gaps
-- **Thin community `Community 28`** (2 nodes): `App()`, `App.jsx`
+- **Thin community `Community 30`** (2 nodes): `home.tsx`, `HomeScreen()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 29`** (2 nodes): `NearnestHome.jsx`, `NearNestHome()`
+- **Thin community `Community 31`** (2 nodes): `profile-setup.tsx`, `ProfileSetupScreen()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 30`** (2 nodes): `AdminDashboard()`, `AdminDashboard.jsx`
+- **Thin community `Community 32`** (2 nodes): `welcome.tsx`, `handlePrimaryPress()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 31`** (2 nodes): `Notifications.jsx`, `Notifications()`
+- **Thin community `Community 33`** (2 nodes): `_layout.tsx`, `RootLayout()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 32`** (2 nodes): `RolePermission.jsx`, `RolePermission()`
+- **Thin community `Community 34`** (2 nodes): `InfoCard.tsx`, `InfoCard()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 33`** (2 nodes): `Settings.jsx`, `Settings()`
+- **Thin community `Community 35`** (2 nodes): `Screen.tsx`, `Screen()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 34`** (2 nodes): `StoreManagement.jsx`, `StoreManagement()`
+- **Thin community `Community 36`** (2 nodes): `App()`, `App.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 35`** (2 nodes): `SignUp.jsx`, `SignUp()`
+- **Thin community `Community 37`** (2 nodes): `NearnestHome.jsx`, `NearNestHome()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 36`** (2 nodes): `VerifyEmail.jsx`, `VerifyEmail()`
+- **Thin community `Community 38`** (2 nodes): `AdminDashboard()`, `AdminDashboard.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 37`** (2 nodes): `landing.jsx`, `Landing()`
+- **Thin community `Community 39`** (2 nodes): `Notifications.jsx`, `Notifications()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (2 nodes): `RegisterStore.jsx`, `RegisterStore()`
+- **Thin community `Community 40`** (2 nodes): `RolePermission.jsx`, `RolePermission()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (2 nodes): `StoreForm.jsx`, `StoreForm()`
+- **Thin community `Community 41`** (2 nodes): `Settings.jsx`, `Settings()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (2 nodes): `SupportAnalytics.jsx`, `SupportAnalytics()`
+- **Thin community `Community 42`** (2 nodes): `StoreManagement.jsx`, `StoreManagement()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (2 nodes): `SupportHome.jsx`, `SupportHome()`
+- **Thin community `Community 43`** (2 nodes): `SignUp.jsx`, `SignUp()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (1 nodes): `eslint.config.js`
+- **Thin community `Community 44`** (2 nodes): `VerifyEmail.jsx`, `VerifyEmail()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 43`** (1 nodes): `main.jsx`
+- **Thin community `Community 45`** (2 nodes): `landing.jsx`, `Landing()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 44`** (1 nodes): `vite.config.js`
+- **Thin community `Community 46`** (2 nodes): `RegisterStore.jsx`, `RegisterStore()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 45`** (1 nodes): `index.js`
+- **Thin community `Community 47`** (2 nodes): `StoreForm.jsx`, `StoreForm()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 46`** (1 nodes): `seedFirestore.js`
+- **Thin community `Community 48`** (2 nodes): `SupportAnalytics.jsx`, `SupportAnalytics()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (1 nodes): `main.jsx`
+- **Thin community `Community 49`** (2 nodes): `SupportHome.jsx`, `SupportHome()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (1 nodes): `firebase.js`
+- **Thin community `Community 50`** (1 nodes): `eslint.config.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 49`** (1 nodes): `firebase.js`
+- **Thin community `Community 51`** (1 nodes): `main.jsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 52`** (1 nodes): `vite.config.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 53`** (1 nodes): `index.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 54`** (1 nodes): `ActionButton.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 55`** (1 nodes): `index.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 56`** (1 nodes): `seedFirestore.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 57`** (1 nodes): `main.jsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 58`** (1 nodes): `firebase.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 59`** (1 nodes): `firebase.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `Community 0` to `Community 1`, `Community 2`, `Community 6`, `Community 8`, `Community 9`, `Community 10`?**
-  _High betweenness centrality (0.095) - this node is a cross-community bridge._
+- **Why does `useAuth()` connect `Community 0` to `Community 1`, `Community 3`, `Community 7`, `Community 8`, `Community 9`, `Community 10`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
 - **Why does `UserHome()` connect `Community 1` to `Community 0`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
-- **Why does `DocumentVerification()` connect `Community 6` to `Community 0`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+- **Why does `DocumentVerification()` connect `Community 7` to `Community 0`?**
+  _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `UserHome()` (e.g. with `useAuth()` and `useProfileComplete()`) actually correct?**
