@@ -1,13 +1,13 @@
 # Nearnest Session State
 
-Last updated: 2026-04-24 (Medifind auth UI implemented)
+Last updated: 2026-04-24 (Medifind Firebase Auth basic setup)
 
 ## Current phase
 Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
 
-**Scaffold status (2026-04-24):** `apps/mobile/` now contains an Expo managed workflow app using TypeScript and expo-router. Firebase is present as the Firebase JS SDK dependency only; there is no Firebase initialization, no env wiring, no backend calls, and no real auth implementation yet. Placeholder routes exist for Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
+**Scaffold status (2026-04-24):** `apps/mobile/` contains an Expo managed workflow app using TypeScript and expo-router. Firebase JS SDK is installed and `apps/mobile/services/firebase.ts` now initializes the Firebase app plus Auth instance with placeholder mobile config only. There is still no env wiring, no real Firebase project config, no Firestore, no callable Functions, and no backend changes. Placeholder routes exist for Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
 
-**Implementation progress (2026-04-24):** Splash, Welcome, Sign In, and Sign Up now have polished Expo UI using `components/Screen.tsx`, `components/ActionButton.tsx`, and `theme/tokens.ts`. Sign In and Sign Up include UI-only loading/error states plus Google and phone login buttons with no provider/backend logic. Temporary navigation is Splash -> Welcome, Welcome -> Sign In/Sign Up, Sign In -> Home, Sign Up -> Profile Setup.
+**Implementation progress (2026-04-24):** Splash, Welcome, Sign In, and Sign Up have polished Expo UI using `components/Screen.tsx`, `components/ActionButton.tsx`, and `theme/tokens.ts`. Sign In and Sign Up now call Firebase Auth email/password methods through `services/auth.ts`, show loading/error states, and route to Home on success. Google and phone login buttons remain UI-only with no provider logic. Current navigation is Splash -> Welcome, Welcome -> Sign In/Sign Up, Sign In -> Home, Sign Up -> Home after account creation; the Profile Setup completion gate is still future work.
 
 **Design progress (2026-04-24):** Splash, Welcome/onboarding, Sign In, Sign Up, and the future Phone OTP flow now have detailed screen specs covering layout, hierarchy, exact copy, button styles, spacing, loading/error states, interactions, and transitions. Phone OTP remains Phase 2 and must not be enabled or scaffolded for MVP unless explicitly approved.
 
@@ -33,22 +33,24 @@ No root app source, Cloud Functions, Firebase rules, root package files, env fil
 - Repo Codex instructions created: `AGENTS.md`.
 - Codex hook created: `.codex/hooks.json`.
 - Knowledge graph generated under `graphify-out/`.
-- Current graph summary from `graphify-out/GRAPH_REPORT.md`: 208 nodes, 207 edges, 50 communities.
+- Current graph summary from `graphify-out/GRAPH_REPORT.md`: 228 nodes, 217 edges, 60 communities.
 - `.graphifyignore` exists and excludes env/secrets, generated build outputs, Graphify cache/cost/manifest files, and AI config folders.
 
 ## Command notes
 - `graphify .` failed because this CLI version does not support `.` as a command.
 - `graphify update .` is the working replacement and was used to create/update the graph.
 - `graphify claude install` created `.claude/settings.json`; that file was removed because it was outside the allowed edit list for this session.
+- `graphify update .` was not run during the Firebase Auth wiring pass because that session's allowed edit scope did not include `graphify-out/**`.
 
 ## Current allowed next work
-1. Commit the Medifind auth UI screens and handoff docs.
-2. Next mobile implementation pass: add placeholder Email Verification and Forgot Password routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
-3. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
-4. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.
-5. Do not add Firebase config/env values, `initializeApp`, provider wiring, or real auth calls until an approved mobile config plan exists.
-6. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
-7. Do not add Phone OTP to MVP unless the user explicitly changes the auth scope.
+1. Commit the Firebase Auth basic wiring and handoff docs.
+2. Replace placeholder Firebase config through an approved mobile config/env plan before testing real accounts.
+3. Add Email Verification and Forgot Password routes, then decide whether Sign Up should route to Profile Setup or Home behind a profile-completion guard.
+4. Add the Profile Setup completion gate and minimal profile write only after Firestore/profile rules are approved.
+5. Add Google sign-in later for MVP; keep phone OTP Phase 2 unless explicitly approved.
+6. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
+7. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.
+8. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
 
 ## Protected files not touched in this setup
 - `src/**`

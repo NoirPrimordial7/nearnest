@@ -4,6 +4,52 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Add basic Firebase Auth wiring to Medifind
+**Agent:** Codex
+**Session goal:** Add MVP-level Firebase Auth setup for email/password sign-in and sign-up in the Expo mobile app without adding providers, Firestore, backend changes, env secrets, or commerce scope.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/DECISIONS.md`
+- `docs/MOBILE_APP_PLAN.md`
+- `docs/SESSION_STATE.md`
+- `docs/TODO_NEXT_AGENT.md`
+- current Medifind auth screens and shared mobile UI components
+
+**Files created:**
+- `apps/mobile/services/firebase.ts` - initializes the Firebase app and Auth instance using placeholder mobile config only.
+- `apps/mobile/services/auth.ts` - wraps `signInWithEmailAndPassword`, `createUserWithEmailAndPassword`, and friendly Firebase Auth error messages.
+
+**Files updated:**
+- `apps/mobile/app/sign-in.tsx` - replaced the fake email submit delay with Firebase email/password sign-in, loading state, error display, and success navigation to Home.
+- `apps/mobile/app/sign-up.tsx` - replaced the fake account creation delay with Firebase email/password account creation, loading state, error display, and success navigation to Home.
+- `docs/SESSION_STATE.md` - recorded that basic Firebase Auth wiring exists with placeholder config.
+- `docs/TODO_NEXT_AGENT.md` - rewrote next steps for post-auth-wiring mobile work.
+- `docs/AGENT_LOG.md` - this entry.
+
+**Commands run:**
+1. `npm run typecheck` in `apps/mobile` - passed.
+2. `rg -n "firebase/firestore|GoogleAuthProvider|PhoneAuthProvider|signInWithPopup|EXPO_PUBLIC_|VITE_|serviceAccount|AIza" apps\mobile\app apps\mobile\components apps\mobile\services apps\mobile\theme` - no matches.
+
+**Scope notes:**
+- Firebase is connected at the SDK/Auth-instance level only. The config is intentionally placeholder and cannot authenticate real users until replaced through an approved mobile config plan.
+- No Google auth, phone auth, Firestore, Functions, App Check, env files, secrets, or backend changes were added.
+- Google and phone buttons remain UI-only placeholders.
+- `graphify update .` was not run because this session's allowed edit scope did not include `graphify-out/**`.
+
+**Files intentionally NOT touched:**
+- root `src/**`, `public/**`, `functions/**`, `dataconnect/**`
+- root `package.json`, root `package-lock.json`
+- Firebase rules/config files
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`feat(mobile): wire email password Firebase auth`
+
+---
+
 ## 2026-04-24 - Implement Medifind auth UI screens
 **Agent:** Codex
 **Session goal:** Implement the first Medifind auth/onboarding UI screens in Expo without backend or Firebase wiring.

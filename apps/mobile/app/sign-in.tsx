@@ -4,6 +4,7 @@ import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
+import { getAuthErrorMessage, signInWithEmail } from '../services/auth';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 type LoadingAction = 'email' | 'google' | 'phone' | null;
@@ -14,7 +15,7 @@ export default function SignInScreen() {
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
-  function handleEmailSignIn() {
+  async function handleEmailSignIn() {
     if (!email.trim()) {
       setFormError('Enter your email address.');
       return;
@@ -27,10 +28,14 @@ export default function SignInScreen() {
 
     setFormError('');
     setLoadingAction('email');
-    setTimeout(() => {
-      setLoadingAction(null);
+    try {
+      await signInWithEmail(email, password);
       router.replace('/home');
-    }, 600);
+    } catch (error) {
+      setFormError(getAuthErrorMessage(error));
+    } finally {
+      setLoadingAction(null);
+    }
   }
 
   function handleProviderPress(provider: 'google' | 'phone') {
@@ -120,7 +125,9 @@ export default function SignInScreen() {
           </View>
         ) : (
           <View style={styles.infoPanel}>
-            <Text style={styles.infoText}>No backend calls yet. Sign in temporarily opens Home.</Text>
+            <Text style={styles.infoText}>
+              Email sign-in now calls Firebase Auth with placeholder mobile config.
+            </Text>
           </View>
         )}
       </View>

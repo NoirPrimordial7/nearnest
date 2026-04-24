@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
+import { getAuthErrorMessage, signUpWithEmail } from '../services/auth';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 type LoadingAction = 'email' | 'google' | 'phone' | null;
@@ -16,7 +17,7 @@ export default function SignUpScreen() {
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
-  function handleCreateAccount() {
+  async function handleCreateAccount() {
     if (!fullName.trim()) {
       setFormError('Enter your full name.');
       return;
@@ -39,10 +40,14 @@ export default function SignUpScreen() {
 
     setFormError('');
     setLoadingAction('email');
-    setTimeout(() => {
+    try {
+      await signUpWithEmail(email, password);
+      router.replace('/home');
+    } catch (error) {
+      setFormError(getAuthErrorMessage(error));
+    } finally {
       setLoadingAction(null);
-      router.replace('/profile-setup');
-    }, 650);
+    }
   }
 
   function handleProviderPress(provider: 'google' | 'phone') {
@@ -154,7 +159,7 @@ export default function SignUpScreen() {
         ) : (
           <View style={styles.infoPanel}>
             <Text style={styles.infoText}>
-              Account creation is UI-only. The next step temporarily opens Profile Setup.
+              Email account creation now calls Firebase Auth with placeholder mobile config.
             </Text>
           </View>
         )}

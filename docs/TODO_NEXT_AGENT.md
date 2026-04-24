@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after Medifind auth UI screens)
+## Next up (as of 2026-04-24, after Medifind Firebase Auth basic setup)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -21,16 +21,17 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit the Medifind auth UI work.** Include `apps/mobile/**`, `graphify-out/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): implement Medifind auth UI screens`.
-2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; it was refreshed after this code pass.
-3. **Next mobile implementation pass:** add Email Verification and Forgot Password placeholder routes, then refine Profile Setup, Location Permission, and Address/Search-Area Picker.
-4. **Keep backend wiring deferred.** Firebase JS SDK is installed, but there is no `initializeApp`, env config, callable Functions usage, provider sign-in, or real auth flow yet.
-5. **Build only discovery MVP routes:** auth shell, profile setup, location/search-area picker, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile.
-6. **Do not add Phone OTP in MVP.** The design exists as a Phase 2 reference only. MVP auth remains email/password plus Google sign-in.
-7. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-8. **Backend readiness for MVP still means discovery endpoints first:** `searchMedicines`, `nearbyStores`, Places/geocode proxy functions, store public contact fields, store coordinates, and inventory freshness metadata.
-9. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, env files, or `serviceAccountKey.json` without explicit authorization.
-10. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+1. **Commit the Firebase Auth basic wiring.** Include `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/services/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): wire email password Firebase auth`.
+2. **Replace placeholder Firebase config through an approved plan before real testing.** `apps/mobile/services/firebase.ts` intentionally uses fake values and must not grow real secrets inline.
+3. **Add Email Verification and Forgot Password next.** Use Firebase Auth email verification/reset APIs, then update navigation around verified/unverified users.
+4. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
+5. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
+6. **Add Google sign-in later for MVP.** Keep phone OTP Phase 2 unless the user explicitly changes auth scope.
+7. **Build only discovery MVP routes:** auth shell, profile setup, location/search-area picker, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile.
+8. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+9. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`. If a future session's allowed edit scope includes `graphify-out/**`, run `graphify update .` after code changes.
+10. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, env files, or `serviceAccountKey.json` without explicit authorization.
+11. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 
@@ -43,8 +44,9 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ### Mobile app
 - Scaffold exists in `apps/mobile/` with placeholder Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
-- Splash, Welcome, Sign In, and Sign Up have polished UI-only implementations with temporary navigation.
-- Add auth placeholders not yet present: Email Verification and Forgot Password.
+- Splash, Welcome, Sign In, and Sign Up have polished implementations.
+- Sign In and Sign Up now call Firebase Auth email/password methods through `apps/mobile/services/auth.ts` with placeholder Firebase config from `apps/mobile/services/firebase.ts`.
+- Add auth routes not yet present: Email Verification and Forgot Password.
 - Profile setup + saved search area/address
 - Location permission + address/search-area picker
 - Home list + Home map
