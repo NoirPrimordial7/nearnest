@@ -4,18 +4,19 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after Graphify coordination setup)
+## Next up (as of 2026-04-24, after mobile UI screen specs)
 
-Graphify coordination is installed for Claude Code + Codex and the repo graph is available in `graphify-out/`. Read `docs/AI_HANDOFF_PROTOCOL.md` and `docs/SESSION_STATE.md` before starting the next session.
+Mobile MVP screen specs now live in `docs/MOBILE_UI_SCREEN_SPECS.md`. They translate `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`, and decisions D-005 through D-014 into screen-by-screen UI contracts.
 
-1. **Commit the coordination + backend handoff docs.** Include `.graphifyignore`, `AGENTS.md`, `CLAUDE.md`, `.codex/hooks.json`, `graphify-out/`, `docs/AI_HANDOFF_PROTOCOL.md`, `docs/SESSION_STATE.md`, `docs/AGENT_LOG.md`, and this TODO update.
-2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` to refresh the graph after future code changes. Note: `graphify .` failed on this CLI version with `unknown command '.'`.
-3. **Create UI screen specs next.** Turn `docs/MOBILE_APP_PLAN.md` and `docs/DESIGN_SYSTEM.md` into screen-by-screen specs for the mobile MVP: Auth, Profile, Home, Store detail, Product detail, Search, Cart, Prescription upload, Checkout, Order detail, Notifications, Support.
-4. **Do not scaffold Expo yet.** No `expo init`, no `create-expo-app`, no `npm install`, and no edits under `apps/mobile/**` until the user explicitly gives the go-ahead.
-5. **Keep backend implementation with the website team.** The mobile side should not edit `functions/**`, Firebase rules files, indexes, root config, `src/**`, or `public/**`.
-6. **Before any real Rx/payment/order endpoint is used in prod,** run a security/compliance review against D-005, D-006, D-009, D-010, D-014, and the risky areas in `docs/FIREBASE_RULES_PROPOSAL.md`.
-7. **Keep flagging committed secrets.** `serviceAccountKey.json`, `.env`, and `.env.local` remain a credential-leak risk to rotate and purge with the website team; do not touch them in mobile-planning sessions.
-8. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+1. **Commit the UI screen specs.** Include `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `docs(mobile): add MVP UI screen specs`.
+2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` to refresh the graph after future code changes. Documentation-only changes do not require a graph rebuild unless requested.
+3. **Review backend readiness before implementation.** Compare `docs/MOBILE_UI_SCREEN_SPECS.md` against `docs/BACKEND_FUNCTIONS_CONTRACT.md`, `docs/FIRESTORE_SCHEMA_CONTRACT.md`, `docs/FIREBASE_RULES_PROPOSAL.md`, and `docs/MOBILE_BACKEND_HANDOFF.md` for any missing endpoints or screen assumptions.
+4. **Optional next planning doc:** create low-fidelity wireframe notes or route-map docs for the 26 screens. Keep it documentation-only unless the user explicitly asks for design assets or code.
+5. **Do not scaffold Expo yet.** No `expo init`, no `create-expo-app`, no `npm install`, and no edits under `apps/mobile/**` until the user explicitly gives the go-ahead.
+6. **Keep backend implementation with the website team.** The mobile side should not edit `functions/**`, Firebase rules files, indexes, root config, `src/**`, or `public/**`.
+7. **Before any real Rx/payment/order endpoint is used in prod,** run a security/compliance review against D-005, D-006, D-009, D-010, D-014, and the risky areas in `docs/FIREBASE_RULES_PROPOSAL.md`.
+8. **Keep flagging committed secrets.** `serviceAccountKey.json`, `.env`, and `.env.local` remain a credential-leak risk to rotate and purge with the website team; do not touch them in mobile-planning sessions.
+9. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 

@@ -4,6 +4,47 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 — Add mobile MVP UI screen specs
+**Agent:** Codex
+**Session goal:** Create detailed, documentation-only mobile UI screen specs for the Nearnest MVP without scaffolding Expo or touching app/backend code.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/AI_HANDOFF_PROTOCOL.md`
+- `docs/SESSION_STATE.md`
+- `docs/MOBILE_APP_PLAN.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/DECISIONS.md`
+- `docs/TODO_NEXT_AGENT.md`
+
+**Files created / updated:**
+- `docs/MOBILE_UI_SCREEN_SPECS.md` — new 26-screen MVP spec covering purpose, layout, CTAs, secondary actions, states, components, Firebase/backend dependencies, navigation links, and design notes for every requested screen.
+- `docs/TODO_NEXT_AGENT.md` — top section rewritten for the next docs-only step.
+- `docs/SESSION_STATE.md` — current phase updated to note UI specs are complete.
+- `docs/AGENT_LOG.md` — this entry.
+
+**Screen specs included:**
+- Splash, Welcome / onboarding, Sign in, Sign up, Email verification, Forgot password, Profile setup, Location permission, Address picker.
+- Home list, Home map, Search, Search results, Store detail, Product detail.
+- Cart, Prescription upload, Prescription status, Checkout, Payment status.
+- Orders list, Order detail, Notifications inbox, Support home, Support chat, Profile.
+
+**Decision alignment:**
+- Specs use expo-router as the planned navigation baseline (D-007), Firebase JS SDK + expo-notifications (D-008), Cloud Functions for protected writes (D-005), Razorpay payments (D-010), server-side Places proxy (D-011), searchMedicines behind Firestore searchTokens (D-013), and per-store prescription scope (D-014).
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`docs(mobile): add MVP UI screen specs`
+
+---
+
 ## 2026-04-24 — Complete Graphify coordination setup
 **Agent:** Codex
 **Session goal:** Continue Graphify setup from the PATH failure and coordinate Claude Code + Codex without touching app source code.
