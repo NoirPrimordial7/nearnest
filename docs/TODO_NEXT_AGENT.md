@@ -4,31 +4,19 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after decisions D-007…D-014)
+## Next up (as of 2026-04-24, after backend handoff docs verified)
 
-All 8 open mobile architecture decisions are now resolved in `docs/DECISIONS.md` (D-007 … D-014). `docs/ARCHITECTURE.md` §8 points to each. Use those decisions as binding contract.
+The backend handoff docs now exist and are the contract for the website/backend team:
+`docs/BACKEND_FUNCTIONS_CONTRACT.md`, `docs/FIRESTORE_SCHEMA_CONTRACT.md`, `docs/FIREBASE_RULES_PROPOSAL.md`, and `docs/MOBILE_BACKEND_HANDOFF.md`.
 
-1. **Read memory first.** Load `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` (especially D-007…D-014), `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`, and this file. Use `project-memory`.
-2. **Run `repo-understanding`.** Confirm nothing in `src/`, `functions/`, `dataconnect/`, or root config has drifted since 2026-04-24.
-3. **Hand off the backend contract to the website team.** Share these specific asks, all derived from the new decisions:
-   - **D-009 Phase A:** add `setUserRole` callable in `functions/` (writes token claims + mirrors `users.roles[]`). New rules for future mobile collections must read `request.auth.token.role` — no new `users.roles[]` reads.
-   - **D-011:** stub `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode` callables in `functions/places.js` with App Check enforcement + a Firestore-backed token-bucket rate limiter.
-   - **D-013:** stub `searchMedicines` callable and a Firestore trigger that maintains `searchTokens[]` on `medicines/{id}` and `stores/{storeId}/inventory/{sku}` writes.
-   - **D-010:** stub `createPaymentOrder`, `paymentsWebhook` (HMAC-verified), `refundPayment` against Razorpay.
-   - **D-014:** `prescriptions/{id}` schema must carry `storeId`; `uploadPrescription` + `reviewPrescription` enforce per-store scope.
-   - All of the above require `firestore.rules` edits by the website team — do NOT edit from the mobile side.
-4. **Coordinate on new Firestore collections + rules + indexes** (`inventory`, `orders`, `payments`, `deliveries`, `prescriptions`, `medicines`, `carts`, `notifications`, `users/*/addresses`, `users/*/fcmTokens`). The shapes are in `MOBILE_APP_PLAN.md` §5.
-5. **Review `apps/mobile/`.** Still just `README.md`. Confirm nobody has scaffolded.
-6. **Do NOT run `expo init` or `npm install` until the user explicitly says go.** When they do, per D-007 and D-008:
-   - Use the `react-native-expo-builder` skill.
-   - Scaffold with `create-expo-app@latest` — **TypeScript + `expo-router` template**.
-   - Add `firebase` (JS SDK, v12 to match web), `expo-notifications`, `expo-location`, `expo-image-picker`, `expo-image-manipulator`, `expo-secure-store`, `react-native-maps`, `@tanstack/react-query`, `zustand`, `react-hook-form`, `zod`, `date-fns`, `lucide-react-native`.
-   - Do not add `@react-native-firebase/*` (per D-008).
-   - Commit the scaffold in a **single** commit before any feature work.
-7. **Once scaffolded, build the MVP checklist from `MOBILE_APP_PLAN.md` §7.** One screen per commit. Order: Auth → Profile setup → Home (list+map) → Store detail → Product detail → Search → Cart → Prescription upload → Checkout → Order detail → Notifications inbox → Support.
-8. **Before any prescription / payment / order code runs in prod:** invoke `security-compliance-reviewer` against the risks in `MOBILE_APP_PLAN.md` §8.3 and the Rx rules implied by D-006 + D-014.
-9. **Raise (again) with the user:** `serviceAccountKey.json`, `.env`, `.env.local` are still committed at repo root. Credential-leak risk. Not our files to fix, but keep flagging until rotated + gitignored.
-10. **End every session with `agent-handoff-logger`** — append to `AGENT_LOG.md`, rewrite this section.
+1. **Commit the backend docs first.** Include `docs/AGENT_LOG.md` and this TODO update in the same docs-only commit. Suggested message: `docs(backend): add mobile backend handoff contracts`.
+2. **Optionally set up Graphify coordination** before screen-spec work if the team wants a shared execution board for backend/mobile dependencies. Keep it as coordination only; do not let it trigger code generation or scaffolding.
+3. **Create UI screen specs next.** Turn `docs/MOBILE_APP_PLAN.md` and `docs/DESIGN_SYSTEM.md` into screen-by-screen specs for the mobile MVP: Auth, Profile, Home, Store detail, Product detail, Search, Cart, Prescription upload, Checkout, Order detail, Notifications, Support.
+4. **Do not scaffold Expo yet.** No `expo init`, no `create-expo-app`, no `npm install`, and no edits under `apps/mobile/**` until the user explicitly gives the go-ahead.
+5. **Keep backend implementation with the website team.** The mobile side should not edit `functions/**`, Firebase rules files, indexes, root config, `src/**`, or `public/**`.
+6. **Before any real Rx/payment/order endpoint is used in prod,** run a security/compliance review against D-005, D-006, D-009, D-010, D-014, and the risky areas in `docs/FIREBASE_RULES_PROPOSAL.md`.
+7. **Keep flagging committed secrets.** `serviceAccountKey.json`, `.env`, and `.env.local` remain a credential-leak risk to rotate and purge with the website team; do not touch them in mobile-planning sessions.
+8. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md` and rewrite this "Next up" section.
 
 ---
 

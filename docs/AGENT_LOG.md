@@ -4,6 +4,52 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 — Verify and complete backend handoff contracts
+**Agent:** Codex
+**Session goal:** Take over after Claude hit a usage limit while creating backend handoff docs; verify what exists, complete any gaps, and leave a clear next-agent handoff without touching code.
+
+**Files inspected (read-only):**
+- `AGENTS.md` — not present in repo root.
+- `docs/PROJECT_MAP.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DECISIONS.md`
+- `docs/MOBILE_APP_PLAN.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/TODO_NEXT_AGENT.md`
+- `docs/AGENT_LOG.md`
+- `docs/BACKEND_FUNCTIONS_CONTRACT.md`
+- `docs/FIRESTORE_SCHEMA_CONTRACT.md`
+- `docs/FIREBASE_RULES_PROPOSAL.md`
+- `docs/MOBILE_BACKEND_HANDOFF.md`
+
+**What Claude started:**
+- Claude had created the four backend handoff docs: Cloud Functions contract, Firestore schema contract, Firebase rules proposal, and beginner-friendly mobile-to-backend handoff.
+
+**What Codex verified / completed:**
+- Confirmed all four backend docs exist and contain full section structures, implementation order, rules intent, schema/index coverage, and backend readiness checklist.
+- Found and fixed one consistency gap: support-ticket functions/rules already referenced a `support` role, but the role enum in the functions/schema contracts did not include `support`.
+- Rewrote the top "Next up" section in `docs/TODO_NEXT_AGENT.md` to make the immediate path explicit: commit backend docs, optionally set up Graphify coordination, create UI screen specs, and do not scaffold Expo until explicit go-ahead.
+
+**Files changed:**
+- `docs/BACKEND_FUNCTIONS_CONTRACT.md` — added `support` to the `setUserRole` role enum and default-role safety note.
+- `docs/FIRESTORE_SCHEMA_CONTRACT.md` — added `support` to the user role description/enum.
+- `docs/TODO_NEXT_AGENT.md` — rewrote "Next up" for the next phase.
+- `docs/AGENT_LOG.md` — this entry.
+
+**Protected files intentionally NOT touched:**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `vite.config.js`, `eslint.config.js`
+- `.env`, `.env.local`, `.env.example`
+- `README.md`, `serviceAccountKey.json`
+- `apps/mobile/**`
+
+**Suggested commit message:**
+`docs(backend): add mobile backend handoff contracts`
+
+---
+
 ## 2026-04-24 — Resolve 8 open mobile architecture decisions
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Close every open architectural decision surfaced in `docs/MOBILE_APP_PLAN.md` §8.1 so the mobile MVP has a firm technical baseline before any scaffold.

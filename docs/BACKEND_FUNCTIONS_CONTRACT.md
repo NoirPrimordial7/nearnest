@@ -38,7 +38,7 @@ _Target audience: the website / backend team implementing `functions/`. Mobile w
 - **Storage:** none.
 - **Notifications:** none.
 - **Errors:** log + swallow (do not throw — would retry forever).
-- **Security:** set default role `user` only; admin/verifier/storeAdmin never granted here.
+- **Security:** set default role `user` only; admin/verifier/storeAdmin/support never granted here.
 - **MVP.**
 
 ### 1.2 `setUserRole`
@@ -47,7 +47,7 @@ _Target audience: the website / backend team implementing `functions/`. Mobile w
 - **Caller:** Web admin UI (MVP) and future admin mobile surface.
 - **Auth req:** Signed-in.
 - **Role:** `admin` only.
-- **Request:** `{ uid: string, role: 'user'|'storeAdmin'|'admin'|'verifier', grant: boolean, clientRequestId?: string }`
+- **Request:** `{ uid: string, role: 'user'|'storeAdmin'|'admin'|'verifier'|'support', grant: boolean, clientRequestId?: string }`
 - **Response:** `{ uid, roles: string[], updatedAt }`
 - **Validation:** `uid` must exist in Auth; cannot self-revoke last `admin` (check live admin count).
 - **Firestore reads:** `users/{uid}`; `users` where `roles array-contains 'admin'` (for last-admin guard).

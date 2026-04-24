@@ -16,7 +16,7 @@ _Target audience: the website/backend team defining Firestore collections + rule
 
 ## users/{uid}
 
-**Purpose:** Identity + preferences for each person using Nearnest (customer, store member, admin, verifier).
+**Purpose:** Identity + preferences for each person using Nearnest (customer, store member, admin, verifier, support).
 
 **Document shape**
 ```
@@ -27,7 +27,7 @@ _Target audience: the website/backend team defining Firestore collections + rule
   phone?: string,           // E.164
   phoneVerified?: boolean,
   photoUrl?: string,
-  roles: string[],          // ['user' | 'storeAdmin' | 'admin' | 'verifier']  (mirror of custom claims; see D-009)
+  roles: string[],          // ['user' | 'storeAdmin' | 'admin' | 'verifier' | 'support']  (mirror of custom claims; see D-009)
   permissions?: string[],   // granular perms, e.g. ['VERIFY_DOCS']
   defaultAddressId?: string,
   preferences: {
