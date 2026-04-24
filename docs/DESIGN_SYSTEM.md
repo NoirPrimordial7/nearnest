@@ -1,8 +1,16 @@
-# Nearnest — Design System
+# Nearnest / Medifind Design System
 
 Premium · Light · Minimal · Medical Trust.
 
 The goal is a clean, calm, clinically-trustworthy interface that feels closer to a premium health app than a generic e-commerce app. Every surface must communicate safety, clarity, and care.
+
+## 0. Medifind mobile brand note
+
+- **Medifind** is the customer-facing mobile app name. Use exact capitalization: `Medifind`.
+- Nearnest remains the parent platform and store/admin brand. Do not use Nearnest as the primary wordmark on Medifind mobile entry screens.
+- Primary mobile surfaces should say `Medifind`, not `Nearnest`. A subtle `by Nearnest` mark is reserved for About, legal, or provenance surfaces, not the main auth/onboarding hero.
+- Medifind copy focuses on discovery: find a medicine, compare nearby verified stores, call the store, and open directions. Avoid delivery, checkout, and order promises in MVP copy.
+- Keep the same color, type, radius, button, loading, and error tokens below for both Nearnest web and Medifind mobile.
 
 ## 1. Design principles
 1. **Clarity over density.** Single primary action per screen. Generous whitespace.

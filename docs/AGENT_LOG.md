@@ -4,6 +4,52 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Expand Medifind entry/auth screen designs
+**Agent:** Codex
+**Session goal:** Continue Claude's Medifind design work and complete documentation-only screen specs for Splash, Welcome/onboarding, Sign In, Sign Up, and Phone OTP.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/MOBILE_APP_PLAN.md` (read only; pre-existing Claude changes were not edited)
+- `docs/MOBILE_UI_SCREEN_SPECS.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/SESSION_STATE.md`
+- `docs/TODO_NEXT_AGENT.md`
+- `docs/AGENT_LOG.md`
+
+**Files updated:**
+- `docs/MOBILE_UI_SCREEN_SPECS.md` - expanded Splash, Welcome/onboarding, Sign In, Sign Up, and Phone OTP with layout structure, UI hierarchy, exact copy, button styles, spacing, loading states, error states, interaction notes, and transitions/animations.
+- `docs/DESIGN_SYSTEM.md` - added a Medifind mobile brand note while keeping Nearnest as the parent/store/admin platform brand.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top handoff section for the next docs-only design pass and preserved no-scaffold guardrails.
+- `docs/SESSION_STATE.md` - recorded current design progress and clarified that Phone OTP remains Phase 2.
+- `docs/AGENT_LOG.md` - this entry.
+
+**Sections completed:**
+- `## 1. Splash`
+- `## 2. Welcome / Onboarding`
+- `## 3. Sign In`
+- `## 4. Sign Up`
+- `## 4.1 Phone OTP Flow (Phase 2, not MVP)`
+
+**Branding / scope notes:**
+- Customer-facing mobile copy now uses **Medifind** on primary entry/auth surfaces.
+- Nearnest remains the parent platform and store/admin brand.
+- Phone OTP is designed for future consistency only. MVP auth remains email/password plus Google sign-in.
+- No cart, checkout, payment, order tracking, delivery, prescription upload, or commerce copy was added to MVP screens.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`docs(mobile): expand Medifind auth screen specs`
+
+---
+
 ## 2026-04-24 - Clarify auth providers and Rx doctrine in MVP
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Pin down two things that could otherwise drift during implementation: (a) the exact authentication providers required in MVP and (b) how the app must behave around prescription-required medicines.

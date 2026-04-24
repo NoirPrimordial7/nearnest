@@ -1,6 +1,14 @@
-# Nearnest Mobile App - Product & System Design
+# Medifind Mobile App (a Nearnest product) - Product & System Design
 
-_Living planning doc. Updated 2026-04-24 after product priority reset; MVP scope reconfirmed 2026-04-24._
+_Living planning doc. Updated 2026-04-24: customer-facing mobile app renamed to **Medifind**; MVP scope reconfirmed._
+
+## Branding (2026-04-24)
+
+- **Platform / parent company:** Nearnest. Everything server-side (Firebase project, Cloud Functions codebase, Firestore, web portal for stores + admins + verifiers + support) stays under the Nearnest name.
+- **Customer-facing mobile app:** **Medifind**. App Store listing name, app icon, wordmark, onboarding copy, and in-app voice all carry the Medifind identity.
+- **Relationship surfaced to users:** Medifind app may occasionally show a subtle "by Nearnest" mark in About / legal screens to establish provenance and trust. It is not shown on primary surfaces.
+- **Store-facing surfaces stay Nearnest.** The web portal, pharmacist approval UI, verification screens, and support portal remain "Nearnest" in branding — stores onboard with Nearnest, customers discover with Medifind.
+- **Scope of the rename:** only the customer mobile app and its docs. Repository name, Firebase project, `functions/`, web portal, rules, and infra naming do NOT change.
 
 ## Canonical MVP definition (reconfirmed 2026-04-24)
 
@@ -16,10 +24,10 @@ Delivery, cart, checkout, payment, order tracking, and the prescription delivery
 
 ## Section 1 - Product Vision
 
-### What Nearnest mobile does in MVP
-Nearnest mobile helps a customer answer one urgent question: **which nearby verified store has the medicine I need right now, and how do I get there or contact them?**
+### What Medifind does in MVP
+Medifind helps a customer answer one urgent question: **which nearby verified store has the medicine I need right now, and how do I get there or contact them?**
 
-The MVP is a discovery and navigation product, not a delivery marketplace. A user searches for a specific medicine or salt, sees nearby verified stores that have it in stock, compares distance/open status/contact details, opens a map route, and can call or contact the store. The app should feel fast, clinical, and trustworthy.
+The MVP is a discovery and navigation product, not a delivery marketplace. A user searches for a specific medicine or salt, sees nearby verified stores (Nearnest-verified stores) that have it in stock, compares distance/open status/contact details, opens a map route, and can call or contact the store. The app should feel fast, clinical, and trustworthy.
 
 ### What is not MVP
 The following are deliberately out of MVP and move to Phase 2:

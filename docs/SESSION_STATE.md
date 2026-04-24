@@ -1,9 +1,11 @@
 # Nearnest Session State
 
-Last updated: 2026-04-24 (MVP scope reconfirmed)
+Last updated: 2026-04-24 (Medifind auth/onboarding design specs expanded)
 
 ## Current phase
-Mobile MVP planning is documentation-only. Graphify coordination is installed and indexed.
+Mobile MVP planning is documentation-only. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
+
+**Design progress (2026-04-24):** Splash, Welcome/onboarding, Sign In, Sign Up, and the future Phone OTP flow now have detailed screen specs covering layout, hierarchy, exact copy, button styles, spacing, loading/error states, interactions, and transitions. Phone OTP remains Phase 2 and must not be enabled or scaffolded for MVP unless explicitly approved.
 
 **Canonical MVP (reconfirmed 2026-04-24):**
 - Find a medicine.
@@ -36,12 +38,13 @@ No app source, Cloud Functions, Firebase rules, package files, env files, or mob
 - `graphify claude install` created `.claude/settings.json`; that file was removed because it was outside the allowed edit list for this session.
 
 ## Current allowed next work
-1. Commit the MVP priority reset docs.
-2. If scaffold is approved later, implement only discovery MVP surfaces: auth, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
-3. Keep `apps/mobile/**` untouched until the user explicitly authorizes Expo scaffolding.
-4. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile-planning sessions.
-5. Optionally create documentation-only wireframe notes for the discovery MVP screens.
+1. Commit the Medifind entry/auth design specs.
+2. Continue documentation-only screen design with Email Verification, Forgot Password, Profile Setup, Location Permission, and Address/Search-Area Picker.
+3. If scaffold is approved later, implement only discovery MVP surfaces: auth, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
+4. Keep `apps/mobile/**` untouched until the user explicitly authorizes Expo scaffolding.
+5. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile-planning sessions.
 6. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
+7. Do not add Phone OTP to MVP unless the user explicitly changes the auth scope.
 
 ## Protected files not touched in this setup
 - `src/**`
