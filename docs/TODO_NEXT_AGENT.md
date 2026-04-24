@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after Medifind Firebase Auth basic setup)
+## Next up (as of 2026-04-25, after Firebase Auth SDK cleanup)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -17,21 +17,35 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
 
-**Auth in MVP:** Firebase Authentication required. Email/password AND Google sign-in both ship in MVP. Phone OTP is Phase 2. Every user must have a minimal profile in `users/{uid}` before reaching Home.
+**Auth implementation now:** Firebase Authentication is wired with email/password through the Firebase JS SDK only. Splash now gates on Firebase Auth state. Google and Phone buttons are disabled UI-only placeholders.
+
+**Google auth status:** do not reintroduce Google OAuth yet. `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is still required before Google auth can be implemented against a development/production build. `expo-auth-session`, `expo-web-browser`, `GoogleAuthProvider`, and all `@react-native-firebase/*` usage have been removed from the mobile app.
+
+**Phone auth status:** Phone OTP is Phase 2.
+
+**Future profile gate:** every user should eventually have a minimal profile in `users/{uid}` before reaching Home, but there is no Firestore profile gate in the app yet. Do not add direct profile writes until the profile contract and rules are approved.
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit the Firebase Auth basic wiring.** Include `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/services/**`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `feat(mobile): wire email password Firebase auth`.
-2. **Replace placeholder Firebase config through an approved plan before real testing.** `apps/mobile/services/firebase.ts` intentionally uses fake values and must not grow real secrets inline.
-3. **Add Email Verification and Forgot Password next.** Use Firebase Auth email verification/reset APIs, then update navigation around verified/unverified users.
-4. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
-5. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
-6. **Add Google sign-in later for MVP.** Keep phone OTP Phase 2 unless the user explicitly changes auth scope.
-7. **Build only discovery MVP routes:** auth shell, profile setup, location/search-area picker, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile.
-8. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-9. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`. If a future session's allowed edit scope includes `graphify-out/**`, run `graphify update .` after code changes.
-10. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, env files, or `serviceAccountKey.json` without explicit authorization.
-11. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+1. **Commit the Firebase Auth SDK cleanup.** Include `apps/mobile/services/firebase.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/app/index.tsx`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/types/firebase-auth-react-native.d.ts`, `apps/mobile/.env.example`, `apps/mobile/README.md`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/package-lock.json`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and the tracked Graphify outputs (`graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, `graphify-out/graph.html`). Do not commit `graphify-out/cache/` unless the project explicitly decides to track Graphify caches. Suggested message: `fix(mobile): use Firebase JS SDK auth`.
+2. **Restart Expo after pulling/committing this change:**
+   `cd C:\projects\nearnest\web-portal\apps\mobile`
+   `npx expo start -c --lan`
+3. **Test email/password auth on device or simulator.** Confirm valid `apps/mobile/.env` Firebase values are present locally, then verify sign-in, sign-up, loading state, friendly error state, and Splash -> `/home` for an existing session.
+4. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
+   `netsh advfirewall firewall add rule name="Medifind Expo Node Private" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private`
+   `netsh advfirewall firewall add rule name="Medifind Expo Metro 8081 Private" dir=in action=allow protocol=TCP localport=8081 profile=private`
+   `netsh advfirewall firewall add rule name="Medifind Expo Metro 8082 Private" dir=in action=allow protocol=TCP localport=8082 profile=private`
+5. **If LAN still fails, try fallback port:**
+   `npx expo start -c --lan --port 8082`
+   Then test `http://192.168.1.149:8082` and `exp://192.168.1.149:8082`.
+6. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
+7. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
+8. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
+9. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+10. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
+11. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
+12. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 
@@ -45,7 +59,10 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 ### Mobile app
 - Scaffold exists in `apps/mobile/` with placeholder Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
 - Splash, Welcome, Sign In, and Sign Up have polished implementations.
-- Sign In and Sign Up now call Firebase Auth email/password methods through `apps/mobile/services/auth.ts` with placeholder Firebase config from `apps/mobile/services/firebase.ts`.
+- Sign In and Sign Up now call Firebase Auth email/password methods through `apps/mobile/services/auth.ts` with Expo public env config from `apps/mobile/services/firebase.ts`.
+- `apps/mobile/.env.example` documents the required mobile Firebase env keys; real `.env` files are ignored.
+- Google Auth is disabled UI-only for now. Do not re-add `expo-auth-session` / `expo-web-browser` until the Android OAuth client ID and development-build path are ready and explicitly approved.
+- Phone auth remains disabled and marked coming soon.
 - Add auth routes not yet present: Email Verification and Forgot Password.
 - Profile setup + saved search area/address
 - Location permission + address/search-area picker

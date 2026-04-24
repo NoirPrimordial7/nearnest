@@ -1,12 +1,12 @@
-# Graph Report - C:\projects\nearnest\web-portal  (2026-04-24)
+# Graph Report - C:\projects\nearnest\web-portal  (2026-04-25)
 
 ## Corpus Check
-- 87 files · ~110,709 words
+- 90 files · ~114,693 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 228 nodes · 217 edges · 60 communities detected
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.8)
+- 236 nodes · 226 edges · 61 communities detected
+- Extraction: 91% EXTRACTED · 9% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -70,6 +70,7 @@
 - [[_COMMUNITY_Community 57|Community 57]]
 - [[_COMMUNITY_Community 58|Community 58]]
 - [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useAuth()` - 14 edges
@@ -80,8 +81,8 @@
 6. `SupportTickets()` - 4 edges
 7. `DocumentVerification()` - 4 edges
 8. `docToStore()` - 4 edges
-9. `useClickAway()` - 3 edges
-10. `setStoreStatus()` - 3 edges
+9. `handleEmailSignIn()` - 3 edges
+10. `handleCreateAccount()` - 3 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `useAuth()` --calls--> `VerificationStatus()`  [INFERRED]
@@ -98,8 +99,8 @@
 ## Communities
 
 ### Community 0 - "Community 0"
-Cohesion: 0.12
-Nodes (7): RoleRedirect(), useAuth(), CreateStore(), ProtectedRoute(), StoreAdminLayout(), useClickAway(), ProfileSetup()
+Cohesion: 0.1
+Nodes (10): RoleRedirect(), useAuth(), CreateStore(), ProtectedRoute(), ReviewSubmit(), StoreAdminLayout(), useClickAway(), UploadDocuments() (+2 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.16
@@ -110,8 +111,8 @@ Cohesion: 0.27
 Nodes (7): createStore(), docToStore(), ensureAddressShape(), getStore(), isAdmin(), listenUserStores(), toArrayMaybe()
 
 ### Community 3 - "Community 3"
-Cohesion: 0.18
-Nodes (3): ReviewSubmit(), UploadDocuments(), hasAllRequired()
+Cohesion: 0.24
+Nodes (5): getAuthErrorMessage(), signInWithEmail(), signUpWithEmail(), handleEmailSignIn(), handleCreateAccount()
 
 ### Community 4 - "Community 4"
 Cohesion: 0.31
@@ -134,56 +135,56 @@ Cohesion: 0.4
 Nodes (3): normalizeTicket(), SupportTickets(), tsToStr()
 
 ### Community 9 - "Community 9"
+Cohesion: 0.33
+Nodes (0): 
+
+### Community 10 - "Community 10"
 Cohesion: 0.4
 Nodes (3): StatusBadge(), statusClass(), VerificationStatus()
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.7
 Nodes (3): AdminLayout(), Icon(), useClickAway()
 
-### Community 11 - "Community 11"
+### Community 12 - "Community 12"
 Cohesion: 0.6
 Nodes (3): Analytics(), downloadCSV(), renderPercentLabel()
 
-### Community 12 - "Community 12"
+### Community 13 - "Community 13"
 Cohesion: 0.5
 Nodes (2): buildDayBuckets(), StoreAdminDashboard()
 
-### Community 13 - "Community 13"
-Cohesion: 0.4
-Nodes (0):
-
 ### Community 14 - "Community 14"
-Cohesion: 0.5
-Nodes (2): getNow(), SupportDashboard()
+Cohesion: 0.4
+Nodes (0): 
 
 ### Community 15 - "Community 15"
 Cohesion: 0.5
-Nodes (0):
+Nodes (2): getNow(), SupportDashboard()
 
 ### Community 16 - "Community 16"
+Cohesion: 0.5
+Nodes (0): 
+
+### Community 17 - "Community 17"
 Cohesion: 0.67
 Nodes (2): fetchRoles(), redirectByRole()
 
-### Community 17 - "Community 17"
+### Community 18 - "Community 18"
 Cohesion: 0.5
 Nodes (1): Inventory()
 
-### Community 18 - "Community 18"
+### Community 19 - "Community 19"
 Cohesion: 0.67
 Nodes (2): formatBytes(), StoreAdvertisement()
 
-### Community 19 - "Community 19"
-Cohesion: 0.5
-Nodes (0):
-
 ### Community 20 - "Community 20"
-Cohesion: 0.67
-Nodes (0):
+Cohesion: 0.5
+Nodes (0): 
 
 ### Community 21 - "Community 21"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 22 - "Community 22"
 Cohesion: 0.67
@@ -199,7 +200,7 @@ Nodes (1): Sidebar()
 
 ### Community 25 - "Community 25"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 26 - "Community 26"
 Cohesion: 0.67
@@ -215,31 +216,31 @@ Nodes (1): StoreSettings()
 
 ### Community 29 - "Community 29"
 Cohesion: 0.67
-Nodes (0):
+Nodes (0): 
 
 ### Community 30 - "Community 30"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 31 - "Community 31"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 32 - "Community 32"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 33 - "Community 33"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 34 - "Community 34"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 35 - "Community 35"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 36 - "Community 36"
 Cohesion: 1.0
@@ -291,51 +292,55 @@ Nodes (0):
 
 ### Community 48 - "Community 48"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 49 - "Community 49"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 50 - "Community 50"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 51 - "Community 51"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 52 - "Community 52"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 53 - "Community 53"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 54 - "Community 54"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 55 - "Community 55"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 56 - "Community 56"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 57 - "Community 57"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 58 - "Community 58"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
 
 ### Community 59 - "Community 59"
 Cohesion: 1.0
-Nodes (0):
+Nodes (0): 
+
+### Community 60 - "Community 60"
+Cohesion: 1.0
+Nodes (0): 
 
 ## Knowledge Gaps
 - **Thin community `Community 30`** (2 nodes): `home.tsx`, `HomeScreen()`
@@ -388,29 +393,31 @@ Nodes (0):
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 54`** (1 nodes): `ActionButton.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 55`** (1 nodes): `index.js`
+- **Thin community `Community 55`** (1 nodes): `firebase-auth-react-native.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 56`** (1 nodes): `seedFirestore.js`
+- **Thin community `Community 56`** (1 nodes): `index.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 57`** (1 nodes): `main.jsx`
+- **Thin community `Community 57`** (1 nodes): `seedFirestore.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 58`** (1 nodes): `firebase.js`
+- **Thin community `Community 58`** (1 nodes): `main.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 59`** (1 nodes): `firebase.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 60`** (1 nodes): `firebase.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `Community 0` to `Community 1`, `Community 3`, `Community 7`, `Community 8`, `Community 9`, `Community 10`?**
-  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+- **Why does `useAuth()` connect `Community 0` to `Community 1`, `Community 7`, `Community 8`, `Community 10`, `Community 11`?**
+  _High betweenness centrality (0.074) - this node is a cross-community bridge._
 - **Why does `UserHome()` connect `Community 1` to `Community 0`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
 - **Why does `DocumentVerification()` connect `Community 7` to `Community 0`?**
-  _High betweenness centrality (0.017) - this node is a cross-community bridge._
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 2 inferred relationships involving `UserHome()` (e.g. with `useAuth()` and `useProfileComplete()`) actually correct?**
   _`UserHome()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.12 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.1 - nodes in this community are weakly interconnected._

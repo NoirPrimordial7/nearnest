@@ -2,11 +2,13 @@ import { router } from 'expo-router';
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
+import { subscribeToAuthState } from '../services/auth';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 export default function SplashScreen() {
   const opacity = useRef(new Animated.Value(0.92)).current;
   const scale = useRef(new Animated.Value(0.96)).current;
+  const hasNavigated = useRef(false);
 
   useEffect(() => {
     Animated.parallel([
@@ -22,11 +24,34 @@ export default function SplashScreen() {
       }),
     ]).start();
 
-    const timer = setTimeout(() => {
-      router.replace('/welcome');
-    }, 1200);
+    const startedAt = Date.now();
+    let isActive = true;
+    let routeTimer: ReturnType<typeof setTimeout> | undefined;
 
-    return () => clearTimeout(timer);
+    const unsubscribe = subscribeToAuthState((user) => {
+      if (hasNavigated.current) {
+        return;
+      }
+
+      const remainingSplashTime = Math.max(0, 900 - (Date.now() - startedAt));
+
+      routeTimer = setTimeout(() => {
+        if (!isActive || hasNavigated.current) {
+          return;
+        }
+
+        hasNavigated.current = true;
+        router.replace(user ? '/home' : '/welcome');
+      }, remainingSplashTime);
+    });
+
+    return () => {
+      isActive = false;
+      if (routeTimer) {
+        clearTimeout(routeTimer);
+      }
+      unsubscribe();
+    };
   }, [opacity, scale]);
 
   return (
@@ -44,7 +69,7 @@ export default function SplashScreen() {
           <View style={styles.dot} />
           <View style={styles.dot} />
         </View>
-        <Text style={styles.status}>Getting Medifind ready</Text>
+        <Text style={styles.status}>Checking your session</Text>
       </View>
     </View>
   );

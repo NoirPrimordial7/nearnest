@@ -7,7 +7,7 @@ import { Screen } from '../components/Screen';
 import { getAuthErrorMessage, signInWithEmail } from '../services/auth';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
-type LoadingAction = 'email' | 'google' | 'phone' | null;
+type LoadingAction = 'email' | null;
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -38,19 +38,6 @@ export default function SignInScreen() {
     }
   }
 
-  function handleProviderPress(provider: 'google' | 'phone') {
-    setFormError('');
-    setLoadingAction(provider);
-    setTimeout(() => {
-      setLoadingAction(null);
-      setFormError(
-        provider === 'google'
-          ? 'Google sign-in UI is ready. Provider wiring will be added later.'
-          : 'Phone login is a UI placeholder and remains outside MVP auth for now.',
-      );
-    }, 450);
-  }
-
   const isBusy = loadingAction !== null;
 
   return (
@@ -67,19 +54,15 @@ export default function SignInScreen() {
             onPress={handleEmailSignIn}
           />
           <ActionButton
-            label="Continue with Google"
+            disabled
+            label="Google sign-in coming soon"
             leadingLabel="G"
-            loading={loadingAction === 'google'}
-            loadingLabel="Connecting to Google"
-            onPress={() => handleProviderPress('google')}
             variant="secondary"
           />
           <ActionButton
-            label="Continue with phone"
+            disabled
+            label="Phone login coming soon"
             leadingLabel="Ph"
-            loading={loadingAction === 'phone'}
-            loadingLabel="Checking phone"
-            onPress={() => handleProviderPress('phone')}
             variant="secondary"
           />
           <ActionButton
@@ -126,7 +109,7 @@ export default function SignInScreen() {
         ) : (
           <View style={styles.infoPanel}>
             <Text style={styles.infoText}>
-              Email sign-in now calls Firebase Auth with placeholder mobile config.
+              Email sign-in uses Firebase Auth from Expo environment config.
             </Text>
           </View>
         )}
