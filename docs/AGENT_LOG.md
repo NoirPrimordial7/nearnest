@@ -4,6 +4,116 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 — Complete Graphify coordination setup
+**Agent:** Codex
+**Session goal:** Continue Graphify setup from the PATH failure and coordinate Claude Code + Codex without touching app source code.
+
+**Commands run:**
+1. `graphify install --platform windows`
+   - Direct shell attempt still failed because this spawned PowerShell did not inherit the user's PATH update.
+   - Retried with `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts` prepended inside the command and succeeded.
+2. `graphify claude install`
+   - Succeeded. Wrote `CLAUDE.md`.
+   - Also created `.claude/settings.json`; removed it because `.claude/**` was outside the allowed edit list for this session.
+3. `graphify codex install`
+   - Succeeded. Wrote `AGENTS.md` and `.codex/hooks.json`.
+4. `graphify .`
+   - Failed because this Graphify CLI version does not support `.` as a command.
+5. `graphify --help`
+   - Used to identify the current indexing command.
+6. `graphify update .`
+   - Succeeded. Generated/updated `graphify-out/` with 208 nodes, 207 edges, and 50 communities.
+
+**Exact errors observed:**
+```text
+graphify : The term 'graphify' is not recognized as the name of a cmdlet, function, script file, or operable program.
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:2 char:1
++ graphify install --platform windows
++ ~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (graphify:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+```
+
+```text
+error: unknown command '.'
+Run 'graphify --help' for usage.
+```
+
+**Files created / updated:**
+- `.graphifyignore`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.codex/hooks.json`
+- `graphify-out/graph.json`
+- `graphify-out/graph.html`
+- `graphify-out/GRAPH_REPORT.md`
+- `graphify-out/cache/**`
+- `docs/AI_HANDOFF_PROTOCOL.md`
+- `docs/SESSION_STATE.md`
+- `docs/TODO_NEXT_AGENT.md`
+- `docs/AGENT_LOG.md`
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Notes for next agent:**
+- Use `graphify update .`, not `graphify .`, with Graphify `0.4.23`.
+- `graphify claude install` wants to register `.claude/settings.json`; that file was intentionally removed to honor this session's allowed-file list.
+
+**Suggested commit message:**
+`chore(ai): configure graphify coordination for claude and codex`
+
+---
+
+## 2026-04-24 — Attempt Graphify coordination setup (stopped on command failure)
+**Agent:** Codex
+**Session goal:** Set up Graphify coordination for Claude Code + Codex without touching app source code.
+
+**Allowed files constraint:** Only `.graphifyignore`, `AGENTS.md`, `CLAUDE.md`, `.codex/**`, `graphify-out/**`, `docs/AI_HANDOFF_PROTOCOL.md`, `docs/SESSION_STATE.md`, `docs/AGENT_LOG.md`, and `docs/TODO_NEXT_AGENT.md`.
+
+**Commands run:**
+1. `pip install graphifyy`
+   - First sandbox attempt failed due blocked network access.
+   - Retried with approved network access and succeeded.
+2. `graphify install --platform windows`
+   - Failed. Stopped immediately per user instruction.
+
+**Exact failure that stopped the setup:**
+```text
+graphify : The term 'graphify' is not recognized as the name of a cmdlet, function, script file, or operable program. 
+Check the spelling of the name, or if a path was included, verify that the path is correct and try again.
+At line:2 char:1
++ graphify install --platform windows
++ ~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (graphify:String) [], CommandNotFoundException
+    + FullyQualifiedErrorId : CommandNotFoundException
+```
+
+**Files created before failure:**
+- `.graphifyignore` — created with requested exclusions.
+
+**Files not created because setup stopped:**
+- `docs/AI_HANDOFF_PROTOCOL.md`
+- `docs/SESSION_STATE.md`
+- `AGENTS.md`
+- `CLAUDE.md`
+- `.codex/**`
+- `graphify-out/**`
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`
+- `package.json`, `firebase.json`, `firestore.rules`, `storage.rules`
+- `.env*`, `serviceAccountKey.json`
+
+**Next action:** Re-run the Graphify commands after adding `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts` to PATH for the shell, or invoke `graphify.exe` by absolute path if the user approves deviating from the exact command text.
+
+---
+
 ## 2026-04-24 — Verify and complete backend handoff contracts
 **Agent:** Codex
 **Session goal:** Take over after Claude hit a usage limit while creating backend handoff docs; verify what exists, complete any gaps, and leave a clear next-agent handoff without touching code.
