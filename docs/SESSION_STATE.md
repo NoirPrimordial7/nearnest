@@ -1,6 +1,6 @@
 # Nearnest Session State
 
-Last updated: 2026-04-25 (Medifind Firebase Auth SDK cleanup)
+Last updated: 2026-04-25 (Medifind auth verification report)
 
 ## Current phase
 Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
@@ -8,6 +8,8 @@ Mobile development has started. Graphify coordination is installed and indexed. 
 **Scaffold status (2026-04-24):** `apps/mobile/` contains an Expo managed workflow app using TypeScript and expo-router. Firebase JS SDK is installed and `apps/mobile/services/firebase.ts` initializes the Firebase app plus Auth instance from Expo public env variables. `apps/mobile/.env.example` lists the required keys, while `apps/mobile/.env` and `.env.local` are ignored. There is still no committed real Firebase config, no Firestore, no callable Functions, and no backend changes. Placeholder routes exist for Splash, Welcome, Sign In, Sign Up, Profile Setup, and Home.
 
 **Implementation progress (2026-04-25):** Splash, Welcome, Sign In, and Sign Up have polished Expo UI using `components/Screen.tsx`, `components/ActionButton.tsx`, and `theme/tokens.ts`. Sign In and Sign Up call Firebase Auth email/password methods through `services/auth.ts`, show loading/error states, and route to Home on success. `apps/mobile/services/firebase.ts` now uses the Firebase JS SDK only, initializes Auth with React Native AsyncStorage persistence, reads required Expo public Firebase env vars, and does not initialize analytics. Splash listens to Firebase Auth state and routes authenticated users to `/home` and signed-out users to `/welcome`. Google and Phone buttons are disabled UI-only placeholders for now; Google OAuth code and Expo Auth Session dependencies have been removed until the Android OAuth client ID and development-build flow are ready. Current navigation is Splash -> Home/Welcome based on auth state, Welcome -> Sign In/Sign Up, Sign In -> Home, Sign Up -> Home after account creation; the Profile Setup completion gate is still future work.
+
+**Verification progress (2026-04-25):** `docs/MOBILE_AUTH_VERIFICATION_REPORT_2026-04-25.md` records the current auth verification pass. `npm run typecheck` passed, Android Expo export passed, mobile dependency checks confirm only `firebase@12.12.1` and no React Native Firebase packages, required mobile Firebase env keys are present locally, and app code has no Firestore/Functions/Storage/backend data calls. Email/password auth is code-verified but still needs a live test with a known Firebase test account. Google login is not implemented in the current committed state; it is a blocker until the Android OAuth client ID and explicit reimplementation approval are available.
 
 **Design progress (2026-04-24):** Splash, Welcome/onboarding, Sign In, Sign Up, and the future Phone OTP flow now have detailed screen specs covering layout, hierarchy, exact copy, button styles, spacing, loading/error states, interactions, and transitions. Phone OTP remains Phase 2 and must not be enabled or scaffolded for MVP unless explicitly approved.
 
@@ -48,14 +50,15 @@ No root app source, Cloud Functions, Firebase rules, root package files, env fil
 - React Native Firebase must not be used in the Expo managed MVP. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app --depth=0` now reports only `firebase@12.12.1`.
 - `npm run typecheck` passed after the Firebase Auth SDK cleanup.
 - `graphify update .` passed after the Firebase Auth SDK cleanup and rebuilt the graph at 236 nodes, 226 edges, and 61 communities.
+- `npx expo export --platform android --output-dir .expo\verification-export` passed during the auth verification pass. The generated `.expo/verification-export` output is local-only and should remain uncommitted.
 
 ## Current allowed next work
-1. Commit the Firebase Auth SDK cleanup and handoff docs.
-2. Restart Expo after pulling this change so Metro picks up the dependency/env changes: `npx expo start -c --lan`.
-3. Test email/password sign-in and sign-up on a device or simulator with valid untracked `apps/mobile/.env` Firebase values.
-4. Add Email Verification and Forgot Password routes next using Firebase JS SDK APIs.
-5. Decide whether Sign Up should route to Profile Setup or Home behind a profile-completion guard; do not add Firestore profile writes until profile rules/contracts are approved.
-6. Keep Google Auth UI-only until `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` and the development-build OAuth path are ready and the user explicitly approves reimplementation.
+1. Commit and push the auth verification report and handoff doc updates.
+2. Restart Expo after pulling this change so Metro picks up dependency/env state: `npx expo start -c --lan`.
+3. Run a manual device/simulator auth test with a known Firebase test account: fresh app -> Splash -> Welcome, Sign In invalid error, Sign In valid -> Home, app restart -> Splash -> Home.
+4. Decide whether Google Auth should be reintroduced now. If approved, add `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` locally and implement the Expo-compatible flow using Firebase JS SDK only.
+5. Add Email Verification and Forgot Password routes next using Firebase JS SDK APIs.
+6. Decide whether Sign Up should route to Profile Setup or Home behind a profile-completion guard; do not add Firestore profile writes until profile rules/contracts are approved.
 7. Keep Phone OTP Phase 2 unless explicitly approved.
 8. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
 9. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.

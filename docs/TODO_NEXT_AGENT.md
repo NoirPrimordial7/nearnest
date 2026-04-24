@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-25, after Firebase Auth SDK cleanup)
+## Next up (as of 2026-04-25, after auth verification report)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -27,25 +27,26 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit the Firebase Auth SDK cleanup.** Include `apps/mobile/services/firebase.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/app/index.tsx`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/types/firebase-auth-react-native.d.ts`, `apps/mobile/.env.example`, `apps/mobile/README.md`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/package-lock.json`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and the tracked Graphify outputs (`graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, `graphify-out/graph.html`). Do not commit `graphify-out/cache/` unless the project explicitly decides to track Graphify caches. Suggested message: `fix(mobile): use Firebase JS SDK auth`.
-2. **Restart Expo after pulling/committing this change:**
+1. **Commit and push the auth verification report.** Include `docs/MOBILE_AUTH_VERIFICATION_REPORT_2026-04-25.md`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `docs(mobile): add auth verification report`.
+2. **Restart Expo after pulling this change:**
    `cd C:\projects\nearnest\web-portal\apps\mobile`
    `npx expo start -c --lan`
-3. **Test email/password auth on device or simulator.** Confirm valid `apps/mobile/.env` Firebase values are present locally, then verify sign-in, sign-up, loading state, friendly error state, and Splash -> `/home` for an existing session.
-4. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
+3. **Run a manual live auth pass with a known Firebase test account.** Automated verification passed (`npm run typecheck`, Android Expo export, SDK/dependency scans), but a credentialed device/simulator test still needs a test account.
+4. **Decide Google Auth direction before coding.** If Google must work now, explicitly approve reimplementation, add `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` to untracked `apps/mobile/.env`, and use Firebase JS SDK only. If not, keep the disabled "coming soon" buttons.
+5. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
    `netsh advfirewall firewall add rule name="Medifind Expo Node Private" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private`
    `netsh advfirewall firewall add rule name="Medifind Expo Metro 8081 Private" dir=in action=allow protocol=TCP localport=8081 profile=private`
    `netsh advfirewall firewall add rule name="Medifind Expo Metro 8082 Private" dir=in action=allow protocol=TCP localport=8082 profile=private`
-5. **If LAN still fails, try fallback port:**
+6. **If LAN still fails, try fallback port:**
    `npx expo start -c --lan --port 8082`
    Then test `http://192.168.1.149:8082` and `exp://192.168.1.149:8082`.
-6. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
-7. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
-8. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
-9. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-10. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
-11. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
-12. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+7. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
+8. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
+9. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
+10. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+11. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
+12. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
+13. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 
