@@ -4,6 +4,57 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Clarify auth providers and Rx doctrine in MVP
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Pin down two things that could otherwise drift during implementation: (a) the exact authentication providers required in MVP and (b) how the app must behave around prescription-required medicines.
+
+**Clarifications recorded:**
+
+Auth (MVP):
+- Firebase Authentication is required for discovery MVP.
+- **Email/password** (with email verification) AND **Google sign-in** must ship together.
+- Phone OTP is **Phase 2** (not MVP).
+- Every mobile user must have a minimal `users/{uid}` profile (`displayName`, `email`, `emailVerified`, `photoUrl?`, `authProvider: 'password' | 'google.com'`, `preferences`, `createdAt`, `updatedAt`) before reaching Home. `onUserCreate` + Profile setup enforce this.
+- Google sign-in collisions with an existing email/password account route to a "Link accounts" path, not silent failure.
+
+Prescription-required medicines (MVP):
+- **Allowed:** search, list, view, navigate to stores that carry Rx medicines.
+- **Required:** a strong "Prescription required" badge + warning block on every Rx surface (palette from `docs/DESIGN_SYSTEM.md` §7). Copy: "Prescription required. Please carry a valid prescription when you visit or call the store."
+- **Blocked in MVP:** reserve, hold, order, delivery, prescription upload, pharmacist approval, any Rx-approval state in the client. No CTA labelled Reserve/Order/Add to cart/Buy/Request.
+- **Blocked in MVP:** medical advice, dosage, "how to take", side effects, contraindications, substitution advice, symptom checker. Even if `medicines/{id}.usage`/`sideEffects`/`warnings` exist in Firestore, mobile does not render them.
+- CTA guidance: primary is **"Navigate to store"**; secondary is **"Call store"**.
+
+**Files updated:**
+- `docs/MOBILE_APP_PLAN.md` — §2.1 Authentication rewritten to specify MVP providers and the required profile shape; new §2.1.1 "Prescription-required medicines in discovery MVP" encodes the full Rx doctrine; §2.7 Medicine Detail tightened to forbid medical/dosage content in MVP.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` — two new top-level doctrine blocks ("Authentication doctrine (MVP)" + "Prescription-required medicine doctrine (MVP)"); Sign In and Sign Up screens updated with Google sign-in button + account-collision path; Medicine Detail (screen §15) updated: allowed vs forbidden sections, Rx-only CTA wording, components list updated (added `RxWarningBlock`, removed `SafetyInfoAccordion`).
+- `docs/SESSION_STATE.md` — "Current phase" now includes the Auth and Rx clarifications.
+- `docs/TODO_NEXT_AGENT.md` — "Next up" restated with Auth + Rx clarifications; commit suggestion updated.
+- `docs/AGENT_LOG.md` — this entry.
+
+**What did NOT change:**
+- No architectural decisions added; D-001 … D-014 unchanged. D-006, D-010, D-014 remain Phase-2 extension points.
+- No backend contract (`BACKEND_FUNCTIONS_CONTRACT.md`, `FIRESTORE_SCHEMA_CONTRACT.md`, `FIREBASE_RULES_PROPOSAL.md`, `MOBILE_BACKEND_HANDOFF.md`) edits — existing Auth provider support is Firebase-level config, not a doc-change requirement; Rx fields stay in schemas for Phase 2 but are not rendered in MVP UI.
+- No code. No scaffold. No protected files touched.
+
+**Files intentionally NOT touched (protected):**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `vite.config.js`, `eslint.config.js`
+- `.env`, `.env.local`, `.env.example`, `.firebaserc`
+- `README.md` (root), `cors.json`, `apphosting.emulator.yaml`, `main.jsx` (root)
+- `serviceAccountKey.json`
+
+**Warnings for next agent:**
+- Backend team enabling the Google provider in Firebase console is a prerequisite to shipping auth UI; note this in the coordination thread.
+- When scaffold is authorized, the Expo side will need `expo-auth-session` (or the chosen Google-sign-in wrapper). That's a scaffold-time dependency, not a planning-phase change.
+- If you see an Rx medicine's dosage or side-effects rendered anywhere in the mobile app code, STOP — this violates MVP doctrine. Escalate before merging.
+
+**Suggested commit message:**
+`docs(mobile): clarify auth providers and Rx handling in MVP`
+
+---
+
 ## 2026-04-24 - Reconfirm MVP direction before any coding
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Lock in the canonical MVP scope in the planning docs as a five-bullet statement future agents can grep for, so discovery-only MVP cannot be re-expanded to commerce by accident.

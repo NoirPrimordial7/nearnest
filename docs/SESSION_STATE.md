@@ -14,6 +14,10 @@ Mobile MVP planning is documentation-only. Graphify coordination is installed an
 
 **Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
 
+**Auth (MVP, clarified 2026-04-24):** Firebase Authentication is required. Both **email/password** (with email verification) and **Google sign-in** must ship together in MVP. **Phone OTP is Phase 2.** Every mobile user must have a minimal `users/{uid}` profile (`displayName`, `email`, `emailVerified`, `photoUrl?`, `authProvider`, `preferences`, `createdAt`, `updatedAt`) before reaching Home; `onUserCreate` + Profile setup enforce this.
+
+**Rx doctrine (MVP, clarified 2026-04-24):** Rx-required medicines are shown during discovery with a strong "Prescription required" badge and warning. Discovery and navigation are NOT blocked. No reserve/order/delivery path exists in MVP. No medical advice, dosage, usage, side-effects, or substitution guidance is shown anywhere in MVP — even if the canonical `medicines/{id}` doc carries those fields, mobile does not render them.
+
 No app source, Cloud Functions, Firebase rules, package files, env files, or mobile scaffold files should be edited in this phase.
 
 ## Graphify status

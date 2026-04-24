@@ -53,13 +53,30 @@ Architecture decisions D-005, D-006, D-010, and D-014 remain useful for future c
 ## Section 2 - Feature Breakdown
 
 ### 2.1 Authentication
-**MVP priority:** Required if backend requires signed-in access to stores/search; otherwise can be soft-gated after first launch.
+**MVP priority:** Required. Firebase Authentication is part of the discovery MVP. A mobile user must be signed in and have a minimal profile in `users/{uid}` before reaching Home.
 
-- Purpose: identify the user for saved location, recent searches, contact preferences, and future Phase 2 readiness.
-- UI: splash, welcome, sign in, sign up, email verification, forgot password.
-- Interactions: email/password auth, resend verification, password reset.
-- Backend: Firebase Auth, `onUserCreate` for `users/{uid}`.
-- Phase 2: phone OTP, biometric unlock, deeper profile.
+- **MVP providers (must ship together):**
+  - **Email / password** (with email verification).
+  - **Google sign-in** (Google provider via Firebase Auth; uses `expo-auth-session` / Google provider wrapper when scaffold is approved).
+- **Phase 2 providers:** phone OTP, biometric unlock, Apple sign-in if iOS compliance requires it.
+- **Profile requirement:** Every mobile user must have a `users/{uid}` Firestore document with at minimum: `displayName`, `email`, `emailVerified`, `photoUrl?`, `authProvider: 'password' | 'google.com'`, `preferences`, `createdAt`, `updatedAt`. `onUserCreate` Auth trigger initialises this doc; Profile setup completes it before the user lands on Home.
+- UI: splash, welcome, sign in (email + "Continue with Google"), sign up, email verification, forgot password, profile setup.
+- Interactions: email/password auth, Google OAuth flow, resend verification, password reset, link-account path if a Google email collides with an existing email/password account.
+- Backend: Firebase Auth (email/password + Google provider enabled in console), `onUserCreate` writes `users/{uid}`, mobile client reads/updates whitelisted profile fields directly; roles remain server-only via `setUserRole` (D-009).
+- Non-goals for MVP: phone OTP, biometric unlock, caretaker/dependent profiles, multi-tenant admin mobile surface.
+
+### 2.1.1 Prescription-required medicines in discovery MVP
+
+Nearnest shows Rx medicines during discovery without becoming a dispensing gate. The doctrine for MVP:
+
+- **Allowed.** Search, list, view, and navigate to stores that carry prescription-required medicines. Rx medicines appear in search results, store inventories, and medicine detail exactly like OTC items for the purpose of *finding the store*.
+- **Required.** Every Rx medicine — in search results, availability rows, store inventories, and medicine detail — must carry a strong, unmissable **"Prescription required"** badge + warning block. Use the Rx palette tokens from `docs/DESIGN_SYSTEM.md` §7 (`--color-rx-*`). The warning copy is short, clinical, and informational: "Prescription required. Please carry a valid prescription when you visit or call the store."
+- **Blocked in MVP.** No reserve, no hold, no order, no delivery, no prescription upload, no pharmacist approval flow, no Rx-approval state in the client. The MVP app cannot initiate any transaction that would dispense an Rx medicine.
+- **Also blocked in MVP.** No medical advice, no dosage guidance, no "how to take", no symptom checker, no side-effect copy, no contraindication copy, no substitution advice. Even if the canonical `medicines/{id}` document carries `usage` / `sideEffects` / `warnings` fields, the mobile app must NOT render them. Only the non-medical facts (name, salt, form, strength, pack size, Rx badge) and nearby availability may be shown.
+- **Guidance when the user taps anything that looks like "get this".** The CTA is **"Navigate to store"** or **"Call store"** — never "Reserve", "Order", "Add to cart", "Request", "Buy". Empty-state copy on Rx items: "Please contact the store directly for availability and to confirm your prescription."
+- **Copy guardrail.** The app does not say a medicine is safe, appropriate, or recommended for anyone. It only says which stores nearby carry it.
+
+D-006, D-010, and D-014 stay on the books as Phase 2 extension points. Do not build any of their flows into MVP.
 
 ### 2.2 Location + Search Area
 **MVP priority:** Critical.
@@ -109,11 +126,13 @@ Architecture decisions D-005, D-006, D-010, and D-014 remain useful for future c
 ### 2.7 Product / Medicine Detail
 **MVP priority:** Important.
 
-- Purpose: show medicine facts and nearby availability.
-- UI: medicine name, salt, form, strength, pack size, Rx badge, safety notes, nearby available stores.
+- Purpose: show **non-medical** medicine facts and nearby availability. Do NOT act as a medical information screen.
+- UI allowed: medicine name, aliases, salt, form, strength, pack size, manufacturer (optional), strong Rx badge + warning block when `requiresPrescription` is true, nearby available stores.
+- UI forbidden in MVP: dosage, "how to take", usage notes, side effects, warnings beyond the Rx-required notice, contraindications, age/weight guidance, substitution advice, ratings/reviews.
 - Primary CTA: choose an available store -> Store detail.
 - Secondary CTA: call store or navigate from availability row.
-- Backend: `medicines/{medicineId}`, inventory availability.
+- Backend: `medicines/{medicineId}` (read name/salt/form/strength/packSize/requiresPrescription only; ignore `usage`, `sideEffects`, `warnings` in MVP), inventory availability.
+- See §2.1.1 for the Rx doctrine this screen must follow.
 
 ### 2.8 Contact Store
 **MVP priority:** Core.

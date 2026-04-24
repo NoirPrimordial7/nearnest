@@ -31,6 +31,25 @@ Global design rules:
 - Store trust signals, open state, availability freshness, contact, and navigation must stay visible.
 - Loading uses skeletons; errors are inline with retry.
 
+## Authentication doctrine (MVP)
+
+Firebase Authentication is **required** for the discovery MVP. A mobile user must be signed in and have a minimal `users/{uid}` profile before reaching Home.
+
+- **MVP providers:** email / password (with email verification) AND Google sign-in. Both must ship together.
+- **Phase 2 providers:** phone OTP, biometric unlock, Apple sign-in if iOS compliance requires it.
+- **Profile requirement:** `users/{uid}` must carry at minimum `displayName`, `email`, `emailVerified`, `photoUrl?`, `authProvider`, `preferences`, `createdAt`, `updatedAt`. `onUserCreate` creates the doc; Profile setup screen completes it.
+- **Account collision:** if a Google sign-in email matches an existing email/password account, surface a clear "link accounts" path rather than silently failing.
+
+## Prescription-required medicine doctrine (MVP)
+
+Nearnest shows Rx medicines during discovery without becoming a dispensing gate. Every screen that can render an Rx medicine follows this doctrine:
+
+- **Allowed.** Search, list, view, and navigate to stores that carry Rx medicines. Rx items behave like OTC items for the purpose of finding the store.
+- **Required.** Display a strong, unmissable **"Prescription required"** badge on every surface that shows an Rx medicine: search results, availability rows, store inventories, medicine detail. Expand to the Rx warning block from `docs/DESIGN_SYSTEM.md` §7 on medicine detail. Copy: "Prescription required. Please carry a valid prescription when you visit or call the store."
+- **Blocked in MVP.** No reserve, hold, order, delivery, prescription upload, pharmacist approval, or Rx-approval state. No CTA labelled "Reserve", "Order", "Add to cart", "Buy", "Request".
+- **Blocked in MVP.** No medical advice, no dosage, no "how to take", no side effects, no contraindications, no symptom checker, no substitution advice. Even if the canonical `medicines/{id}` doc carries `usage` / `sideEffects` / `warnings`, mobile screens must NOT render them in MVP.
+- **CTA guidance.** On any Rx surface the primary CTA is **"Navigate to store"**; secondary is **"Call store"**. Empty-state copy on Rx items: "Please contact the store directly for availability and to confirm your prescription."
+
 ## MVP Screen Set
 
 The MVP needs these screens:
@@ -143,24 +162,28 @@ The old commerce screens are Phase 2 only: Cart, Checkout, Payment status, Order
 - Footer sign-up link.
 
 **Primary CTA**
-- "Sign in".
+- "Sign in" (email + password).
 
 **Secondary actions**
+- **"Continue with Google"** (MVP — Google provider required alongside email/password).
 - "Forgot password".
 - "Create account".
-- Optional "Continue as guest" only if backend allows anonymous discovery.
+- No guest mode in MVP; Firebase Auth sign-in is required before Home.
 
 **Empty/loading/error states**
 - Loading: button says "Signing in".
 - Error: field-level or form-level inline message.
 - Unverified email: route to Email verification.
+- Account-collision: if Google email matches an existing email/password account, route to a "Link accounts" sheet rather than silently failing.
 
 **Components needed**
-- AuthShell, TextField, PasswordField, InlineFormError, LoadingButton.
+- AuthShell, TextField, PasswordField, InlineFormError, LoadingButton, **GoogleSignInButton**, **LinkAccountsSheet**.
 
 **Firebase/backend dependencies**
 - Firebase Auth `signInWithEmailAndPassword`.
+- Firebase Auth **Google provider** (via `expo-auth-session` / Google sign-in when scaffold lands).
 - `users/{uid}` read.
+- `onUserCreate` initialises `users/{uid}` on first Google sign-in.
 
 **Navigation links**
 - Forgot password.
@@ -184,24 +207,26 @@ The old commerce screens are Phase 2 only: Cart, Checkout, Payment status, Order
 - Sign-in footer link.
 
 **Primary CTA**
-- "Create account".
+- "Create account" (email + password).
 
 **Secondary actions**
+- **"Continue with Google"** (MVP — same provider button as Sign in).
 - "Sign in".
 - Terms/privacy links.
 
 **Empty/loading/error states**
 - Loading: "Creating account".
 - Error: inline field validation.
-- Duplicate email: show Sign in shortcut.
+- Duplicate email: show Sign in shortcut or "Link accounts" if a Google account already exists with this email.
 
 **Components needed**
-- AuthShell, TextField, PhoneField, PasswordField, CheckboxRow, LoadingButton.
+- AuthShell, TextField, PhoneField, PasswordField, CheckboxRow, LoadingButton, **GoogleSignInButton**.
 
 **Firebase/backend dependencies**
-- Firebase Auth create account.
+- Firebase Auth create account (email/password).
+- Firebase Auth Google provider.
 - Email verification send.
-- `onUserCreate` creates `users/{uid}`.
+- `onUserCreate` creates `users/{uid}` with `authProvider` = `'password' | 'google.com'`.
 
 **Navigation links**
 - Email verification.
@@ -617,33 +642,35 @@ The old commerce screens are Phase 2 only: Cart, Checkout, Payment status, Order
 ## 15. Product / Medicine Detail
 
 **Purpose**
-- Explain the medicine and show where nearby it is available.
+- Show non-medical facts about the medicine and where nearby it is available. **Not** a medical information screen.
 
 **Layout sections**
-- Name, salt, form, strength, pack size.
-- Rx badge and informational warning if needed.
-- Safety/usage notes.
+- Name, aliases, salt, form, strength, pack size, manufacturer (optional).
+- Strong Rx badge + full Rx warning block (from `docs/DESIGN_SYSTEM.md` §7) when `requiresPrescription` is true.
 - Nearby available store list.
-- Alternatives by same salt if available.
+- Alternatives by same salt if available (as a neutral list — no recommendation language).
+- **Not rendered in MVP:** dosage, how-to-take, side effects, contraindications, warnings beyond the Rx-required notice, age/weight guidance, substitution advice, reviews.
 
 **Primary CTA**
-- Select a store availability row -> Store detail.
+- **"Navigate to store"** on the top availability row — NOT "Reserve", "Order", "Add to cart", "Buy", "Request".
 
 **Secondary actions**
 - Call store.
-- Navigate.
-- Compare alternatives if available.
+- Select a different availability row -> Store detail.
+- Compare alternatives (neutral list of same-salt medicines).
 
 **Empty/loading/error states**
 - Loading: medicine skeleton.
 - Error: unavailable medicine detail with retry/back.
-- No available stores: widen radius/change area/notify me optional.
+- No available stores: widen radius / change area / notify me optional.
+- Rx + no available stores: "Please contact nearby verified stores directly to confirm availability and your prescription."
 
 **Components needed**
-- ProductHero, MedicineFacts, RxInfoCard, StoreAvailabilityList, SafetyInfoAccordion.
+- ProductHero, MedicineFacts, **RxWarningBlock** (strong), StoreAvailabilityList.
+- **Removed from MVP:** SafetyInfoAccordion, dosage/usage modules.
 
 **Firebase/backend dependencies**
-- `medicines/{medicineId}`.
+- `medicines/{medicineId}` — read only `name`, `aliases`, `salt`, `form`, `strength`, `packSize`, `manufacturer?`, `requiresPrescription`, `schedule?`. Do **not** render `usage`, `sideEffects`, `warnings` in MVP.
 - Availability from `searchMedicines` or inventory query.
 
 **Navigation links**
@@ -653,7 +680,9 @@ The old commerce screens are Phase 2 only: Cart, Checkout, Payment status, Order
 - Search results.
 
 **Design notes**
-- Rx copy: "Prescription may be required by the store/pharmacist." Do not show approval workflow in MVP.
+- Rx copy (MVP verbatim): "**Prescription required.** Please carry a valid prescription when you visit or call the store."
+- No approval workflow, no upload prompt, no "we'll verify" language.
+- No medical advice of any kind, even implicit (avoid "recommended", "safe", "suitable for").
 
 ## 16. Contact Store
 

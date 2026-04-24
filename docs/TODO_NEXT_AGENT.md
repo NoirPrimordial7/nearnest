@@ -15,7 +15,11 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
 
-1. **Commit the MVP-direction docs.** Include `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`. Suggested message: `docs(mobile): reconfirm MVP direction - discovery over commerce`.
+**Auth in MVP:** Firebase Authentication required. Email/password AND Google sign-in both ship in MVP. Phone OTP is Phase 2. Every user must have a minimal profile in `users/{uid}` before reaching Home.
+
+**Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy — even if the data exists in `medicines/{id}`.
+
+1. **Commit the MVP-direction + auth/Rx clarifications.** Include `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`. Suggested message: `docs(mobile): clarify auth providers and Rx handling in MVP`.
 2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` only after future code changes. Documentation-only changes do not require a graph rebuild unless requested.
 3. **If scaffold is approved later, build only discovery MVP routes:** auth, profile setup, location/search-area picker, home list, home map, search, search results, store detail, medicine detail, contact store, navigation handoff, profile.
 4. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
