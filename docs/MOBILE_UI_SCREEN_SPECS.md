@@ -1,119 +1,146 @@
-# Nearnest Mobile UI Screen Specs - MVP
+# Nearnest Mobile UI Screen Specs - Discovery MVP
 
-Last updated: 2026-04-24
+Last updated: 2026-04-24 (MVP scope reconfirmed)
 
-Scope: customer-facing React Native + Expo MVP screens only. This is a product/design contract, not implementation code.
+## Canonical MVP definition
+
+The Nearnest mobile MVP does exactly five things. Every screen in this spec must serve one of these bullets.
+
+- **Find a medicine.**
+- **Show nearby stores that have it.**
+- **Show store details and availability.**
+- **Guide / navigate the user to the store.**
+- **Let the user call / contact the store.**
+
+Delivery, cart, checkout, payment, order tracking, and the prescription delivery flow are **Phase 2 / optional**, not MVP. Do not design, scaffold, or route any screen that serves only those flows in MVP.
+
+Scope: customer-facing React Native + Expo screens for the revised MVP. The MVP is **medicine discovery + nearby store availability + map navigation + store contact**. It is not a cart, checkout, payment, order, or delivery product.
 
 Decision baseline:
-- Navigation: expo-router (D-007).
-- Firebase client: Firebase JS SDK plus expo-notifications (D-008).
-- Protected writes: Cloud Functions only (D-005).
-- Roles: custom claims canonical, with users.roles mirror during rollout (D-009).
-- Payments: Razorpay for India MVP (D-010).
-- Places proxy: same functions codebase, server-side Google Places key (D-011).
-- Search: Firestore searchTokens behind searchMedicines callable (D-013).
-- Prescriptions: per-store approval scope (D-014).
+- Navigation: expo-router when scaffold is approved (D-007).
+- Firebase client: Firebase JS SDK plus expo-notifications only if notifications ship (D-008).
+- Places proxy: server-side Places key in the existing Functions codebase (D-011).
+- Search: Firestore `searchTokens[]` behind `searchMedicines` callable (D-013).
+- Commerce decisions D-005, D-006, D-010, and D-014 remain Phase 2 extension points.
 
-Global UI rules:
-- Use the premium, light, minimal medical-trust style from `docs/DESIGN_SYSTEM.md`.
-- Use one primary CTA per screen. Secondary actions are ghost or bordered buttons.
-- Use Inter/system font, 400/500/600 weights, generous whitespace, and accessible 44x44 minimum touch targets.
-- Use `--color-primary-500` for primary actions, `--color-accent-500` for links/info, and the reserved Rx palette for prescription gates.
-- Loading uses skeletons wherever content shape is known. Avoid full-screen spinners except during splash/bootstrap.
-- Errors are inline with retry. Avoid disruptive red toasts for recoverable errors.
-- Any Rx item must show an explicit prescription gate. Checkout remains disabled until every Rx item has approved per-store prescription coverage.
+Global design rules:
+- Use the premium, light, minimal medical-trust system from `docs/DESIGN_SYSTEM.md`.
+- One primary CTA per screen.
+- Primary actions use `--color-primary-500`; links/info use `--color-accent-500`.
+- Rx status is informational in MVP; use the Rx palette for badges/warnings, but do not show approval/checkout gating.
+- Store trust signals, open state, availability freshness, contact, and navigation must stay visible.
+- Loading uses skeletons; errors are inline with retry.
+
+## MVP Screen Set
+
+The MVP needs these screens:
+1. Splash
+2. Welcome / onboarding
+3. Sign in
+4. Sign up
+5. Email verification
+6. Forgot password
+7. Profile setup
+8. Location permission
+9. Address / search-area picker
+10. Home list
+11. Home map
+12. Search
+13. Search results
+14. Store detail
+15. Product / medicine detail
+16. Contact store
+17. Navigation handoff
+18. Profile
+
+The old commerce screens are Phase 2 only: Cart, Checkout, Payment status, Orders list, Order detail, Delivery tracking, Prescription upload/review.
 
 ## 1. Splash
 
 **Purpose**
-- Bootstrap auth, remote config, cached user profile, and first-run routing without exposing a blank screen.
+- Bootstrap auth, cached location/search area, feature flags, and route decisions.
 
 **Layout sections**
-- Centered Nearnest wordmark or symbol.
-- Small loading shimmer or progress dot below the brand.
-- Optional bottom caption: "Finding trusted nearby stores" only if boot lasts longer than 1s.
+- Centered Nearnest brand mark.
+- Small shimmer/progress dot.
+- Optional status text if boot lasts longer than 1s.
 
 **Primary CTA**
-- None. Route automatically.
+- None.
 
 **Secondary actions**
 - None.
 
 **Empty/loading/error states**
-- Loading: brand mark with subtle pulse.
-- Error: small retry panel if Firebase initialization/auth restore fails.
-- Offline: continue with cached session if available; otherwise route to Sign in with inline network message.
+- Loading: subtle brand pulse.
+- Error: inline retry if Firebase/bootstrap fails.
+- Offline: continue with cached discovery data if available; otherwise route to Sign in with network note.
 
 **Components needed**
 - BrandMark, BootStatusText, InlineRetryPanel.
 
 **Firebase/backend dependencies**
-- Firebase Auth current user.
-- Firestore `users/{uid}` profile read if authenticated.
-- Optional cached address/cart from local storage.
+- Firebase Auth current user if auth is enabled.
+- Cached `users/{uid}` and saved location/search area.
 
 **Navigation links**
-- Authenticated + profile complete -> Home list.
-- Authenticated + profile incomplete -> Profile setup.
-- Unauthenticated -> Welcome or Sign in depending first-run flag.
-- Email unverified -> Email verification.
+- Unauthenticated -> Welcome or Sign in.
+- Authenticated -> Home list.
+- Missing search area -> Location permission.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Near-white background, calm primary color, restrained motion.
-- No marketing hero, no decorative gradients, no card wrapper around the brand.
+**Design notes**
+- Near-white background; no hero card or decorative gradient.
 
 ## 2. Welcome / Onboarding
 
 **Purpose**
-- Explain the customer value quickly before sign-in: nearby real stock, pharmacist-approved Rx, and live order tracking.
+- Explain that Nearnest finds nearby stores with a specific medicine and helps users navigate/contact them.
 
 **Layout sections**
-- Full-height pager with 3 slides.
-- Slide 1: nearby stores and real inventory.
-- Slide 2: prescription approval by verified store/pharmacist.
-- Slide 3: payment and delivery tracking.
-- Bottom pagination dots and CTA row.
+- Three-slide pager:
+  - "Find the exact medicine"
+  - "See nearby verified stores"
+  - "Call or navigate before you go"
+- Pagination dots.
+- CTA row.
 
 **Primary CTA**
-- "Get started" -> Sign up on final slide; "Continue" advances earlier slides.
+- "Get started".
 
 **Secondary actions**
-- "Sign in" text button.
-- "Skip" on first two slides to Sign in.
+- "Sign in".
+- "Skip" to location/search if anonymous discovery is allowed.
 
 **Empty/loading/error states**
-- No data loading.
-- If illustration asset missing, use lucide icon in tinted circle.
-- Error state not expected.
+- Static screen; no loading.
+- Use lucide icons if no illustration assets exist.
 
 **Components needed**
 - OnboardingPager, OnboardingSlide, PaginationDots, AuthFooterLinks.
 
 **Firebase/backend dependencies**
 - None.
-- Local first-run flag only.
 
 **Navigation links**
 - Sign up.
 - Sign in.
+- Location permission if skipping auth is allowed.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Display type may use `--font-display`.
-- Keep copy short and clinical; avoid marketplace language.
-- Use trust icons like ShieldCheck, MapPin, Truck.
+**Design notes**
+- Copy must avoid delivery promises. Use MapPin, Search, Phone, ShieldCheck icons.
 
 ## 3. Sign In
 
 **Purpose**
-- Let returning users authenticate with email/password.
+- Let returning users authenticate for saved search areas, recent searches, and preferences.
 
 **Layout sections**
-- Header: "Welcome back" with short support copy.
-- Email input.
-- Password input with show/hide icon.
+- Header.
+- Email field.
+- Password field.
 - Forgot password link.
-- Primary sign-in button.
-- Footer link to Sign up.
+- Primary button.
+- Footer sign-up link.
 
 **Primary CTA**
 - "Sign in".
@@ -121,44 +148,40 @@ Global UI rules:
 **Secondary actions**
 - "Forgot password".
 - "Create account".
-- Phase 2 placeholder area for Google/phone auth should not render in MVP unless available.
+- Optional "Continue as guest" only if backend allows anonymous discovery.
 
 **Empty/loading/error states**
-- Loading: button shows spinner plus "Signing in".
-- Error: inline Auth error under relevant field or form summary.
-- Unverified email: route to Email verification with resend affordance.
+- Loading: button says "Signing in".
+- Error: field-level or form-level inline message.
+- Unverified email: route to Email verification.
 
 **Components needed**
 - AuthShell, TextField, PasswordField, InlineFormError, LoadingButton.
 
 **Firebase/backend dependencies**
 - Firebase Auth `signInWithEmailAndPassword`.
-- `users/{uid}` read after sign-in.
-- `getIdTokenResult(true)` for custom claims when needed.
+- `users/{uid}` read.
 
 **Navigation links**
 - Forgot password.
 - Sign up.
 - Email verification.
-- Profile setup or Home list after auth/profile gate.
+- Home list or Location permission.
 
-**Design notes from DESIGN_SYSTEM.md**
-- One primary button.
-- Use visible focus ring and readable body copy.
-- Errors use danger text inline, not large red banners.
+**Design notes**
+- One primary button; accessible fields and focus states.
 
 ## 4. Sign Up
 
 **Purpose**
-- Create a customer account with enough identity data for safe ordering and profile setup.
+- Create an account for saved search/location preferences and future commerce readiness.
 
 **Layout sections**
-- Header: "Create your Nearnest account".
+- Header.
 - Name, email, phone, password fields.
-- Password strength/help text.
-- Terms and privacy checkbox.
-- Primary submit button.
-- Footer link to Sign in.
+- Terms checkbox.
+- Submit button.
+- Sign-in footer link.
 
 **Primary CTA**
 - "Create account".
@@ -168,91 +191,83 @@ Global UI rules:
 - Terms/privacy links.
 
 **Empty/loading/error states**
-- Loading: button shows "Creating account".
-- Error: field-level validation for email, password, phone; form-level error for Auth failures.
-- Duplicate email: inline message with Sign in shortcut.
+- Loading: "Creating account".
+- Error: inline field validation.
+- Duplicate email: show Sign in shortcut.
 
 **Components needed**
-- AuthShell, TextField, PhoneField, PasswordField, PasswordStrengthMeter, CheckboxRow, LoadingButton.
+- AuthShell, TextField, PhoneField, PasswordField, CheckboxRow, LoadingButton.
 
 **Firebase/backend dependencies**
-- Firebase Auth `createUserWithEmailAndPassword`.
-- Auth email verification send.
-- `onUserCreate` Cloud Function creates `users/{uid}` with default role user.
+- Firebase Auth create account.
+- Email verification send.
+- `onUserCreate` creates `users/{uid}`.
 
 **Navigation links**
-- Email verification after successful account creation.
+- Email verification.
 - Sign in.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Keep terms copy small but legible.
-- Use soft surfaces; do not cram fields.
-- Primary action disabled until required fields and terms are valid.
+**Design notes**
+- Do not mention delivery checkout benefits in MVP copy.
 
 ## 5. Email Verification
 
 **Purpose**
-- Block sensitive actions until the user verifies email.
+- Verify trusted contact before saving profile/preferences and before any future sensitive features.
 
 **Layout sections**
-- Verification icon in soft tinted circle.
-- Title and verified email address.
-- Explanation of why verification matters for prescriptions, orders, and payments.
-- Resend email row with cooldown timer.
-- Primary "I've verified" action.
+- Verification icon.
+- Email address.
+- Short explanation.
+- Resend cooldown.
+- Confirmation button.
 
 **Primary CTA**
-- "I've verified" -> reload user and continue.
+- "I've verified".
 
 **Secondary actions**
 - "Resend email".
-- "Change email" -> Sign up or Profile setup depending implementation.
 - "Sign out".
 
 **Empty/loading/error states**
-- Loading: primary button "Checking".
-- Error: resend failure or reload failure inline.
-- Cooldown: disable resend for 30s with timer.
+- Loading: "Checking".
+- Error: resend/reload failure inline.
+- Cooldown: timer on resend action.
 
 **Components needed**
 - VerificationStatusIcon, CountdownButton, InlineInfo, LoadingButton.
 
 **Firebase/backend dependencies**
-- Firebase Auth `sendEmailVerification`.
-- Firebase Auth `currentUser.reload()`.
-- `users/{uid}.emailVerified` mirror should update through backend/client sync.
+- Firebase Auth verification and reload.
 
 **Navigation links**
-- Profile setup if verified and profile incomplete.
-- Home list if verified and profile complete.
-- Sign in/sign out path.
+- Location permission or Home list.
+- Sign in/sign out.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Use info color for neutral verification state.
-- Keep trust/safety message visible without fear-based wording.
+**Design notes**
+- Use info/success states calmly.
 
 ## 6. Forgot Password
 
 **Purpose**
-- Let users request a password reset email.
+- Send reset email.
 
 **Layout sections**
-- Header: "Reset password".
+- Header.
 - Email input.
-- Primary submit button.
-- Success panel after send.
+- Submit button.
+- Success panel.
 
 **Primary CTA**
 - "Send reset link".
 
 **Secondary actions**
 - "Back to sign in".
-- "Try a different email" after success.
 
 **Empty/loading/error states**
-- Loading: button "Sending".
-- Success: calm confirmation with email address.
-- Error: invalid email or Auth failure inline.
+- Loading: "Sending".
+- Success: confirmation.
+- Error: inline auth error.
 
 **Components needed**
 - AuthShell, TextField, SuccessPanel, LoadingButton.
@@ -263,939 +278,575 @@ Global UI rules:
 **Navigation links**
 - Sign in.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Simple, low-friction form.
-- Success uses `--color-success` sparingly.
+**Design notes**
+- Keep the screen simple and quiet.
 
 ## 7. Profile Setup
 
 **Purpose**
-- Capture the minimum profile and default delivery preference needed before using the app.
+- Capture minimal profile and discovery preferences.
 
 **Layout sections**
-- Header with progress indicator.
-- Name and phone confirmation.
-- Optional avatar picker.
-- Delivery strategy segmented control: nearest, fastest, cheapest.
-- Prompt to add first address or continue to Location permission.
+- Name/phone confirmation.
+- Optional avatar.
+- Preferred search radius.
+- Preferred maps app if needed.
+- Prompt to add search area/address.
 
 **Primary CTA**
 - "Continue".
 
 **Secondary actions**
 - "Add photo".
-- "I'll add address later" only if Home will immediately ask for location/address.
+- "Set location now".
 
 **Empty/loading/error states**
-- Loading: skeleton for existing profile fields.
-- Error: profile save failure inline with retry.
-- Missing required fields: disabled CTA plus helper text.
+- Loading: profile skeleton.
+- Error: save failure with retry.
+- Missing required field: disabled CTA with helper.
 
 **Components needed**
-- ProfileAvatarPicker, TextField, SegmentedControl, PreferenceCard, LoadingButton.
+- ProfileAvatarPicker, TextField, RadiusSelector, LoadingButton.
 
 **Firebase/backend dependencies**
-- Firestore `users/{uid}` read/update for owner fields.
-- Storage `avatars/{uid}/*` for optional avatar.
-- No role writes from client.
+- `users/{uid}` read/update.
+- Optional Storage `avatars/{uid}/*`.
 
 **Navigation links**
 - Location permission.
 - Address picker.
-- Home list after complete.
+- Home list.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Treat profile as a quiet utility surface, not onboarding marketing.
-- Use segmented controls for delivery strategy.
+**Design notes**
+- Replace delivery strategy with discovery radius/preferences.
 
 ## 8. Location Permission
 
 **Purpose**
-- Ask for foreground location at the right moment, while preserving manual address fallback.
+- Ask for location access to rank nearby stores, while offering manual location fallback.
 
 **Layout sections**
-- Location icon or simple map pin illustration.
-- Explanation of nearby inventory and delivery-area checks.
+- Location icon.
+- Why location helps: "show stores near you".
 - Permission CTA.
-- Manual address fallback.
+- Manual search-area fallback.
 
 **Primary CTA**
 - "Use my location".
 
 **Secondary actions**
-- "Enter address manually".
-- "Not now" routes to manual address mode.
+- "Enter area manually".
+- "Not now".
 
 **Empty/loading/error states**
-- Loading: "Checking permission" compact state.
-- Denied: show manual address fallback as primary next step.
-- Error: OS/location service unavailable message with retry.
+- Loading: checking permission.
+- Denied: manual address picker becomes primary.
+- Error: OS location unavailable with retry.
 
 **Components needed**
-- PermissionPrimer, IconCircle, InlineError, SecondaryButton.
+- PermissionPrimer, IconCircle, InlineError.
 
 **Firebase/backend dependencies**
-- Device location permission via Expo APIs after scaffold.
-- `reverseGeocode` callable for detected coordinates.
-- `nearbyStores` callable after location/address confirmed.
+- Expo location after scaffold.
+- `reverseGeocode`.
+- `nearbyStores`.
 
 **Navigation links**
 - Address picker.
-- Home list if permission succeeds and address is resolved.
+- Home list.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Clear, respectful copy.
-- No dark permission overlay; use near-white background and primary CTA.
+**Design notes**
+- No delivery-area language; say "nearby stores" and "directions".
 
-## 9. Address Picker
+## 9. Address / Search-Area Picker
 
 **Purpose**
-- Select, save, and switch delivery addresses used for nearby stores, cart, and checkout.
+- Let users choose where to search from.
 
 **Layout sections**
-- Search input for Places.
-- Saved addresses list.
-- Map preview with draggable pin for selected result.
-- Address form bottom sheet: label, line details, recipient name/phone.
-- Confirm bar.
+- Places search field.
+- Saved areas/addresses.
+- Map pin picker.
+- Confirm sheet.
 
 **Primary CTA**
-- "Use this address" or "Save address".
+- "Search from here".
 
 **Secondary actions**
 - "Use current location".
+- "Save this area".
 - "Edit details".
-- "Delete" for saved address, destructive only in confirm flow.
 
 **Empty/loading/error states**
-- Empty: no saved addresses, show manual entry/search prompt.
-- Loading: search result skeleton rows.
-- Error: Places/geocode failure inline, allow manual entry.
+- Empty: prompt to enter locality/pincode/landmark.
+- Loading: Places result skeletons.
+- Error: Places/geocode failure with manual fallback.
 
 **Components needed**
-- PlacesSearchInput, SavedAddressRow, MapPinPicker, AddressFormSheet, LabelChips.
+- PlacesSearchInput, SavedAddressRow, MapPinPicker, AddressFormSheet.
 
 **Firebase/backend dependencies**
-- `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode` callables.
-- Firestore `users/{uid}/addresses/{addressId}` CRUD.
-- `nearbyStores` after selection.
+- `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode`.
+- `users/{uid}/addresses/{addressId}` if signed in.
 
 **Navigation links**
-- Return to previous screen (Home, Cart, Checkout, Profile).
-- Location permission if current location requested and not granted.
+- Home list.
+- Home map.
+- Search results if launched from search.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Use map as functional element, not decoration.
-- Keep address cards compact with clear default badge.
+**Design notes**
+- Map is functional. Keep saved address rows compact.
 
 ## 10. Home List
 
 **Purpose**
-- Show verified nearby stores that can deliver to the selected address.
+- Show verified stores near the selected search area and provide quick entry to medicine search.
 
 **Layout sections**
-- Header with address chip, notification bell, profile/avatar shortcut.
-- Search bar entry point.
-- List/map segmented toggle.
-- Nearby store cards sorted by selected delivery strategy.
-- Category chips and service-area notes.
-- Sticky cart bar when cart has items.
+- Header with search area chip.
+- Search bar.
+- List/map toggle.
+- Nearby verified store cards.
+- Optional "recent medicine searches".
 
 **Primary CTA**
-- Store card tap -> Store detail.
+- Tap Search bar -> Search.
 
 **Secondary actions**
-- Address chip -> Address picker.
-- Search bar -> Search.
-- Map toggle -> Home map.
-- Notification bell -> Notifications inbox.
+- Store card -> Store detail.
+- Call store from card if phone exists.
+- Navigate from card.
+- Toggle Map.
 
 **Empty/loading/error states**
-- Loading: store-card skeletons.
-- Empty: "No verified stores deliver here yet" with change-address CTA.
-- Error: retry nearby stores fetch.
-- Location missing: show address picker prompt.
+- Loading: store card skeletons.
+- Empty: no verified stores nearby; widen radius/change area.
+- Error: retry nearby store load.
 
 **Components needed**
-- AppHeader, AddressChip, SearchFieldButton, SegmentedToggle, StoreCard, VerifiedBadge, StickyCartBar.
+- AppHeader, SearchFieldButton, AddressChip, StoreCard, VerifiedBadge, RadiusControl.
 
 **Firebase/backend dependencies**
-- `nearbyStores` callable.
-- Firestore `stores/{id}` data as returned/enriched by backend.
-- Firestore `carts/{uid}` listener or local cart store.
-- Notifications unread count from `notifications/{uid}/items`.
+- `nearbyStores`.
+- Store data with public contact and location.
 
 **Navigation links**
-- Address picker.
-- Home map.
 - Search.
+- Home map.
 - Store detail.
-- Cart.
-- Notifications inbox.
+- Address picker.
+- Contact store.
+- Navigation handoff.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Store cards use thumbnail 4:3, verified badge, distance, ETA, rating.
-- Keep list scannable and calm; avoid dense marketplace badges.
+**Design notes**
+- Store cards emphasize verified, open now, distance, contact, directions.
+- No sticky cart bar in MVP.
 
 ## 11. Home Map
 
 **Purpose**
-- Provide spatial browsing for nearby verified stores.
+- Let users spatially browse nearby stores and select one for details/directions.
 
 **Layout sections**
-- Header overlay with address chip and list toggle.
-- Full-screen map with clustered store pins.
-- "Search this area" pill after map drag.
-- Bottom sheet preview for selected store.
-- Sticky cart bar if cart active.
+- Full-screen map.
+- Header overlay with search area chip.
+- Store pins/clusters.
+- Selected store bottom sheet with call/navigate/detail actions.
+- "Search this area" pill.
 
 **Primary CTA**
-- Bottom sheet "View store".
+- "Navigate" from selected store sheet.
 
 **Secondary actions**
-- Toggle back to List.
+- "View details".
+- "Call".
 - Recenter.
-- Search this area.
-- Address chip.
+- Toggle List.
 
 **Empty/loading/error states**
-- Loading: map with skeleton bottom sheet.
-- Empty: map centered on address with no-store message sheet.
+- Loading: map with skeleton sheet.
+- Empty: no-store sheet.
 - Error: map unavailable fallback to Home list.
-- Permission denied: use selected address, not GPS.
 
 **Components needed**
 - StoreMap, ClusterPin, SelectedStoreSheet, RecenterButton, SearchAreaPill.
 
 **Firebase/backend dependencies**
-- `nearbyStores` callable with map bounds/radius.
-- Google Maps SDK rendering key after Expo setup.
-- Places proxy only for address changes/search.
+- `nearbyStores`.
+- Store coordinates/geohash.
+- Maps rendering key.
 
 **Navigation links**
-- Home list.
 - Store detail.
+- Contact store.
+- Navigation handoff.
 - Address picker.
-- Cart.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Map should be full-bleed/unframed.
-- Use bottom sheet as tool surface, not decorative card nesting.
+**Design notes**
+- Full-bleed functional map; no decorative container.
 
 ## 12. Search
 
 **Purpose**
-- Start global medicine search and show recent/saved searches before results.
+- Search for a specific medicine, brand, or salt.
 
 **Layout sections**
-- Focused search input at top.
+- Focused search input.
 - Recent searches.
-- Saved searches or requested medicines.
-- Popular nearby categories as chips.
-- Filters collapsed until query exists.
+- Popular categories/chips.
+- Optional filters collapsed until query exists.
 
 **Primary CTA**
-- Submit query or tap suggestion.
+- Submit query.
 
 **Secondary actions**
-- Clear input.
-- Delete recent search.
-- Filter chips after query.
+- Tap recent search.
+- Clear query.
+- Change search area.
 
 **Empty/loading/error states**
-- Empty: prompt to search brand or salt name.
-- Loading: typeahead suggestions skeleton.
-- Error: search service unavailable inline.
-- Query too short: helper text for minimum 2 characters.
+- Empty: prompt to search by medicine or salt.
+- Loading: suggestions skeleton.
+- Error: search unavailable with retry.
+- Query too short: helper for minimum 2 characters.
 
 **Components needed**
-- SearchInput, RecentSearchRow, SuggestionRow, FilterChips, EmptyPrompt.
+- SearchInput, RecentSearchRow, SuggestionRow, FilterChips.
 
 **Firebase/backend dependencies**
-- `searchMedicines` callable after minimum query length.
-- Optional local storage for recent searches.
-- Selected address/location from profile/address state.
+- `searchMedicines`.
+- Local recent searches or `users/{uid}` metadata.
 
 **Navigation links**
 - Search results.
-- Home list via back/tab.
+- Address picker.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Keep search utilitarian.
-- Icons from lucide-react-native: Search, Clock, SlidersHorizontal.
+**Design notes**
+- Fast, utilitarian, large tap targets.
 
 ## 13. Search Results
 
 **Purpose**
-- Show canonical medicine results and ranked in-stock nearby store availability.
+- Show matching medicine(s) and nearby stores that currently have them.
 
 **Layout sections**
-- Search input with query retained.
-- Filter/sort row: nearest, fastest, cheapest, Rx/OTC, open now.
-- Medicine result groups.
-- Availability rows under each medicine: store, price, ETA, stock, Rx badge.
+- Search input with query.
+- Sort/filter row: nearest, open now, price, radius, Rx/OTC.
+- Medicine result group.
+- Store availability rows.
 
 **Primary CTA**
-- Tap availability row -> Store detail pre-scrolled to SKU.
+- Tap availability row -> Store detail.
 
 **Secondary actions**
-- Tap medicine title -> Product detail.
-- Change sort/filter.
-- "Notify me" for no availability.
-- "Request medicine" for no results.
+- "Call".
+- "Navigate".
+- Tap medicine -> Product detail.
+- Widen radius/change area.
 
 **Empty/loading/error states**
-- Loading: result group skeletons.
-- Empty: no nearby store has this, show notify/request actions.
-- Error: retry search.
-- Partial result: show stale/cached label if backend returns cached data.
+- Loading: result skeletons.
+- Empty: widen radius, edit query, optional "Notify me" if backend supports it.
+- Error: retry.
+- Stale data: show updated timestamp/freshness.
 
 **Components needed**
-- ResultMedicineCard, AvailabilityRow, SortControl, RxBadge, EmptySearchState.
+- ResultMedicineCard, AvailabilityRow, SortControl, RxBadge, FreshnessLabel.
 
 **Firebase/backend dependencies**
-- `searchMedicines` callable.
-- `medicines/{medicineId}` canonical fields in response.
-- Store/inventory availability returned by backend.
+- `searchMedicines`.
+- Store/inventory/medicine response.
 
 **Navigation links**
-- Product detail.
 - Store detail.
-- Address picker if location missing.
+- Product detail.
+- Contact store.
+- Navigation handoff.
+- Address picker.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Product cards show square image, body name, h3 price, Rx badge.
-- Use prescription badge consistently and never hide Rx status in secondary text.
+**Design notes**
+- Availability rows must make call/navigate easy.
+- Avoid "buy" or "add to cart" language.
 
 ## 14. Store Detail
 
 **Purpose**
-- Show a verified store's inventory, trust signals, hours, and products.
+- Show the selected store's trust, contact, address, hours, map, and relevant availability.
 
 **Layout sections**
-- Store header: image, name, verified badge, license hint, rating, distance, ETA, open state.
-- Mini map with Directions CTA.
-- Category chips.
-- Search within store.
-- Product list/grid.
-- Sticky cart bar.
+- Store header with verified badge and open state.
+- Public contact actions.
+- Address and mini-map.
+- Hours and license/verification hint.
+- Available medicines/products list.
+- "Medicine you searched for" highlight when applicable.
 
 **Primary CTA**
-- Add product to cart from product rows/cards.
+- "Navigate".
 
 **Secondary actions**
-- Directions.
-- Call store if policy allows.
-- Search within store.
-- Tap product -> Product detail.
+- "Call store".
+- "Search in this store".
+- "Report stale info".
+- Tap medicine -> Product detail.
 
 **Empty/loading/error states**
-- Loading: header and product skeletons.
-- Empty: no active inventory in selected category.
-- Error: retry store/inventory load.
-- Closed store: show closed banner and allow browsing; checkout may be disabled or scheduled when Phase 2.
+- Loading: header and inventory skeletons.
+- Empty: no active visible inventory; still show contact/navigation.
+- Error: retry store load.
+- Closed: show hours and allow navigation/call.
 
 **Components needed**
-- StoreHeader, VerifiedBadge, MiniMap, CategoryChips, ProductCard, QuantityStepper, StickyCartBar.
+- StoreHeader, VerifiedBadge, ContactActionRow, MiniMap, HoursPanel, ProductAvailabilityRow.
 
 **Firebase/backend dependencies**
-- Firestore `stores/{storeId}` read.
-- Firestore `stores/{storeId}/inventory` query.
-- Cart state `carts/{uid}` or local cart wrapper.
+- `stores/{storeId}`.
+- `stores/{storeId}/inventory`.
+- Store public contact fields.
 
 **Navigation links**
 - Product detail.
-- Cart.
-- Address picker if service area mismatch.
-- Home list/map.
+- Contact store.
+- Navigation handoff.
+- Home map/list.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Trust signals must be first-viewport content.
-- Store card visual language should match Home list.
+**Design notes**
+- Trust signals first viewport.
+- Primary action is navigate, not checkout.
 
-## 15. Product Detail
+## 15. Product / Medicine Detail
 
 **Purpose**
-- Help the user decide whether a medicine/product is appropriate and add it to cart safely.
+- Explain the medicine and show where nearby it is available.
 
 **Layout sections**
-- Product image carousel.
 - Name, salt, form, strength, pack size.
-- Price, MRP, savings if available.
-- Rx required warning block when applicable.
-- Store availability context.
-- Usage/safety notes.
-- Alternatives by same salt (Phase 2 or MVP-light if data exists).
-- Bottom add-to-cart bar.
+- Rx badge and informational warning if needed.
+- Safety/usage notes.
+- Nearby available store list.
+- Alternatives by same salt if available.
 
 **Primary CTA**
-- "Add to cart" or quantity stepper once added.
-
-**Secondary actions**
-- "Attach prescription" for Rx item.
-- "Compare alternatives" if available.
-- Back to store/search.
-
-**Empty/loading/error states**
-- Loading: image and text skeleton.
-- Error: product unavailable with back/retry.
-- Out of stock: disable add, show notify action.
-- Rx missing: add allowed, checkout gate remains blocked.
-
-**Components needed**
-- ProductHero, PriceBlock, RxGateCard, StoreAvailabilityList, SafetyInfoAccordion, AddToCartBar.
-
-**Firebase/backend dependencies**
-- `medicines/{medicineId}` read or response from search.
-- `stores/{storeId}/inventory/{sku}` read.
-- Prescription state for the selected store if Rx.
-- Cart state.
-
-**Navigation links**
-- Cart.
-- Prescription upload/status.
-- Store detail.
-- Search results.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Use reserved Rx warning pattern exactly.
-- Medical safety text should be readable, not hidden in tiny accordions only.
-
-## 16. Cart
-
-**Purpose**
-- Review one-store cart, adjust quantities, attach prescriptions, and proceed to checkout.
-
-**Layout sections**
-- Store name and single-store constraint note.
-- Line items with quantity steppers.
-- Rx gate blocks for Rx items.
-- Delivery address summary.
-- Server-estimated totals preview.
-- Checkout bar.
-
-**Primary CTA**
-- "Checkout".
-
-**Secondary actions**
-- Change address.
-- Attach/view prescription.
-- Remove item.
-- Continue shopping.
-
-**Empty/loading/error states**
-- Empty: cart icon, "Your cart is empty", CTA to Home/Search.
-- Loading: line-item skeletons and total skeleton.
-- Error: compute total failure with retry.
-- Stock changed: modal with accept new quantity/remove options.
-- Rx missing/pending/rejected: checkout disabled with helper text.
-
-**Components needed**
-- CartLineItem, QuantityStepper, RxGateCard, AddressSummaryCard, PriceSummary, StickyCheckoutBar.
-
-**Firebase/backend dependencies**
-- Firestore `carts/{uid}` or local persisted cart.
-- `computeCartTotal` callable.
-- `prescriptions` query for matching approved store-scoped docs.
-
-**Navigation links**
-- Checkout.
-- Address picker.
-- Prescription upload/status.
-- Store detail/Product detail.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Checkout primary button disabled until Rx gate is satisfied.
-- Use secondary CTA for prescription upload, not primary.
-
-## 17. Prescription Upload
-
-**Purpose**
-- Upload prescription pages for a specific store and medicine set, then create a pending review.
-
-**Layout sections**
-- Context header: store and medicines requiring Rx.
-- Source chooser: camera, gallery, PDF.
-- Page preview/reorder/delete.
-- Optional doctor fields.
-- Safety note about pharmacist review.
-- Submit bar.
-
-**Primary CTA**
-- "Submit for review".
-
-**Secondary actions**
-- Add page.
-- Retake/replace page.
-- Save draft/cancel.
-
-**Empty/loading/error states**
-- Empty: source chooser with guidance.
-- Loading: upload progress per page.
-- Error: upload failure per page with retry.
-- File invalid: size/type message before upload.
-
-**Components needed**
-- PrescriptionContextHeader, UploadSourceButtons, PagePreviewGrid, DoctorInfoFields, UploadProgressList.
-
-**Firebase/backend dependencies**
-- `uploadPrescription` callable returns doc ID and signed upload URLs.
-- Storage upload to `prescriptions/{uid}/{prescriptionId}/pages/*`.
-- `onPrescriptionCreate` trigger notifies store staff.
-
-**Navigation links**
-- Prescription status after submit.
-- Cart/Checkout return path.
-- Product detail return path.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Use Rx palette and safety framing.
-- Keep upload controls large and one-hand friendly.
-- Never show "approved" locally after upload; only pending until backend state changes.
-
-## 18. Prescription Status
-
-**Purpose**
-- Show lifecycle state for a prescription and next actions.
-
-**Layout sections**
-- State header: pending, approved, rejected, expired.
-- Store scope and reviewed-by metadata if available.
-- Medicines covered.
-- Uploaded pages preview.
-- Notes/rejection reason.
-- Linked order references if any.
-
-**Primary CTA**
-- Pending: none or "Back to cart".
-- Approved: "Use in cart" when launched from cart.
-- Rejected/expired: "Upload new".
-
-**Secondary actions**
-- View pages.
-- Contact support.
-- Re-submit to another store when needed per D-014.
-
-**Empty/loading/error states**
-- Loading: status skeleton.
-- Error: not found/no access with back to prescriptions list.
-- Pending stale: show expected review time and support link.
-
-**Components needed**
-- PrescriptionStatusHeader, StatusPill, MedicineCoverageList, PagePreviewStrip, NotesPanel.
-
-**Firebase/backend dependencies**
-- Firestore `prescriptions/{prescriptionId}` listener.
-- Storage read access for owner page previews.
-- `onPrescriptionStateChange` notifications.
-
-**Navigation links**
-- Cart/Checkout.
-- Prescription upload.
-- Support chat/home.
-- Product detail.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Status chip colors: warning pending, success approved, danger rejected, muted expired.
-- Keep approval state visible; do not bury it.
-
-## 19. Checkout
-
-**Purpose**
-- Confirm address, totals, Rx readiness, and payment method before creating an order.
-
-**Layout sections**
-- Address card.
-- Delivery timing: ASAP for MVP.
-- Item summary.
-- Rx readiness section.
-- Payment method picker: UPI, card, netbanking, wallet, COD if store supports.
-- Price breakdown.
-- Place order bar.
-
-**Primary CTA**
-- "Place order".
-
-**Secondary actions**
-- Change address.
-- Change payment method.
-- Edit cart.
-- Attach prescription.
-
-**Empty/loading/error states**
-- Loading: compute totals skeleton.
-- Error: total computation/order creation failure with retry.
-- Out of stock: affected items modal.
-- Address outside service area: change address or return to store.
-- Rx incomplete: disabled primary and helper text.
-
-**Components needed**
-- CheckoutAddressCard, PaymentMethodPicker, PriceSummary, RxGateCard, OrderReviewList, LoadingButton.
-
-**Firebase/backend dependencies**
-- `computeCartTotal` callable.
-- `createOrder` callable.
-- `createPaymentOrder` callable for non-COD.
-- `prescriptions` approved state.
-- Firestore `users/{uid}/addresses`.
-
-**Navigation links**
-- Payment status after order/payment starts.
-- Address picker.
-- Cart.
-- Prescription upload/status.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Money values use tabular numerals.
-- Only one primary CTA.
-- Rx gate must use reserved warning pattern.
-
-## 20. Payment Status
-
-**Purpose**
-- Handle payment handoff, confirmation, failure, retry, and order transition visibility.
-
-**Layout sections**
-- Current payment state: processing, success, failed, pending webhook, COD confirmed.
-- Order summary card.
-- Retry or view order action.
-- Support link for payment issue.
-
-**Primary CTA**
-- Success/COD: "View order".
-- Failed: "Retry payment".
-- Pending: "Check status".
-
-**Secondary actions**
-- "Change payment method" when still pending.
-- "Contact support".
-- "Back to orders".
-
-**Empty/loading/error states**
-- Loading: processing state with clear non-dismiss warning during provider handoff.
-- Pending webhook: show "Payment confirmation may take a moment".
-- Failed: provider reason if safe to show.
-- Error: verification failure with retry.
-
-**Components needed**
-- PaymentStateIcon, OrderSummaryCard, LoadingButton, InlineSupportLink.
-
-**Firebase/backend dependencies**
-- Razorpay SDK/WebView result.
-- `verifyPaymentClient` callable.
-- Firestore `orders/{orderId}` and `payments/{paymentId}` listeners.
-- `paymentsWebhook` is source of truth.
-
-**Navigation links**
-- Order detail.
-- Checkout for retry/change method.
-- Support home/chat.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Use success/info/danger state colors sparingly.
-- Avoid implying payment success until backend confirms it.
-
-## 21. Orders List
-
-**Purpose**
-- Let users track active orders and review past orders.
-
-**Layout sections**
-- Header with filter tabs: Active, Past.
-- Active order cards with status, ETA, store, total.
-- Past order cards with delivered/cancelled/refunded state.
-- Reorder affordance on eligible past orders.
-
-**Primary CTA**
-- Tap order card -> Order detail.
-
-**Secondary actions**
-- Filter toggle.
-- Reorder.
-- Help for active order.
-
-**Empty/loading/error states**
-- Loading: order-card skeletons.
-- Empty active: no active orders, CTA to Search.
-- Empty past: no order history yet.
-- Error: retry orders query.
-
-**Components needed**
-- OrderCard, StatusPill, FilterTabs, EmptyOrdersState, ReorderButton.
-
-**Firebase/backend dependencies**
-- Firestore `orders` query by `buyerUid`.
-- Optional `reorderFromOrder` callable for reorder.
-- `notifications` deep links may route here.
-
-**Navigation links**
-- Order detail.
-- Search.
-- Support chat/home.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Order cards use compact status pill with color at 12% alpha background.
-- Timestamps and order IDs use caption/mono styles.
-
-## 22. Order Detail
-
-**Purpose**
-- Single source of truth for order state, delivery tracking, support, and receipt context.
-
-**Layout sections**
-- Header: order number, store, placed time, total.
-- Status stepper.
-- Live map when out_for_delivery; otherwise progress summary.
-- Items list.
-- Prescription attached section if any.
-- Payment summary.
-- Event log collapsed by default.
-- Action row: Call store, Help, Cancel/request cancellation, Reorder.
-
-**Primary CTA**
-- Active delivery: context CTA such as "Track delivery" if map collapsed.
-- Delivered: "Reorder".
-- Problem state: "Get help".
+- Select a store availability row -> Store detail.
 
 **Secondary actions**
 - Call store.
-- View receipt.
-- Cancel before preparing.
-- Open support.
+- Navigate.
+- Compare alternatives if available.
 
 **Empty/loading/error states**
-- Loading: detail skeleton.
-- Error/not found/no access: inline panel and back to Orders.
-- Stale delivery location: ETA "Updating".
-- Out of stock/refunded: show clear resolution panel.
+- Loading: medicine skeleton.
+- Error: unavailable medicine detail with retry/back.
+- No available stores: widen radius/change area/notify me optional.
 
 **Components needed**
-- OrderHeader, OrderStatusStepper, DeliveryMap, ItemSummaryList, EventLog, PaymentSummary, ActionRow.
+- ProductHero, MedicineFacts, RxInfoCard, StoreAvailabilityList, SafetyInfoAccordion.
 
 **Firebase/backend dependencies**
-- Firestore `orders/{orderId}` listener.
-- Firestore `orders/{orderId}/events` listener.
-- Firestore `deliveries/{deliveryId}` listener when active.
-- `cancelOrder` callable.
-- `reorderFromOrder` callable.
+- `medicines/{medicineId}`.
+- Availability from `searchMedicines` or inventory query.
 
 **Navigation links**
 - Store detail.
-- Support chat.
-- Orders list.
-- Product detail for item rows if available.
+- Contact store.
+- Navigation handoff.
+- Search results.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Use the order/delivery stepper pattern.
-- Delivery map is full-width functional content.
-- Trust timestamps must remain visible.
+**Design notes**
+- Rx copy: "Prescription may be required by the store/pharmacist." Do not show approval workflow in MVP.
 
-## 23. Notifications Inbox
+## 16. Contact Store
 
 **Purpose**
-- Give users an in-app record of order, prescription, payment, and system notifications.
+- Give a focused contact surface when direct call/message needs context.
 
 **Layout sections**
-- Header with unread count.
-- Category filters: All, Orders, Prescriptions, Payments, System.
-- Notification list grouped by date.
-- Read/unread indicator.
+- Store summary.
+- Public phone number / call action.
+- Optional WhatsApp/message action if store provides it.
+- Hours/open-state note.
+- Searched medicine context.
 
 **Primary CTA**
-- Tap notification -> deep link target.
+- "Call store".
 
 **Secondary actions**
-- Mark all read.
-- Filter category.
-- Notification settings link.
+- "Navigate".
+- "View store".
+- "Report wrong number".
 
 **Empty/loading/error states**
-- Loading: list skeleton.
-- Empty: quiet icon and "No notifications yet".
-- Error: retry inbox fetch.
+- Loading: contact skeleton.
+- Missing phone: show "Contact unavailable" and offer navigate/report.
+- Error: retry store contact load.
 
 **Components needed**
-- NotificationRow, CategoryFilterTabs, UnreadDot, EmptyInboxState.
+- StoreSummaryCard, ContactActionRow, HoursStatus, ReportIssueLink.
 
 **Firebase/backend dependencies**
-- Firestore `notifications/{uid}/items` query.
-- Owner update of `readAt`.
-- FCM token registered via `registerFcmToken`.
+- `stores/{storeId}` public contact fields.
+- Optional `reportInventoryIssue` / support ticket in Phase 2.
 
 **Navigation links**
-- Order detail.
-- Prescription status.
-- Support chat.
-- Profile notification settings.
+- Store detail.
+- Navigation handoff.
+- Support/report issue optional.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Inbox is not a bottom tab; open from bell.
-- Keep rows compact and readable; use icons for category scan.
+**Design notes**
+- Use phone icon button with clear label. Do not expose non-public owner contact.
 
-## 24. Support Home
+## 17. Navigation Handoff
 
 **Purpose**
-- Help users create or continue support tickets for orders, payments, prescriptions, or account issues.
+- Confirm the selected destination and hand off to the user's map app.
 
 **Layout sections**
-- Topic cards: Order issue, Payment issue, Prescription issue, Account/Other.
-- Open tickets list.
-- FAQ/search section.
-- Optional context card when launched from order/prescription.
+- Store name and address.
+- Distance estimate.
+- Map preview.
+- Map app choices if multiple are available.
 
 **Primary CTA**
-- "Start support request" for selected topic.
+- "Open directions".
 
 **Secondary actions**
-- Open existing ticket.
-- Search FAQ.
-- Back to originating order/prescription.
+- "Call store".
+- "Back to store".
 
 **Empty/loading/error states**
-- Loading: ticket skeleton rows.
-- Empty tickets: show topic cards only.
-- Error: retry ticket load.
+- Loading: resolving route/address.
+- Error: cannot open maps; show copy address fallback.
+- Missing coordinates: show address and call action.
 
 **Components needed**
-- SupportTopicCard, TicketRow, FAQSearch, ContextSummaryCard.
+- DestinationSummary, MiniMap, MapAppPicker, CopyAddressButton.
 
 **Firebase/backend dependencies**
-- Firestore `supportTickets` query by owner.
-- `createSupportTicket` callable.
+- Store coordinates/address.
+- Device maps linking.
+- No Cloud Function required unless route estimates are server-side.
 
 **Navigation links**
-- Support chat.
-- Order detail.
-- Prescription status.
-- Profile.
+- External maps app.
+- Store detail.
+- Contact store.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Support should feel calm and accountable.
-- Avoid red warning styling unless the issue is destructive/urgent.
+**Design notes**
+- Keep the handoff utilitarian. Map content is functional, not decorative.
 
-## 25. Support Chat
+## 18. Profile
 
 **Purpose**
-- Provide threaded conversation between user and support team, optionally tied to an order/store/prescription.
+- Manage account, saved search areas, recent searches, preferences, support/legal, and sign out.
 
 **Layout sections**
-- Ticket header: subject, status, linked context.
-- Message list.
-- Composer with attachment option.
-- Status/resolution banner.
-
-**Primary CTA**
-- Send message.
-
-**Secondary actions**
-- Attach image/PDF if enabled.
-- Mark resolved/close request when allowed.
-- View linked order/prescription.
-
-**Empty/loading/error states**
-- Loading: message skeleton.
-- Empty: first-message composer prompt.
-- Error: failed send retry on message bubble.
-- Closed ticket: composer disabled, reopen/support CTA if allowed.
-
-**Components needed**
-- ChatHeader, MessageBubble, Composer, AttachmentPreview, TicketStatusBanner.
-
-**Firebase/backend dependencies**
-- Firestore `supportTickets/{ticketId}` read.
-- Firestore `supportTickets/{ticketId}/messages` listener.
-- `postSupportMessage` callable.
-- Optional Storage path for attachments.
-
-**Navigation links**
-- Support home.
-- Order detail.
-- Prescription status.
-- Notification deep links.
-
-**Design notes from DESIGN_SYSTEM.md**
-- Use clear ownership in bubbles without noisy color.
-- Attachment controls must meet touch target sizing.
-
-## 26. Profile
-
-**Purpose**
-- Manage account, addresses, prescriptions, notification preferences, delivery preferences, legal links, and sign-out.
-
-**Layout sections**
-- Profile header: avatar, name, email, phone, verification status.
-- Saved addresses summary.
-- My prescriptions shortcut.
-- Orders shortcut.
-- Preferences: delivery strategy, notification categories, language placeholder.
-- Support shortcut.
+- Profile header.
+- Saved search areas/addresses.
+- Recent searches.
+- Preferred radius.
+- Notification preference only if notify-me ships.
+- Support/report issue.
 - Legal/about/version.
 - Sign out.
 
 **Primary CTA**
-- Contextual: "Complete profile" if incomplete; otherwise no single dominant CTA.
+- "Add search area" if none exists; otherwise no dominant CTA.
 
 **Secondary actions**
 - Edit profile.
-- Manage addresses.
-- Manage notifications.
-- View prescriptions.
+- Manage saved areas.
+- Clear recent searches.
 - Sign out.
 
 **Empty/loading/error states**
 - Loading: profile skeleton.
-- Error: retry profile load.
-- Missing phone/address: show completion prompt.
-- Sign-out failure: inline message near sign-out row.
+- Error: retry.
+- No saved areas: prompt to add one.
 
 **Components needed**
-- ProfileHeader, SettingsRow, AddressSummaryCard, PreferenceSegmentedControl, SignOutButton.
+- ProfileHeader, SettingsRow, SavedAreaCard, RadiusSelector, SignOutButton.
 
 **Firebase/backend dependencies**
-- Firestore `users/{uid}` read/update for owner fields.
-- Firestore `users/{uid}/addresses` query.
-- Firestore `prescriptions` query by owner.
+- `users/{uid}`.
+- `users/{uid}/addresses`.
 - Firebase Auth sign out.
-- Storage avatar path `avatars/{uid}/*`.
 
 **Navigation links**
-- Profile setup/edit profile.
-- Address picker/manage addresses.
-- Prescription status/list.
-- Orders list.
-- Notifications inbox/settings.
-- Support home.
+- Address picker.
+- Search.
+- Support/report issue optional.
 - Auth stack after sign out.
 
-**Design notes from DESIGN_SYSTEM.md**
-- Keep profile utilitarian and scan-friendly.
-- Use cards for individual repeated items only; do not nest cards.
-- Sign out is secondary/destructive-adjacent but not bright red unless confirming.
+**Design notes**
+- Remove orders, prescriptions, cart, delivery preferences from MVP profile.
 
-## Cross-Screen Component Inventory
+## Phase 2 / Optional Screens
+
+These are intentionally not part of discovery MVP. Do not scaffold or route them until the user explicitly expands scope.
+
+### Cart
+- Phase 2 commerce screen.
+- Requires cart state, totals, Rx gate, and `computeCartTotal`.
+- Not present in MVP navigation.
+
+### Checkout
+- Phase 2 commerce screen.
+- Requires `createOrder`, Rx validation, address serviceability, and payment handoff.
+- Not present in MVP navigation.
+
+### Payment Status
+- Phase 2 commerce screen.
+- D-010 selects Razorpay when this scope returns.
+- Requires `createPaymentOrder`, `paymentsWebhook`, and `verifyPaymentClient`.
+
+### Orders List / Order Detail
+- Phase 2 commerce/delivery screens.
+- Requires `orders`, `orders/{id}/events`, cancellation/reorder, and later delivery state.
+- Not present in MVP tabs.
+
+### Delivery Tracking
+- Phase 2 only.
+- Requires `deliveries`, driver assignment, and location updates.
+
+### Prescription Upload / Prescription Status
+- Phase 2 if in-app ordering/delivery of Rx medicines ships.
+- In discovery MVP, show only an Rx informational badge and tell users to contact the store.
+
+### Notifications Inbox
+- Optional MVP only if saved-search/notify-me ships.
+- Otherwise Phase 2 for order/payment/prescription notifications.
+
+### Support Chat
+- Optional MVP for reporting stale availability.
+- Full ticket chat can wait for Phase 2.
+
+## MVP Component Inventory
 
 - AuthShell, TextField, PasswordField, PhoneField, LoadingButton, InlineFormError.
-- AppHeader, AddressChip, NotificationBell, SegmentedToggle, FilterTabs.
-- StoreCard, StoreHeader, VerifiedBadge, ProductCard, ProductHero, PriceBlock.
-- RxBadge, RxGateCard, PrescriptionStatusHeader, PagePreviewGrid.
-- CartLineItem, QuantityStepper, StickyCartBar, PriceSummary.
-- PaymentMethodPicker, PaymentStateIcon, OrderCard, OrderStatusStepper.
-- StoreMap, DeliveryMap, SelectedStoreSheet, MiniMap.
-- NotificationRow, SupportTopicCard, TicketRow, MessageBubble, Composer.
+- AppHeader, AddressChip, SearchFieldButton, SearchInput, FilterChips.
+- StoreCard, StoreHeader, VerifiedBadge, ContactActionRow, HoursPanel.
+- StoreMap, MiniMap, SelectedStoreSheet, RecenterButton, SearchAreaPill.
+- ResultMedicineCard, AvailabilityRow, ProductAvailabilityRow, FreshnessLabel.
+- ProductHero, MedicineFacts, RxBadge, RxInfoCard, SafetyInfoAccordion.
+- DestinationSummary, MapAppPicker, CopyAddressButton.
+- ProfileHeader, SavedAreaCard, RadiusSelector.
 - EmptyState, SkeletonList, InlineRetryPanel.
 
-## Backend Dependency Map By Screen Group
+## Backend Dependency Map
 
-- Auth/Profile: Firebase Auth, `users/{uid}`, `onUserCreate`, `setUserRole` only for admin-side role changes, avatar Storage.
-- Location/Home/Search: `nearbyStores`, `searchMedicines`, `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode`, `stores`, `inventory`, `medicines`.
-- Cart/Checkout/Payment: `carts/{uid}`, `computeCartTotal`, `createOrder`, `createPaymentOrder`, `paymentsWebhook`, `verifyPaymentClient`.
-- Prescriptions: `uploadPrescription`, `reviewPrescription`, `expirePrescriptions`, `onPrescriptionCreate`, `onPrescriptionStateChange`, `prescriptions`, prescription Storage path.
-- Orders/Delivery: `orders`, `orders/{id}/events`, `deliveries`, `cancelOrder`, `updateOrderStatus`, `assignDelivery`, `markDelivered`.
-- Notifications/Support: `registerFcmToken`, `sendNotification`, `notifications/{uid}/items`, `supportTickets`, `createSupportTicket`, `postSupportMessage`, `closeSupportTicket`.
+Required for MVP:
+- Auth/profile: Firebase Auth, `users/{uid}`, optional `onUserCreate`.
+- Location/search area: `placesSearch`, `placeDetails`, `geocode`, `reverseGeocode`, `users/{uid}/addresses`.
+- Discovery: `nearbyStores`, `searchMedicines`, `stores`, `stores/{storeId}/inventory`, `medicines`.
+- Contact/navigation: store public contact fields, store coordinates/address, native map links.
 
-## MVP Implementation Notes For Future Scaffold
+Deferred to Phase 2:
+- `carts/{uid}`, `orders`, `payments`, `deliveries`, `prescriptions` approval workflow.
+- `computeCartTotal`, `createOrder`, `createPaymentOrder`, `paymentsWebhook`, `uploadPrescription`, `reviewPrescription`, delivery functions.
 
-- Specs assume expo-router route groups, but no route files should be created until explicit scaffold approval.
-- Service wrappers should isolate all callable names so backend stubs can swap to real logic without screen rewrites.
-- Mock data may be used only behind service wrappers; never mock approved prescriptions, payment success, order totals, or role permissions in production.
-- Before public launch, run security/compliance review on Rx, payment, order, notification, and support flows.
+## Scaffold Notes For Later
+
+- Specs assume expo-router, but no files under `apps/mobile/**` should be created until explicit scaffold approval.
+- Service wrappers should be separated by domain: auth, location, stores, search, contact, maps.
+- Do not create cart/order/payment service wrappers in MVP unless they are empty Phase 2 placeholders and the user explicitly approves.
+- Mock data may be used behind service wrappers for discovery screens only; do not mock commerce flows because they are out of scope.

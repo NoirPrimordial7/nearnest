@@ -1,9 +1,20 @@
 # Nearnest Session State
 
-Last updated: 2026-04-24
+Last updated: 2026-04-24 (MVP scope reconfirmed)
 
 ## Current phase
-Mobile MVP planning is documentation-only. Graphify coordination is installed and indexed, backend handoff docs exist, and `docs/MOBILE_UI_SCREEN_SPECS.md` now defines the 26 MVP customer-facing screens. No app source, Cloud Functions, Firebase rules, package files, env files, or mobile scaffold files should be edited in this phase.
+Mobile MVP planning is documentation-only. Graphify coordination is installed and indexed.
+
+**Canonical MVP (reconfirmed 2026-04-24):**
+- Find a medicine.
+- Show nearby stores that have it.
+- Show store details and availability.
+- Guide / navigate the user to the store.
+- Let the user call / contact the store.
+
+**Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
+
+No app source, Cloud Functions, Firebase rules, package files, env files, or mobile scaffold files should be edited in this phase.
 
 ## Graphify status
 - Python package installed: `graphifyy==0.4.23`.
@@ -21,11 +32,12 @@ Mobile MVP planning is documentation-only. Graphify coordination is installed an
 - `graphify claude install` created `.claude/settings.json`; that file was removed because it was outside the allowed edit list for this session.
 
 ## Current allowed next work
-1. Commit the mobile UI screen specs and handoff updates.
-2. Review the UI specs against backend contracts for missing API assumptions.
+1. Commit the MVP priority reset docs.
+2. If scaffold is approved later, implement only discovery MVP surfaces: auth, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
 3. Keep `apps/mobile/**` untouched until the user explicitly authorizes Expo scaffolding.
 4. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile-planning sessions.
-5. Optionally create documentation-only wireframe notes or a route map for the 26 screens.
+5. Optionally create documentation-only wireframe notes for the discovery MVP screens.
+6. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
 
 ## Protected files not touched in this setup
 - `src/**`

@@ -4,18 +4,25 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-24, after mobile UI screen specs)
+## Next up (as of 2026-04-24, after MVP scope reconfirmation)
 
-Mobile MVP screen specs now live in `docs/MOBILE_UI_SCREEN_SPECS.md`. They translate `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`, and decisions D-005 through D-014 into screen-by-screen UI contracts.
+**Canonical MVP:**
+- Find a medicine.
+- Show nearby stores that have it.
+- Show store details and availability.
+- Guide / navigate the user to the store.
+- Let the user call / contact the store.
 
-1. **Commit the UI screen specs.** Include `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `docs(mobile): add MVP UI screen specs`.
-2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` to refresh the graph after future code changes. Documentation-only changes do not require a graph rebuild unless requested.
-3. **Review backend readiness before implementation.** Compare `docs/MOBILE_UI_SCREEN_SPECS.md` against `docs/BACKEND_FUNCTIONS_CONTRACT.md`, `docs/FIRESTORE_SCHEMA_CONTRACT.md`, `docs/FIREBASE_RULES_PROPOSAL.md`, and `docs/MOBILE_BACKEND_HANDOFF.md` for any missing endpoints or screen assumptions.
-4. **Optional next planning doc:** create low-fidelity wireframe notes or route-map docs for the 26 screens. Keep it documentation-only unless the user explicitly asks for design assets or code.
-5. **Do not scaffold Expo yet.** No `expo init`, no `create-expo-app`, no `npm install`, and no edits under `apps/mobile/**` until the user explicitly gives the go-ahead.
-6. **Keep backend implementation with the website team.** The mobile side should not edit `functions/**`, Firebase rules files, indexes, root config, `src/**`, or `public/**`.
-7. **Before any real Rx/payment/order endpoint is used in prod,** run a security/compliance review against D-005, D-006, D-009, D-010, D-014, and the risky areas in `docs/FIREBASE_RULES_PROPOSAL.md`.
-8. **Keep flagging committed secrets.** `serviceAccountKey.json`, `.env`, and `.env.local` remain a credential-leak risk to rotate and purge with the website team; do not touch them in mobile-planning sessions.
+**Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
+
+1. **Commit the MVP-direction docs.** Include `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`. Suggested message: `docs(mobile): reconfirm MVP direction - discovery over commerce`.
+2. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; use `graphify update .` only after future code changes. Documentation-only changes do not require a graph rebuild unless requested.
+3. **If scaffold is approved later, build only discovery MVP routes:** auth, profile setup, location/search-area picker, home list, home map, search, search results, store detail, medicine detail, contact store, navigation handoff, profile.
+4. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+5. **Backend readiness for MVP now means discovery endpoints first:** `searchMedicines`, `nearbyStores`, Places/geocode proxy functions, store public contact fields, store coordinates, and inventory freshness metadata.
+6. **Keep architecture flexible for Phase 2.** Existing backend/payment/Rx decisions remain future extension points, but they should not influence first mobile implementation scope.
+7. **Do not edit protected areas during planning.** No edits to `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, package files, env files, `serviceAccountKey.json`, or `apps/mobile/**` without explicit user authorization.
+8. **Keep flagging committed secrets.** `serviceAccountKey.json`, `.env`, and `.env.local` remain a credential-leak risk to rotate and purge with the website team.
 9. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
@@ -23,28 +30,30 @@ Mobile MVP screen specs now live in `docs/MOBILE_UI_SCREEN_SPECS.md`. They trans
 ## Backlog (in rough priority order)
 
 ### Architecture + planning
-- Confirm mobile-stack open questions in `docs/ARCHITECTURE.md` §8 (expo-router vs React Navigation, Firebase JS SDK vs `@react-native-firebase`, payments provider, Places proxy location, custom claims migration).
-- Flesh out `orders/`, `prescriptions/`, `payments/`, `deliveries/` Firestore schemas and corresponding index + rule proposals (use `firebase-architect`).
-- Document Cloud Function contracts for: `createOrder`, `updateOrderStatus`, `uploadPrescription`, `reviewPrescription`, `processPayment`, `assignDelivery`, `sendNotification`, `setUserRole`.
+- Discovery MVP backend readiness: confirm `searchMedicines`, `nearbyStores`, Places/geocode proxy functions, store public contact fields, store coordinates, and inventory freshness metadata.
+- Phase 2 commerce backlog only: `orders/`, `prescriptions/`, `payments/`, `deliveries/` schemas, rules, indexes, and functions.
+- Do not treat Razorpay, Rx approval, cart, checkout, or delivery as blockers for the discovery MVP.
 
-### Mobile app (after scaffold)
+### Mobile app (after scaffold approval)
 - Auth screens (sign in / sign up / email verify / forgot password)
-- Profile setup
-- Store/product browse (list + detail)
-- Cart + checkout gate for Rx items
-- Prescription upload flow
-- Order status + live delivery map
-- Notifications inbox
-- Store-admin lite view (Phase 2)
+- Profile setup + saved search area/address
+- Location permission + address/search-area picker
+- Home list + Home map
+- Medicine search + search results
+- Store detail + medicine detail
+- Contact store + native navigation handoff
+- Optional: stale availability report / notify-me if backend exists
+- Phase 2 only: cart, checkout, payment, prescription approval, orders, delivery, store-admin mobile surface
 
 ### Shared design
-- Build theme token file from `docs/DESIGN_SYSTEM.md` — but only inside `apps/mobile/theme/`, never overwrite web styles.
+- Build theme token file from `docs/DESIGN_SYSTEM.md` - but only inside `apps/mobile/theme/`, never overwrite web styles.
 - Pick an icon set that matches `lucide-react` on web (candidate: `lucide-react-native`).
 
 ### Security + compliance
-- Security review of the committed `serviceAccountKey.json`, `.env`, `.env.local` (flag to website team — do not remove yourself).
+- Security review of the committed `serviceAccountKey.json`, `.env`, `.env.local` (flag to website team - do not remove yourself).
 - Plan App Check rollout for prod.
-- Plan test framework adoption (Vitest for web, Jest + RTL for mobile).
+- Plan test framework adoption only after scaffold is approved.
+- Run security/compliance review before any Phase 2 Rx, payment, order, or delivery implementation.
 
 ### Housekeeping
 - Confirm jezweb / expo external skills register with Claude Code's plugin system after `/reload-plugins`. If not, decide whether to author proper `plugin.json` wrappers or read them directly from `.claude/external/*/` on demand.

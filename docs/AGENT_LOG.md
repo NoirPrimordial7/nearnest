@@ -4,6 +4,91 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-24 - Reconfirm MVP direction before any coding
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Lock in the canonical MVP scope in the planning docs as a five-bullet statement future agents can grep for, so discovery-only MVP cannot be re-expanded to commerce by accident.
+
+**Canonical MVP (verbatim):**
+- Find a medicine.
+- Show nearby stores that have it.
+- Show store details and availability.
+- Guide / navigate the user to the store.
+- Let the user call / contact the store.
+
+**Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
+
+**Skills invoked:** `repo-understanding` (reused), `project-memory`, `firebase-architect`, `mobile-product-planner`, `agent-handoff-logger`.
+
+**Files inspected (read-only):**
+- `CLAUDE.md`, `AGENTS.md`, `graphify-out/GRAPH_REPORT.md`
+- `docs/AI_HANDOFF_PROTOCOL.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md`, `docs/DECISIONS.md`, `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`
+- No source files re-inspected; no backend docs edited.
+
+**Files updated:**
+- `docs/MOBILE_APP_PLAN.md` - added a "Canonical MVP definition" section at the top containing the five-bullet statement verbatim and an explicit Phase-2 callout. The rest of the doc (discovery/navigation plan authored by the prior Codex session) is unchanged.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` - added the same five-bullet canonical MVP block below the title. Existing 18-screen spec unchanged.
+- `docs/SESSION_STATE.md` - "Current phase" now restates the canonical MVP bullets and the Phase-2 exclusions.
+- `docs/TODO_NEXT_AGENT.md` - "Next up" top section restated with the canonical bullets; commit message suggestion updated.
+- `docs/AGENT_LOG.md` - this entry.
+
+**What did NOT change (important):**
+- No scope drift. Discovery MVP, Phase 2 commerce set, D-001 ... D-014, and the 18 MVP screens all remain exactly as Codex left them. This session only makes the MVP definition harder to lose.
+- `docs/BACKEND_FUNCTIONS_CONTRACT.md`, `docs/FIRESTORE_SCHEMA_CONTRACT.md`, `docs/FIREBASE_RULES_PROPOSAL.md`, `docs/MOBILE_BACKEND_HANDOFF.md` untouched; they still document the full (including Phase-2) surface, which is intentional.
+
+**Files intentionally NOT touched (protected):**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `vite.config.js`, `eslint.config.js`
+- `.env`, `.env.local`, `.env.example`, `.firebaserc`
+- `README.md` (root), `cors.json`, `apphosting.emulator.yaml`, `main.jsx` (root)
+- `serviceAccountKey.json`
+
+**Warnings for next agent:**
+- If you see anything in future work that looks like cart, checkout, payment, order tracking, or prescription *delivery* flow in MVP context, stop and re-read the canonical MVP block at the top of `docs/MOBILE_APP_PLAN.md`. Escalate to the user before proceeding.
+- Committed secrets (`serviceAccountKey.json`, `.env`, `.env.local`) still at repo root - not our file to fix, still flag it.
+
+**Suggested commit message:**
+`docs(mobile): reconfirm MVP direction - discovery over commerce`
+
+---
+
+## 2026-04-24 - Refocus mobile MVP on medicine discovery
+**Agent:** Codex
+**Session goal:** Adjust product priorities before coding so the first mobile MVP focuses on finding a medicine, seeing which nearby stores have it, navigating to the store, and calling/contacting the store.
+
+**Files inspected (read-only):**
+- `AGENTS.md`
+- `graphify-out/GRAPH_REPORT.md`
+- `docs/DECISIONS.md`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/MOBILE_APP_PLAN.md`
+- `docs/MOBILE_UI_SCREEN_SPECS.md`
+
+**Files updated:**
+- `docs/MOBILE_APP_PLAN.md` - rewritten around discovery/navigation MVP. Cart, checkout, payment, order placement, delivery, and prescription approval are explicitly Phase 2.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` - rewritten for the reduced MVP screen set: auth, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff, profile. Commerce screens are marked Phase 2/optional.
+- `docs/TODO_NEXT_AGENT.md` - next steps rewritten to prevent commerce/delivery scaffolding in MVP.
+- `docs/SESSION_STATE.md` - current phase updated with the new priority reset.
+- `docs/AGENT_LOG.md` - this entry.
+
+**Important scope reset:**
+- MVP is now: search -> nearby store availability -> store detail -> call/contact -> map navigation.
+- MVP is not: cart, checkout, payment, order tracking, prescription approval, or delivery.
+- Existing decisions D-005, D-006, D-010, and D-014 remain future Phase 2 extension points, not MVP implementation requirements.
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, `apps/mobile/**`
+- `package.json`, `package-lock.json`
+- `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`
+- `.env`, `.env.local`, `.env.example`
+- `serviceAccountKey.json`
+
+**Suggested commit message:**
+`docs(mobile): refocus MVP on medicine discovery`
+
+---
+
 ## 2026-04-24 — Add mobile MVP UI screen specs
 **Agent:** Codex
 **Session goal:** Create detailed, documentation-only mobile UI screen specs for the Nearnest MVP without scaffolding Expo or touching app/backend code.
