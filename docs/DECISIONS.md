@@ -4,6 +4,35 @@ Append-only. Each decision gets a stable ID (`D-NNN`). Never silently edit prior
 
 ---
 
+## D-015 - Phone OTP: defer until after medicine discovery MVP
+**Date:** 2026-04-26
+**Status:** Accepted
+**Refines:** D-008
+**Context:** Medifind now has working MVP auth through Firebase JS SDK email/password and Google sign-in in the Expo development build. The next product risk is not authentication coverage; it is proving the medicine discovery loop: search -> nearby stores -> store detail -> call or navigate. Phone OTP is desirable for India users, but the current Expo SDK 54 + Firebase JS SDK 12 path is not safe or simple enough to treat as MVP work.
+
+**Decision:** Defer Phone OTP until after the Search + Store Locator MVP is working. Keep Firebase JS SDK email/password and Google as the MVP auth stack. Do not migrate to `@react-native-firebase/auth` right now. Do not build a custom SMS backend right now. Re-evaluate Phone OTP after the discovery MVP has real backend search, nearby store, and availability data.
+
+**Why this is best for the MVP:**
+- Firebase JS SDK phone auth is still built around web-style `RecaptchaVerifier` / `ApplicationVerifier` flows. In Expo SDK 54, that is not a simple native mobile integration and should not depend on deprecated Expo Firebase reCAPTCHA packages.
+- React Native Firebase Auth would add native module setup, app config changes, EAS rebuild requirements, and a broader auth-state migration. That extra complexity is not justified before the core medicine discovery flow exists.
+- A backend OTP path needs an SMS provider, Cloud Functions, custom-token minting, App Check, rate limiting, abuse controls, audit logs, retry/expiry handling, and provider cost controls. That is a real backend product surface, not a quick mobile-only feature.
+- Email/password plus Google already covers MVP onboarding without blocking discovery, store contact, or navigation.
+
+**Impact on mobile:** Keep `/phone-otp` disabled and labelled "coming soon". Do not install `@react-native-firebase/app` or `@react-native-firebase/auth`. Do not disable email/password. Do not make Phone OTP a blocker for Home, Search, Store detail, or Medicine detail.
+
+**Impact on backend:** No SMS provider, OTP callable, custom-token function, or new Firebase rule surface is required for MVP discovery. Backend effort should focus on `searchMedicines`, `nearbyStores`, store public contact fields, store coordinates, inventory freshness, and related indexes/rules.
+
+**Risks:**
+- Some users may prefer phone-first sign-in. Mitigation: keep Google prominent and email/password available, then add Phone OTP after discovery value is proven.
+- Delaying OTP may defer phone-number collection. Mitigation: collect public store contact data separately; do not overload user auth with store-contact requirements.
+
+**Phase 2 fallback options:**
+1. If Expo and Firebase provide a current, supported native-friendly reCAPTCHA path for Firebase JS SDK phone auth, implement Phone OTP without changing the auth SDK.
+2. If native phone auth is required, add a new decision for `@react-native-firebase/auth`, migrate carefully in an Expo development build, and keep Firestore profile upserts consistent with the current `users/{uid}` contract.
+3. If a custom OTP product is required, build Cloud Functions backed by an approved SMS provider, then sign users in with Firebase custom tokens. Require App Check, per-phone and per-IP rate limits, OTP expiry, resend throttles, audit logs, and cost monitoring.
+
+---
+
 ## D-001 — Website stays at repo root (for now)
 **Date:** 2026-04-24
 **Status:** Accepted
