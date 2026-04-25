@@ -7,7 +7,7 @@ Expo managed workflow scaffold for the Medifind customer mobile app.
 - Expo SDK 54
 - TypeScript
 - expo-router
-- Firebase JS SDK for Auth
+- Firebase JS SDK for Auth and basic user profile writes
 
 ## Current Scope
 
@@ -17,10 +17,12 @@ This scaffold contains early MVP auth screens and placeholder app screens:
 - Welcome
 - Sign In
 - Sign Up
+- Verify Email
+- Forgot Password
 - Profile Setup
 - Home
 
-Firebase app/Auth initialization lives in `services/firebase.ts` and reads only Expo public env variables. Sign In and Sign Up call Firebase email/password Auth through the Firebase JS SDK with React Native AsyncStorage persistence. Google auth is wired through Expo AuthSession and Firebase `GoogleAuthProvider`, but requires a Medifind development build plus valid OAuth client IDs. Phone auth, Firestore, Functions, analytics, and backend wiring are not implemented yet.
+Firebase app/Auth initialization lives in `services/firebase.ts` and reads only Expo public env variables. Sign In and Sign Up call Firebase email/password Auth through the Firebase JS SDK with React Native AsyncStorage persistence, save or refresh `users/{uid}` in Firestore, and route unverified email users to `/verify-email`. Google auth is wired through Expo AuthSession and Firebase `GoogleAuthProvider`; it requires a Medifind development build plus valid OAuth client IDs. After any successful email/password or Google credential sign-in, the app gates users by email verification and `profileComplete` before Home. Phone auth, Functions, analytics, and discovery backend wiring are not implemented yet.
 
 ## Environment
 

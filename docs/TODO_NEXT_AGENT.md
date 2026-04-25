@@ -4,28 +4,24 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-26, after live email auth smoke test)
+## Next up (as of 2026-04-26, discovery UI mock phase)
 
-**Auth status:** Medifind mobile uses Firebase JS SDK only. Email/password and Google sign-in both save or refresh `users/{uid}` in Firestore, then route through the same gate: unverified password user -> `/verify-email`; incomplete profile -> `/profile-setup`; complete profile -> `/home`. `/verify-email`, `/forgot-password`, and real Profile Setup persistence are present. The client does not write `roles` or `permissions`.
+**Current verified auth state:** Medifind mobile uses Firebase JS SDK only. Email/password and Google sign-in both save or refresh `users/{uid}` in Firestore, then route through: unverified password user -> `/verify-email`; incomplete profile -> `/profile-setup`; complete profile -> `/home`. Google dev-build flow passed on emulator via `10.0.2.2:8081`; Profile Setup routed to Home after save. Email/password + Firestore profile persistence has a direct live smoke test.
 
-**Live Firebase verification:** A live Firebase JS SDK smoke test passed for email/password auth and Firestore profile persistence. Test user `codex.medifind.20260425191445@example.com` / uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2` was created, `users/{uid}` was written/read, profile completion was saved, and sign-in re-read the same profile. The generated account is not email-verified, so app UI should route it to `/verify-email`.
+**Phone OTP direction:** `D-015` now explicitly defers Phone OTP until after the medicine discovery MVP. Keep Email/Password + Google as MVP auth. Do not install React Native Firebase, do not disable email/password, and do not build a custom SMS backend yet. The `/phone-otp` route remains a disabled "coming soon" UI.
 
-**Development build status:** EAS Android development build `51fcfd40-9e66-44c4-99f6-f0090b1b21e3` succeeded after fixing AsyncStorage to Expo-pinned `2.2.0`. The APK previously installed on emulator `emulator-5554` and reached Welcome and Sign In. During the latest check, ADB first saw `emulator-5554`, then the emulator went offline and later no devices were connected. Restart the emulator or use a physical device before the next UI pass. Expo Go is not the valid Google OAuth test target.
-
-**Google status:** Google OAuth code and local env key presence are verified, but Google sign-in still needs an interactive live test in the development build with a real Google account. Expected path: Sign In/Sign Up -> Continue with Google -> Firebase credential -> Firestore `users/{uid}` merge -> `/profile-setup` or `/home`.
-
-**Phone OTP:** Still deferred. Sign In/Sign Up phone buttons are disabled and `/phone-otp` is a disabled stub with coming-soon copy. Phase 2 needs an approved implementation path for Firebase Phone Auth/reCAPTCHA or a backend SMS/custom-token flow. Do not fake SMS or bypass reCAPTCHA.
+**Discovery UI status:** Home is now the discovery entry page. Mock-only routes exist for `/search`, `/store/[storeId]`, and `/medicine/[medicineId]`, backed by `apps/mobile/services/mockDiscovery.ts` and `apps/mobile/types/discovery.ts`. These screens show medicine search, nearby store previews, availability badges, Rx warnings, public call actions, and native maps URL handoff. They do not call Firestore, Cloud Functions, Maps SDKs, or any real inventory service.
 
 **Canonical MVP remains:** find a medicine, show nearby stores with availability, show store detail, guide/navigation, and call/contact store. Delivery, cart, checkout, payment, orders, and prescription delivery are Phase 2.
 
-1. **Commit the current auth/dev-build/docs changes.** Include mobile auth/profile files, docs, and tracked Graphify outputs if they are still staged for the auth work. Suggested message: `test(mobile): verify Firebase auth profile persistence`.
-2. **Restart the emulator or connect a physical device.** Confirm `adb devices` shows a connected device before launching the development client.
-3. **Run a manual Google live test in the installed development build.** Confirm the Firestore doc has identity/profile fields and no client-written `roles` or `permissions`.
-4. **Run a manual email verification UI test with an inbox-controlled Firebase test account.** Expected path: sign-up -> verification email -> `/verify-email` -> verified -> `/profile-setup` -> `/home`.
-5. **Optionally clean up the smoke-test account.** Delete Firebase Auth user / Firestore profile for `codex.medifind.20260425191445@example.com` if the project should not retain test records.
-6. **If Metro is stale, restart dev client mode:** `cd C:\projects\nearnest\web-portal\apps\mobile` then `npx expo start -c --dev-client --android`.
-7. **Add the location/search-area gate after auth live tests pass.** The current gate stops at profile completion; discovery Home still needs location/search-area setup before real MVP use.
-8. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+1. **Commit the current discovery UI and D-015 changes.** Suggested message: `feat(mobile): add mock medicine discovery flow`.
+2. **Test the mock UI in the development build.** Start Metro from `apps/mobile` with `npx expo start -c --dev-client --android --port 8081`; if emulator LAN hangs, open the dev-client URL with `10.0.2.2:8081`.
+3. **Prepare real backend contracts before replacing mock data.** Required: `searchMedicines`, `nearbyStores`, store coordinates/geohash, public store phone/contact fields, verified/open state, inventory availability/freshness timestamps, rules, and indexes.
+4. **Replace mocks with mobile service wrappers only after backend readiness.** Add `services/search.ts`, `services/stores.ts`, and `services/location.ts`; keep clients calling Cloud Functions instead of direct inventory joins.
+5. **Add location/search-area gate next.** The current auth gate stops at profile completion; discovery still needs a saved search area or permission/manual-location flow before real ranking.
+6. **Choose and configure map rendering later.** Current Navigate actions use native Google Maps URLs only. Add `react-native-maps` or `expo-maps` deliberately after the data contract is ready and rebuild the dev client.
+7. **Keep Rx discovery informational.** Show "Prescription required" and tell users to carry/call with a valid prescription; do not add reserve/order/upload/delivery behavior to MVP.
+8. **Directly verify the Google Firestore doc if needed.** Use Firebase Console or a token-safe read of `users/{uid}`; do not print ID tokens or secrets.
 9. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
 10. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
 

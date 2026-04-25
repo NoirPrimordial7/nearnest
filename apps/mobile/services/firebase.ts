@@ -1,4 +1,4 @@
-import { createAsyncStorage } from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   FirebaseError,
   getApp,
@@ -8,6 +8,7 @@ import {
   type FirebaseOptions,
 } from 'firebase/app';
 import { getAuth, getReactNativePersistence, initializeAuth, type Auth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 type FirebaseEnv = {
   EXPO_PUBLIC_FIREBASE_API_KEY?: string;
@@ -49,7 +50,7 @@ export const firebaseApp: FirebaseApp =
 function initializeMobileAuth(app: FirebaseApp): Auth {
   try {
     return initializeAuth(app, {
-      persistence: getReactNativePersistence(createAsyncStorage('medifind-auth')),
+      persistence: getReactNativePersistence(AsyncStorage),
     });
   } catch (error) {
     if (error instanceof FirebaseError && error.code === 'auth/already-initialized') {
@@ -61,3 +62,4 @@ function initializeMobileAuth(app: FirebaseApp): Auth {
 }
 
 export const auth = initializeMobileAuth(firebaseApp);
+export const db = getFirestore(firebaseApp);

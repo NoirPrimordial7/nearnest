@@ -11,6 +11,7 @@ import {
   getGoogleAuthResultMessage,
   getGoogleAuthUnavailableMessage,
 } from '../services/googleAuth';
+import { getPostAuthRouteForUser } from '../services/userProfile';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 type LoadingAction = 'email' | 'google' | null;
@@ -58,8 +59,8 @@ export default function SignUpScreen() {
       }
 
       try {
-        await signInWithGoogleIdToken(idToken);
-        router.replace('/home');
+        const result = await signInWithGoogleIdToken(idToken);
+        router.replace(await getPostAuthRouteForUser(result.user));
       } catch (error) {
         setFormError(getAuthErrorMessage(error));
       } finally {
@@ -94,8 +95,8 @@ export default function SignUpScreen() {
     setFormError('');
     setLoadingAction('email');
     try {
-      await signUpWithEmail(email, password);
-      router.replace('/home');
+      const result = await signUpWithEmail(email, password, fullName);
+      router.replace(await getPostAuthRouteForUser(result.user));
     } catch (error) {
       setFormError(getAuthErrorMessage(error));
     } finally {
@@ -152,8 +153,8 @@ export default function SignUpScreen() {
             variant="secondary"
           />
           <ActionButton
-            disabled={isBusy}
-            label="Continue with phone"
+            disabled
+            label="Phone login coming soon"
             leadingLabel="Ph"
             onPress={() => router.push('/phone-otp')}
             variant="secondary"
@@ -223,7 +224,7 @@ export default function SignUpScreen() {
         ) : (
           <View style={styles.infoPanel}>
             <Text style={styles.infoText}>
-              Email uses Firebase Auth now. Google requires a Medifind development build and OAuth client IDs.
+              Email uses Firebase Auth now. Google creates your Medifind profile after sign-in.
             </Text>
           </View>
         )}

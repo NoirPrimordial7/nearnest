@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import * as Google from 'expo-auth-session/providers/google';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
@@ -11,6 +11,7 @@ import {
   getGoogleAuthResultMessage,
   getGoogleAuthUnavailableMessage,
 } from '../services/googleAuth';
+import { getPostAuthRouteForUser } from '../services/userProfile';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 type LoadingAction = 'email' | 'google' | null;
@@ -56,8 +57,8 @@ export default function SignInScreen() {
       }
 
       try {
-        await signInWithGoogleIdToken(idToken);
-        router.replace('/home');
+        const result = await signInWithGoogleIdToken(idToken);
+        router.replace(await getPostAuthRouteForUser(result.user));
       } catch (error) {
         setFormError(getAuthErrorMessage(error));
       } finally {
@@ -82,8 +83,8 @@ export default function SignInScreen() {
     setFormError('');
     setLoadingAction('email');
     try {
-      await signInWithEmail(email, password);
-      router.replace('/home');
+      const result = await signInWithEmail(email, password);
+      router.replace(await getPostAuthRouteForUser(result.user));
     } catch (error) {
       setFormError(getAuthErrorMessage(error));
     } finally {
@@ -140,8 +141,8 @@ export default function SignInScreen() {
             variant="secondary"
           />
           <ActionButton
-            disabled={isBusy}
-            label="Continue with phone"
+            disabled
+            label="Phone login coming soon"
             leadingLabel="Ph"
             onPress={() => router.push('/phone-otp')}
             variant="secondary"
@@ -181,7 +182,14 @@ export default function SignInScreen() {
             value={password}
           />
         </View>
-        <Text style={styles.forgotLink}>Forgot password?</Text>
+        <Pressable
+          accessibilityRole="link"
+          disabled={isBusy}
+          onPress={() => router.push('/forgot-password')}
+          style={styles.forgotLinkPressable}
+        >
+          <Text style={styles.forgotLink}>Forgot password?</Text>
+        </Pressable>
         {formError ? (
           <View style={styles.errorPanel}>
             <Text style={styles.errorTitle}>Action needed</Text>
@@ -190,7 +198,7 @@ export default function SignInScreen() {
         ) : (
           <View style={styles.infoPanel}>
             <Text style={styles.infoText}>
-              Email uses Firebase Auth now. Google requires a Medifind development build and OAuth client IDs.
+              Email uses Firebase Auth now. Google creates your Medifind profile after sign-in.
             </Text>
           </View>
         )}
@@ -221,8 +229,11 @@ const styles = StyleSheet.create({
     fontSize: typography.body,
     paddingHorizontal: spacing.lg,
   },
-  forgotLink: {
+  forgotLinkPressable: {
     alignSelf: 'flex-end',
+    paddingVertical: spacing.xs,
+  },
+  forgotLink: {
     color: colors.primary700,
     fontSize: typography.bodySm,
     fontWeight: '500',

@@ -1,6 +1,6 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (Medifind live email auth and Firestore profile persistence verified)
+Last updated: 2026-04-26 (Medifind mock medicine discovery UI started; Phone OTP deferred by D-015)
 
 ## Current phase
 Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.
@@ -12,6 +12,12 @@ Mobile development has started. Graphify coordination is installed and indexed. 
 **Verification progress (2026-04-25):** `docs/MOBILE_AUTH_VERIFICATION_REPORT_2026-04-25.md` records the earlier auth verification pass. Current static verification passes: `npm run typecheck`, Android Expo export, dependency checks with Firebase JS SDK and no React Native Firebase, and Graphify update. An EAS Android development build was created successfully after downgrading AsyncStorage to the Expo-pinned `2.2.0` and changing Auth persistence to the default AsyncStorage object. Successful build: `51fcfd40-9e66-44c4-99f6-f0090b1b21e3`; install URL: `https://expo.dev/accounts/noir7777/projects/medifind/builds/51fcfd40-9e66-44c4-99f6-f0090b1b21e3`. The APK installed successfully on emulator `emulator-5554`, and the app reached the Welcome and Sign In screens in the Medifind development client.
 
 **Live verification update (2026-04-26):** A live Firebase JS SDK smoke test passed for email/password auth and Firestore profile persistence against the configured Firebase project. Generated test user: `codex.medifind.20260425191445@example.com`, uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2`. The test created the Firebase Auth user, wrote `users/{uid}`, confirmed no client-written `roles` or `permissions`, marked the profile complete, signed out, signed back in, and re-read the profile successfully. Because the generated email is not inbox-verifiable, `emailVerified` is `false`; the app should route that account to `/verify-email`. Google OAuth still needs an interactive development-build pass with a real Google account. During the latest emulator check, ADB initially saw `emulator-5554`, then the emulator became offline and later no devices were connected, so no new on-device UI screenshots or Google login could be completed.
+
+**Google dev-build verification update (2026-04-26):** Google OAuth was tested in the installed Medifind development build on emulator `emulator-5554`. The normal LAN dev-client URL stayed on `Reloading...`, but opening the development client with Android emulator host URL `10.0.2.2:8081` loaded the app. Test path: Sign In -> Continue with Google -> Profile Setup with `Aditya Gholap` prefilled -> Continue -> Home with `Welcome, Aditya Gholap`. This verifies the development-build Google flow, post-auth profile gate, and profile-completion route. Direct REST/console inspection of the Google user's Firestore doc was not completed before the user moved to the Phone OTP/map phase, so only the app-flow persistence is verified for Google. Phone OTP remains disabled because the requested Firebase Phone Auth + Expo reCAPTCHA path is not safe/current under Expo SDK 54 + Firebase JS SDK 12 without a new architecture decision.
+
+**Next-phase planning update (2026-04-26):** Phone OTP is now an explicit architecture decision point, not an implementation task. Email/password stays enabled. Current official Expo/Firebase guidance still presents Firebase JS SDK and React Native Firebase as separate integration paths; React Native Firebase requires custom native code / development builds and cannot run in Expo Go. Firebase JS phone auth still depends on web-style `RecaptchaVerifier` / `ApplicationVerifier`, so the old Expo reCAPTCHA route should not be revived without current official support. Store locator/map work is also gated: real nearby inventory requires backend functions and data readiness first (`nearbyStores`, `searchMedicines`, store coordinates, inventory freshness, public contact fields, rules, indexes). `react-native-maps` is the recommended default map library unless the team deliberately chooses `expo-maps`.
+
+**Discovery UI update (2026-04-26):** `docs/DECISIONS.md` now includes `D-015`, which defers Phone OTP until after the medicine discovery MVP. The Expo app has a mock-only discovery flow: Home is the entry page with a medicine search field, popular/recent chips, and nearby verified store previews; `/search` shows mock medicine results with availability badges, Rx warnings, store distance/open state, call, navigate, and detail actions; `/store/[storeId]` shows public store contact, address, open state, and mock available medicines; `/medicine/[medicineId]` shows medicine facts, Rx warnings where required, and nearby stores that carry it. Data comes only from `apps/mobile/services/mockDiscovery.ts` and typed models in `apps/mobile/types/discovery.ts`. No backend functions, Firestore inventory reads, Maps SDK, cart, payment, order, delivery, or Phone OTP code was added.
 
 **Independent static review (2026-04-25, Claude follow-on):** Re-read auth services + auth screens; `tsc --noEmit` clean; the Google sign-in chain (`useIdTokenAuthRequest` -> `signInWithCredential` -> `upsertUserProfileFromAuthUser`) writes the four required Firestore fields (`uid`, `email`, `displayName`, `photoURL`) plus `emailVerified`, `authProvider`, `authProviders`, timestamps, and (on first create) `preferences` / `profileComplete:false` / `hasProfile:false` / `createdAt`. Phone OTP UI and entry buttons are correctly disabled with deferred-message copy in the Rx warning palette. Two gaps confirmed: (a) `signInWithEmail` / `signUpWithEmail` did not call `upsertUserProfileFromAuthUser`; (b) `app/index.tsx` did not gate on `profileComplete`. **Both fixed in the 2026-04-25 auth wiring pass below.**
 
@@ -78,17 +84,26 @@ No root app source, Cloud Functions, Firebase rules, root package files, env fil
 - `npm run typecheck` passed again on 2026-04-26.
 - `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` passed again on 2026-04-26; no React Native Firebase packages are installed.
 - `adb devices` first showed `emulator-5554 device`, but the emulator became offline during `adb shell` package checks and later no devices were connected. Restart the emulator or use a physical device before the next UI/Google OAuth test.
+- Google dev-build test passed on 2026-04-26 after reopening the dev client with `10.0.2.2:8081`. LAN URL `192.168.1.150:8081` stayed on `Reloading...`; emulator host URL worked.
+- Profile Setup Continue routed to Home on 2026-04-26, confirming the app-flow save path for `profileComplete` and search radius preferences.
+- No code was changed in the next-phase planning pass. No runtime test was required for that docs-only update.
+- Official docs checked in the next-phase planning pass: Expo Using Firebase, Firebase Web Phone Auth / `RecaptchaVerifier`, and Expo map docs for `react-native-maps` / `expo-maps`.
+- `npm run typecheck` passed after adding the mock medicine discovery UI.
+- `npx expo export --platform android --output-dir .expo\discovery-ui-export` passed after sandbox escalation for Windows user-profile access. The generated export is local-only and should remain uncommitted.
+- `graphify update .` passed after the mock discovery UI changes and rebuilt the graph at 301 nodes, 324 edges, and 66 communities.
+- `git diff --check` passed after trimming generated trailing whitespace from `graphify-out/GRAPH_REPORT.md`.
 
 ## Current allowed next work
-1. Commit the current auth/dev-build/docs changes when ready.
-2. Restart the Android emulator or connect a physical device, then run a manual Google live test in the development build: Sign In/Sign Up -> Continue with Google -> Firebase credential -> Firestore `users/{uid}` merge -> profile gate. Confirm the Firestore document contains profile fields and no client-written `roles` or `permissions`.
-3. Run a manual email verification UI pass with an inbox-controlled Firebase test account: sign-up -> verification email -> `/verify-email` -> verified -> `/profile-setup` -> `/home`; sign-in -> same gate.
-4. Optionally clean up the live smoke-test Firebase user/doc: `codex.medifind.20260425191445@example.com`, uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2`.
-5. Keep Phone OTP disabled until a supported implementation path is chosen. Options: approved native/dev-build provider, custom backend OTP provider, or a future Firebase-supported Expo path. Do not fake SMS or bypass reCAPTCHA.
-6. Add location/search-area setup after live auth verification. The profile gate currently routes complete profiles directly to Home; the later location gate should come before discovery Home.
-7. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
-8. Keep backend implementation in the website/backend team's scope; do not edit `functions/**` or Firebase rules from mobile sessions.
-9. Do not reintroduce cart, checkout, payment, orders, prescription approval, or delivery into MVP without explicit user direction.
+1. Commit the current D-015 and mock discovery UI changes when ready.
+2. Test Home -> Search -> Medicine detail -> Store detail in the installed development build. Prefer `10.0.2.2:8081` for Android emulator dev-client reloads if LAN hangs.
+3. Keep Phone OTP deferred per `D-015`. Do not install React Native Firebase, disable email/password, or build SMS/custom-token backend before discovery MVP.
+4. Prepare discovery backend contracts before replacing mocks: `searchMedicines`, `nearbyStores`, store coordinates/geohash, inventory freshness, public contact fields, rules, and indexes.
+5. Add mobile wrappers (`services/search.ts`, `services/stores.ts`, `services/location.ts`) only after backend readiness; avoid direct client-side inventory joins.
+6. Add location/search-area setup after auth verification. The profile gate currently routes complete profiles directly to Home; the later location gate should come before real discovery ranking.
+7. Choose the map library before rendering maps. Current mock UI opens Google Maps URLs only. Default recommendation remains `react-native-maps`; `expo-maps` is an explicit alternative decision.
+8. Directly inspect the Google user's `users/{uid}` profile in Firebase Console or via a token-safe script if direct field confirmation is still needed. Do not print ID tokens or secrets.
+9. Keep implementation limited to discovery MVP surfaces: auth shell, profile/location, home list/map, search/results, store detail, medicine detail, contact store, navigation handoff.
+10. Keep backend implementation in the website/backend team's scope; do not edit `functions/**`, Firebase rules, or root app source from mobile sessions.
 
 ## Protected files not touched in this setup
 - `src/**`

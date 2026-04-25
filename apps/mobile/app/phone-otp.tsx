@@ -31,7 +31,7 @@ export default function PhoneOtpScreen() {
       description="Use a number you can access. Medifind will send a one-time code when Phone OTP is enabled."
       footer={
         <>
-          <ActionButton label="Send code" onPress={handleSendCode} />
+          <ActionButton disabled label="Phone OTP coming soon" onPress={handleSendCode} />
           <ActionButton
             label="Use email instead"
             onPress={() => router.replace('/sign-in')}
@@ -45,6 +45,7 @@ export default function PhoneOtpScreen() {
           <Text style={styles.stepText}>1 of 2</Text>
           <Text style={styles.label}>Mobile number</Text>
           <TextInput
+            editable={false}
             keyboardType="phone-pad"
             onChangeText={setPhoneNumber}
             placeholder="98765 43210"
@@ -65,6 +66,7 @@ export default function PhoneOtpScreen() {
             ))}
           </Pressable>
           <TextInput
+            editable={false}
             keyboardType="number-pad"
             maxLength={6}
             onChangeText={setOtp}
@@ -75,6 +77,7 @@ export default function PhoneOtpScreen() {
         </View>
 
         <Pressable
+          disabled
           onPress={() => {
             setPhoneNumber('');
             setOtp('');

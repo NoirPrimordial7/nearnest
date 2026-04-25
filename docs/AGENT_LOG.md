@@ -4,6 +4,175 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Add D-015 And Mock Medicine Discovery UI
+**Agent:** Codex
+**Session goal:** Move Medifind from auth-only screens into the discovery MVP by deferring Phone OTP in an architecture decision and adding mock-only search, store, and medicine detail UI.
+
+**Skills invoked:** `repo-understanding`, `firebase-architect`, `react-native-expo-builder`, `agent-handoff-logger`.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current graph context before code work.
+- `docs/DECISIONS.md`, `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md` - confirmed discovery MVP scope, Phone OTP constraints, and design guardrails.
+- `apps/mobile/app/home.tsx`, `apps/mobile/theme/tokens.ts`, `apps/mobile/components/ActionButton.tsx`, `apps/mobile/components/InfoCard.tsx`, `apps/mobile/components/Screen.tsx`, `apps/mobile/app/_layout.tsx`, `apps/mobile/services/auth.ts`, and `apps/mobile/services/userProfile.ts` - checked existing mobile patterns before implementation.
+
+**Files edited / created:**
+- `docs/DECISIONS.md` - added `D-015`, deferring Phone OTP until after medicine discovery MVP while keeping Firebase JS SDK Email/Password + Google as MVP auth.
+- `apps/mobile/types/discovery.ts` - added typed mock discovery models.
+- `apps/mobile/services/mockDiscovery.ts` - added mock medicines, stores, availability, and helper functions for search, store inventory, call links, and maps links.
+- `apps/mobile/app/home.tsx` - replaced placeholder Home with a discovery entry page: search field, popular/recent chips, nearby store preview, call, navigate, and Search CTA.
+- `apps/mobile/app/search.tsx` - added mock medicine search results with availability badges, Rx warnings, distance/open state, store detail, call, and navigate actions.
+- `apps/mobile/app/store/[storeId].tsx` - added store detail with public contact, address, open state, call/navigate CTAs, and mock available medicines.
+- `apps/mobile/app/medicine/[medicineId].tsx` - added medicine detail with Rx warning where required and nearby store availability.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top Next up section around D-015, mock discovery UI, and backend requirements before real data.
+- `docs/SESSION_STATE.md` - updated current state and allowed next work.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/**` - updated by `graphify update .` after mobile code changes.
+
+**What changed functionally:**
+- Home is now the customer discovery entry point instead of an auth placeholder.
+- Search, Store detail, and Medicine detail exist as expo-router routes.
+- Availability statuses shown: Available, Low stock, Call to confirm, and Prescription required.
+- Store actions open native dialer and Google Maps URL handoff. No Maps SDK was added.
+- All discovery data is local mock data. No backend functions, Firestore inventory reads, real-time stock, cart, checkout, payment, orders, delivery, map SDK, or Phone OTP implementation was added.
+
+**Verification status:**
+- `npm run typecheck` in `apps/mobile` passed.
+- `npx expo export --platform android --output-dir .expo\discovery-ui-export` passed after sandbox escalation for Windows user-profile access.
+- `graphify update .` passed via the installed `graphify.exe` and rebuilt the graph at 301 nodes, 324 edges, and 66 communities.
+- `git diff --check` passed after trimming generated trailing whitespace in `graphify-out/GRAPH_REPORT.md`.
+
+**Files intentionally NOT touched:**
+- Root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json`.
+- No real backend, Firebase rules, Cloud Functions, map SDK, payment, delivery, cart, order, or Phone OTP code was added.
+
+**Warnings for next agent:**
+- Do not replace mock discovery data until backend contracts for `searchMedicines` and `nearbyStores` are ready.
+- Keep Phone OTP deferred per `D-015`; do not install React Native Firebase or disable email/password for OTP work.
+- Native map rendering is still a later decision. Current UI only opens external maps links.
+
+**Suggested commit message:**
+`feat(mobile): add mock medicine discovery flow`
+
+---
+
+## 2026-04-26 - Define Phone OTP And Store Locator Next Phase
+**Agent:** Codex
+**Session goal:** Move Medifind into the next phase by documenting the Phone OTP decision point and backend/map prerequisites without changing app code.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current graph context.
+- `docs/MOBILE_APP_PLAN.md`, `docs/DECISIONS.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/AGENT_LOG.md` - checked MVP scope, accepted Firebase/mobile decisions, and current handoff state.
+- `apps/mobile/package.json` and `apps/mobile/app.json` - confirmed Expo SDK 54, Firebase JS SDK 12, `expo-dev-client`, `expo-auth-session`, and no React Native Firebase packages.
+- Official Expo Firebase guide - confirmed Expo currently documents Firebase JS SDK and React Native Firebase as separate paths; React Native Firebase requires custom native code / development builds and is not usable in Expo Go.
+- Official Firebase Web Phone Auth docs and JS API reference - confirmed Firebase JS phone auth still depends on `RecaptchaVerifier` / `ApplicationVerifier` for SMS verification.
+- Official Expo map docs - confirmed `react-native-maps` is supported by Expo and requires Google Maps app-key setup for production/development binaries; Expo Maps also exists but should be selected deliberately before code.
+
+**Files edited:**
+- `docs/AGENT_LOG.md` - this entry.
+- `docs/TODO_NEXT_AGENT.md` - top Next up section rewritten for Phone OTP architecture, map/store locator backend readiness, and safe implementation order.
+- `docs/SESSION_STATE.md` - current state updated to reflect next-phase blockers and recommended order.
+
+**Progress made:**
+- Confirmed no Phone OTP code should be added yet under the current D-008 Firebase JS SDK-only decision.
+- Confirmed email/password should stay enabled while Phone OTP is evaluated.
+- Defined the Phone OTP decision path:
+  1. Wait for a current Expo/Firebase reCAPTCHA path that works with Firebase JS SDK in native Expo, or
+  2. add a new `D-015` decision to migrate auth to React Native Firebase / native phone auth in a development build, or
+  3. build a backend OTP provider with Cloud Functions + Firebase custom tokens.
+- Defined the map/store locator implementation gate: do not build real map/store locator UI until `nearbyStores`, `searchMedicines`, store coordinates, inventory freshness, and public contact fields are available from backend contracts/functions.
+- Reconfirmed delivery/cart/checkout/payment/orders remain Phase 2 and should not enter the discovery MVP.
+
+**Files intentionally NOT touched:**
+- `apps/mobile/**` source files - no implementation changes were made because the requested features are gated by decisions/backend readiness.
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json`.
+- `docs/DECISIONS.md` - not edited because no Phone OTP architecture choice was approved yet.
+- `apps/mobile/.env` - not read or edited in this pass.
+
+**Testing status:**
+- No runtime test was required because no app code changed.
+- Existing known state remains: Google dev-build flow passed; email/password + Firestore profile persistence passed in a live smoke test; Phone OTP remains disabled.
+
+**Warnings for next agent:**
+- Do not install `@react-native-firebase/auth` casually. It would change the accepted Firebase client architecture and needs a `D-015` decision plus a migration plan for auth state/profile writes.
+- Do not disable email/password until Phone OTP is implemented and tested end to end.
+- Do not implement map/store locator against mock "real-time" data. Build the backend contract/function first or clearly mark UI as placeholder-only.
+- For maps, choose between `react-native-maps` and `expo-maps` deliberately; `react-native-maps` is the safer mature default, while `expo-maps` should be treated as a separate decision if selected.
+
+**Suggested commit message:**
+`docs(mobile): define phone otp and store locator next phase`
+
+---
+
+## 2026-04-26 - Verify Google Dev-Build Flow And Assess Phone OTP Next Phase
+**Agent:** Codex
+**Session goal:** Test Google OAuth in the Medifind development build, verify profile completion routing, and assess the requested Phone OTP / map next phase without forcing unsupported auth code.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current auth graph nodes.
+- `docs/MOBILE_APP_PLAN.md`, `docs/DECISIONS.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/AGENT_LOG.md` - checked MVP scope, Firebase SDK decision, and current handoff state.
+- `apps/mobile/package.json` and `apps/mobile/app.json` - confirmed Expo SDK 54, Firebase JS SDK 12, `expo-dev-client`, `expo-auth-session`, and `expo-web-browser`.
+- `apps/mobile/services/auth.ts`, `apps/mobile/services/googleAuth.ts`, `apps/mobile/services/userProfile.ts`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/profile-setup.tsx`, and `apps/mobile/app/phone-otp.tsx` - reviewed Google auth, profile persistence, profile completion, and Phone OTP disabled state.
+- `apps/mobile/.env` - checked key presence only; values were not printed. Firebase and Google Web/Android public env keys are set locally.
+- Official Expo Firebase guide and Firebase Web Phone Auth / JS API docs - checked the requested Expo reCAPTCHA + Firebase Phone OTP path.
+
+**Files edited:**
+- `docs/AGENT_LOG.md` - this entry.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top Next up section around Google verification, Phone OTP blocker, and map/backend prerequisites.
+- `docs/SESSION_STATE.md` - updated current Google verification state and next-phase constraints.
+
+**Google OAuth test results:**
+- Existing LAN dev-client URL initially stuck on `Reloading...`.
+- Fixed emulator connectivity by starting Metro on port `8081` and reopening the development client with Android emulator host URL `exp+medifind://expo-development-client/?url=http%3A%2F%2F10.0.2.2%3A8081`.
+- Tapped **Continue with Google** on Sign In.
+- Google sign-in completed in the development build and returned to Medifind.
+- App routed to `/profile-setup` with the Google account display name populated: `Aditya Gholap`.
+- Tapped the Profile Setup **Continue** button and verified the app routed to `/home`.
+- Home showed `Welcome, Aditya Gholap`, confirming the current user/profile gate sees the profile as complete after save.
+
+**Firestore/profile verification status:**
+- Google credential sign-in and post-auth profile gate succeeded on-device.
+- Profile completion save succeeded on-device because `/profile-setup` routed to `/home` only after `markProfileComplete` resolved.
+- Direct Firestore REST verification of the Google user's `users/{uid}` doc was started but interrupted by the user's next-phase request before completion; do not claim direct console/REST inspection for this Google account.
+- Previous live email/password Firestore smoke test remains direct-data verified: `codex.medifind.20260425191445@example.com`, uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2`.
+
+**Phone OTP assessment:**
+- Phone OTP was not enabled.
+- The requested "Firebase Phone OTP using Expo reCAPTCHA" path is not safe to implement in the current Expo SDK 54 + Firebase JS SDK 12 setup. Firebase JS Phone Auth requires an `ApplicationVerifier` / `RecaptchaVerifier` built around web reCAPTCHA. Expo's current Firebase guide treats old Expo Firebase reCAPTCHA packages as migration-era and points Firebase users toward JS SDK or React Native Firebase depending on requirements.
+- This conflicts with D-008, which currently accepts Firebase JS SDK for mobile and only lists React Native Firebase as a fallback after an explicit architecture decision.
+- Email/password was not disabled because the replacement Phone OTP path is not implemented and disabling working auth would strand the app.
+
+**Map/store locator assessment:**
+- Real nearby-store maps and real-time medicine availability were not implemented in this pass.
+- The current backend still needs the documented MVP functions/data contracts before the app can show real availability: `nearbyStores`, `searchMedicines`, store coordinates, public store contact fields, and inventory freshness metadata.
+- Do not fake real-time availability with local mock data.
+
+**Commands run:**
+1. `npm run typecheck` in `apps/mobile` - passed.
+2. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` - passed; no React Native Firebase packages are installed.
+3. `adb devices` - reported `emulator-5554 device`.
+4. `npx expo start -c --dev-client --android --port 8081` - started Metro on port `8081`.
+5. `adb reverse tcp:8081 tcp:8081` and `adb shell am start ...10.0.2.2:8081` - used to load the dev client successfully on the Android emulator.
+6. ADB tap/screenshot passes - verified Sign In, Google -> Profile Setup, and Profile Setup -> Home.
+
+**Files intentionally NOT touched:**
+- `apps/mobile/**` source files - no code changes were made in this pass.
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json`.
+- `apps/mobile/.env` - read key presence only; no values were printed or edited.
+
+**Warnings for next agent:**
+- If the user still wants Phone OTP, add a new decision superseding/refining D-008 first. Viable paths are:
+  1. React Native Firebase Auth with Expo Dev Client and a broader mobile-auth migration plan.
+  2. Backend OTP provider + Cloud Function + Firebase custom token.
+  3. A future officially supported Expo/Firebase reCAPTCHA path if Expo/Firebase reintroduce one.
+- Do not disable email/password until Phone OTP is actually working.
+- Do not implement maps/availability until the backend functions and Firestore inventory contracts exist.
+- Direct Firestore REST verification for the Google account was not completed; the on-device flow verifies successful auth/profile gate behavior.
+
+**Suggested commit message:**
+`docs(mobile): record Google auth verification and next-phase blockers`
+
+---
+
 ## 2026-04-26 - Live Email Auth Smoke Test And Firestore Verification
 **Agent:** Codex
 **Session goal:** Continue Medifind auth verification by testing live Firebase email/password auth, Firestore profile persistence, current mobile dependencies, and development-build availability.

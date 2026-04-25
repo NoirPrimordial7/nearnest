@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 
 import { subscribeToAuthState } from '../services/auth';
+import { getPostAuthRouteForUser } from '../services/userProfile';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
 export default function SplashScreen() {
@@ -35,13 +36,34 @@ export default function SplashScreen() {
 
       const remainingSplashTime = Math.max(0, 900 - (Date.now() - startedAt));
 
-      routeTimer = setTimeout(() => {
+      routeTimer = setTimeout(async () => {
         if (!isActive || hasNavigated.current) {
           return;
         }
 
-        hasNavigated.current = true;
-        router.replace(user ? '/home' : '/welcome');
+        if (!user) {
+          hasNavigated.current = true;
+          router.replace('/welcome');
+          return;
+        }
+
+        try {
+          const nextRoute = await getPostAuthRouteForUser(user);
+          if (!isActive || hasNavigated.current) {
+            return;
+          }
+
+          hasNavigated.current = true;
+          router.replace(nextRoute);
+        } catch {
+          // If Firestore is unreachable on cold start, do not strand the user on splash.
+          // Send them to profile-setup; it will retry the load on its own.
+          if (!isActive || hasNavigated.current) {
+            return;
+          }
+          hasNavigated.current = true;
+          router.replace('/profile-setup');
+        }
       }, remainingSplashTime);
     });
 
