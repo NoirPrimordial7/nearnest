@@ -4,52 +4,30 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-25, after Google AuthSession wiring)
+## Next up (as of 2026-04-26, after live email auth smoke test)
 
-**Canonical MVP:**
-- Find a medicine.
-- Show nearby stores that have it.
-- Show store details and availability.
-- Guide / navigate the user to the store.
-- Let the user call / contact the store.
+**Auth status:** Medifind mobile uses Firebase JS SDK only. Email/password and Google sign-in both save or refresh `users/{uid}` in Firestore, then route through the same gate: unverified password user -> `/verify-email`; incomplete profile -> `/profile-setup`; complete profile -> `/home`. `/verify-email`, `/forgot-password`, and real Profile Setup persistence are present. The client does not write `roles` or `permissions`.
 
-**Mobile brand:** customer-facing app is **Medifind**. Nearnest remains the parent/store/admin platform brand.
+**Live Firebase verification:** A live Firebase JS SDK smoke test passed for email/password auth and Firestore profile persistence. Test user `codex.medifind.20260425191445@example.com` / uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2` was created, `users/{uid}` was written/read, profile completion was saved, and sign-in re-read the same profile. The generated account is not email-verified, so app UI should route it to `/verify-email`.
 
-**Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
+**Development build status:** EAS Android development build `51fcfd40-9e66-44c4-99f6-f0090b1b21e3` succeeded after fixing AsyncStorage to Expo-pinned `2.2.0`. The APK previously installed on emulator `emulator-5554` and reached Welcome and Sign In. During the latest check, ADB first saw `emulator-5554`, then the emulator went offline and later no devices were connected. Restart the emulator or use a physical device before the next UI pass. Expo Go is not the valid Google OAuth test target.
 
-**Auth implementation now:** Firebase Authentication is wired with email/password through the Firebase JS SDK. Splash gates on Firebase Auth state. Google AuthSession code is wired through Firebase JS SDK `GoogleAuthProvider`, but Android Google sign-in is blocked until `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is added locally and a Medifind development build is installed.
+**Google status:** Google OAuth code and local env key presence are verified, but Google sign-in still needs an interactive live test in the development build with a real Google account. Expected path: Sign In/Sign Up -> Continue with Google -> Firebase credential -> Firestore `users/{uid}` merge -> `/profile-setup` or `/home`.
 
-**Google auth status:** code is present, not fully functional locally. Expo Go should not be used as the final OAuth test environment because Expo's OAuth guidance requires a development build for app-specific redirects. The local `.env` has Google Web and iOS client IDs present, but `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is missing.
+**Phone OTP:** Still deferred. Sign In/Sign Up phone buttons are disabled and `/phone-otp` is a disabled stub with coming-soon copy. Phase 2 needs an approved implementation path for Firebase Phone Auth/reCAPTCHA or a backend SMS/custom-token flow. Do not fake SMS or bypass reCAPTCHA.
 
-**Phone auth status:** `/phone-otp` UI stub exists. Real SMS is deferred because Firebase JS SDK Phone Auth requires a reCAPTCHA verifier with a browser DOM, and Expo's old Firebase reCAPTCHA package is archived. Do not fake SMS or bypass reCAPTCHA.
+**Canonical MVP remains:** find a medicine, show nearby stores with availability, show store detail, guide/navigation, and call/contact store. Delivery, cart, checkout, payment, orders, and prescription delivery are Phase 2.
 
-**Future profile gate:** every user should eventually have a minimal profile in `users/{uid}` before reaching Home, but there is no Firestore profile gate in the app yet. Do not add direct profile writes until the profile contract and rules are approved.
-
-**Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
-
-1. **Commit the Google AuthSession wiring and Phone OTP stub.** Include `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/phone-otp.tsx`, `apps/mobile/services/auth.ts`, `apps/mobile/services/googleAuth.ts`, `apps/mobile/services/phoneAuth.ts`, `apps/mobile/.env.example`, `apps/mobile/README.md`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/package-lock.json`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and tracked Graphify outputs. Suggested message: `feat(mobile): wire Google auth and phone OTP stub`.
-2. **Add the missing Android Google client ID locally.** Add this only to untracked `apps/mobile/.env`, never to committed files:
-   `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=`
-3. **Restart Expo after changing env values:**
-   `cd C:\projects\nearnest\web-portal\apps\mobile`
-   `npx expo start -c --lan`
-4. **Use a Medifind development build for Google OAuth testing.** Expo Go can load the app, but the Google button intentionally blocks in Expo Go with a clear message.
-5. **Run a manual live auth pass with a known Firebase test account.** Automated verification passed (`npm run typecheck`, Android Expo export, SDK/dependency scans), but a credentialed device/simulator test still needs a test account.
-6. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
-   `netsh advfirewall firewall add rule name="Medifind Expo Node Private" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private`
-   `netsh advfirewall firewall add rule name="Medifind Expo Metro 8081 Private" dir=in action=allow protocol=TCP localport=8081 profile=private`
-   `netsh advfirewall firewall add rule name="Medifind Expo Metro 8082 Private" dir=in action=allow protocol=TCP localport=8082 profile=private`
-7. **If LAN still fails, try fallback port:**
-   `npx expo start -c --lan --port 8082`
-   Then test `http://192.168.1.149:8082` and `exp://192.168.1.149:8082`.
-8. **Choose the real Phone OTP implementation path before enabling SMS.** The current screen is a UI stub with a clear blocker. Do not use Firebase JS SDK phone auth in native Expo unless a supported reCAPTCHA verifier path is approved.
-9. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
-10. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
-11. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
-12. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-13. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
-14. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
-15. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+1. **Commit the current auth/dev-build/docs changes.** Include mobile auth/profile files, docs, and tracked Graphify outputs if they are still staged for the auth work. Suggested message: `test(mobile): verify Firebase auth profile persistence`.
+2. **Restart the emulator or connect a physical device.** Confirm `adb devices` shows a connected device before launching the development client.
+3. **Run a manual Google live test in the installed development build.** Confirm the Firestore doc has identity/profile fields and no client-written `roles` or `permissions`.
+4. **Run a manual email verification UI test with an inbox-controlled Firebase test account.** Expected path: sign-up -> verification email -> `/verify-email` -> verified -> `/profile-setup` -> `/home`.
+5. **Optionally clean up the smoke-test account.** Delete Firebase Auth user / Firestore profile for `codex.medifind.20260425191445@example.com` if the project should not retain test records.
+6. **If Metro is stale, restart dev client mode:** `cd C:\projects\nearnest\web-portal\apps\mobile` then `npx expo start -c --dev-client --android`.
+7. **Add the location/search-area gate after auth live tests pass.** The current gate stops at profile completion; discovery Home still needs location/search-area setup before real MVP use.
+8. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+9. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
+10. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
 
 ---
 
@@ -65,10 +43,11 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 - Splash, Welcome, Sign In, and Sign Up have polished implementations.
 - Sign In and Sign Up now call Firebase Auth email/password methods through `apps/mobile/services/auth.ts` with Expo public env config from `apps/mobile/services/firebase.ts`.
 - `apps/mobile/.env.example` documents the required mobile Firebase env keys; real `.env` files are ignored.
-- Google Auth is disabled UI-only for now. Do not re-add `expo-auth-session` / `expo-web-browser` until the Android OAuth client ID and development-build path are ready and explicitly approved.
+- Google Auth is wired through `expo-auth-session` / `expo-web-browser` and Firebase JS SDK; Android live testing now needs a manual credentialed pass in the installed development build.
+- Successful Google and email/password sign-in now write basic Firestore profile data to `users/{uid}` without writing roles/permissions.
 - Phone auth remains disabled and marked coming soon.
-- Add auth routes not yet present: Email Verification and Forgot Password.
-- Profile setup + saved search area/address
+- Email Verification and Forgot Password routes are present.
+- Profile setup persistence is present; saved search area/address remains next.
 - Location permission + address/search-area picker
 - Home list + Home map
 - Medicine search + search results

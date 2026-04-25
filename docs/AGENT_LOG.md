@@ -4,6 +4,166 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Live Email Auth Smoke Test And Firestore Verification
+**Agent:** Codex
+**Session goal:** Continue Medifind auth verification by testing live Firebase email/password auth, Firestore profile persistence, current mobile dependencies, and development-build availability.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify rules and current auth graph context.
+- `docs/MOBILE_APP_PLAN.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/AGENT_LOG.md` - checked current mobile/auth handoff state.
+- `apps/mobile/.env` - checked key presence only; values were not printed. Firebase and Google Web/iOS/Android public env keys are set locally.
+- `apps/mobile/services/firebase.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/services/userProfile.ts`, `apps/mobile/app/index.tsx`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/verify-email.tsx`, `apps/mobile/app/profile-setup.tsx`, `apps/mobile/app/phone-otp.tsx`, `apps/mobile/package.json`, and `firestore.rules` - reviewed auth/profile flow and write permissions.
+
+**Files edited:**
+- `docs/AGENT_LOG.md` - this entry.
+- `docs/TODO_NEXT_AGENT.md` - updated the top Next up section with live verification results and remaining manual tests.
+- `docs/SESSION_STATE.md` - updated current auth verification state, command notes, and next work.
+
+**Live verification performed:**
+- Ran a Firebase JS SDK live smoke test against the configured Firebase project using a generated email/password user.
+- Created Firebase Auth user `codex.medifind.20260425191445@example.com` with uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2`.
+- Wrote and read Firestore `users/q0yxtSRkSoSCSxa9r1QXgPUTX0V2`.
+- Confirmed initial profile fields persisted with `profileComplete: false`, no client-written `roles`, and no client-written `permissions`.
+- Marked the profile complete and confirmed Firestore stored `profileComplete: true`, `hasProfile: true`, and `preferences.preferredSearchRadiusKm: 10`.
+- Signed out, signed back in with email/password, and re-read the same Firestore profile successfully.
+
+**Commands run:**
+1. Live Firebase JS SDK email/password + Firestore smoke test in `apps/mobile` - passed after approved network access.
+2. `npm run typecheck` in `apps/mobile` - passed.
+3. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` - passed; no React Native Firebase packages are installed.
+4. `adb devices` - first reported `emulator-5554 device`, then later reported no connected devices.
+5. `adb shell pm list packages com.nearnest.medifind` / `adb shell pidof com.nearnest.medifind` - failed because the emulator became offline: `error: closed` and `device offline`.
+
+**Testing status:**
+- Email/password Auth plus Firestore profile persistence is live data-verified at the Firebase SDK/backend level.
+- Profile-completion persistence is live data-verified in Firestore.
+- Google OAuth code and env presence are verified, but Google sign-in is still not interactively live-tested because the emulator disconnected and no Google account session was completed.
+- The generated email test user's `emailVerified` value is `false`, so the app should route that account to `/verify-email` until a real inbox-verifiable account is used.
+- Development APK build `51fcfd40-9e66-44c4-99f6-f0090b1b21e3` remains the successful development build, but the emulator must be restarted before another UI run.
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json`.
+- `apps/mobile/**` source files - no app code was changed in this verification pass.
+- `apps/mobile/.env` - read for key presence only; no values were printed or edited.
+- Phone OTP implementation - remains disabled and deferred.
+
+**Warnings for next agent:**
+- Clean up the generated Firebase Auth user / Firestore profile if the project should not retain smoke-test accounts: `codex.medifind.20260425191445@example.com`, uid `q0yxtSRkSoSCSxa9r1QXgPUTX0V2`.
+- Complete the manual Google OAuth test in the development build after restarting the emulator or using a physical device.
+- Complete the email verification UI route with a real inbox-controlled test account; the generated smoke-test address cannot receive verification email.
+
+**Suggested commit message:**
+`test(mobile): verify Firebase auth profile persistence`
+
+---
+
+## 2026-04-26 - Add Auth Profile Gate And Fix Development Build
+**Agent:** Codex
+**Session goal:** Finish Medifind auth profile routing, resolve the Expo Android development build failure, and document the remaining live-test status.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current mobile auth graph nodes.
+- `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/DECISIONS.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/AGENT_LOG.md` - checked the auth/profile, MVP, and handoff requirements.
+- `apps/mobile/.env` - checked key presence only; values were not printed. Firebase and Google Web/iOS/Android public env keys are set locally.
+- `apps/mobile/app/*.tsx`, `apps/mobile/services/*.ts`, `apps/mobile/package.json`, `apps/mobile/app.json`, and `apps/mobile/eas.json` - reviewed current mobile auth, routing, Expo, and EAS setup.
+
+**Files created / edited:**
+- `apps/mobile/services/userProfile.ts` - added/finished profile loading, email verification refresh, profile completion save, and `getPostAuthRouteForUser` for `/verify-email` -> `/profile-setup` -> `/home` routing.
+- `apps/mobile/services/auth.ts` - made email sign-in/sign-up upsert Firestore profiles; sign-up updates display name and sends email verification when possible.
+- `apps/mobile/app/index.tsx` - Splash now routes through the profile gate instead of sending every signed-in user to Home.
+- `apps/mobile/app/sign-in.tsx` and `apps/mobile/app/sign-up.tsx` - route successful email/Google auth through the shared profile gate; Phone remains disabled.
+- `apps/mobile/app/verify-email.tsx` - after reload/poll success, refreshes Firestore email state and routes through the shared gate.
+- `apps/mobile/app/profile-setup.tsx` - protects the screen from unverified password users and saves `profileComplete` to Firestore.
+- `apps/mobile/README.md` - documented email/Google profile persistence and auth gating.
+- `apps/mobile/package.json` and `apps/mobile/package-lock.json` - corrected AsyncStorage to Expo SDK-compatible `2.2.0`.
+- `apps/mobile/services/firebase.ts` - uses the default AsyncStorage object with `getReactNativePersistence`, removing the incompatible `createAsyncStorage` v3 API.
+- `docs/SESSION_STATE.md` - updated auth/dev-build status, verification status, command notes, and current next work.
+- `docs/TODO_NEXT_AGENT.md` - added a fresh top Next up section for live Google/email testing, Phone OTP deferral, and next MVP work.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, and `graphify-out/graph.html` - refreshed by `graphify update .`.
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json` - protected/out of scope.
+- `apps/mobile/.env` - read key presence only; no values were printed or committed.
+- `firestore.rules` - not edited; profile writes still depend on existing signed-in user write permissions.
+- Phone OTP implementation - intentionally deferred; no SMS, reCAPTCHA, or native auth provider was enabled.
+
+**Decisions made:** No new decision record added. Continued D-008 Firebase JS SDK-only mobile auth and D-009 server-owned roles/permissions.
+
+**Commands run:**
+1. `npm run typecheck` in `apps/mobile` - passed.
+2. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` - passed; no React Native Firebase packages are installed.
+3. `npx expo export --platform android --output-dir .expo\profile-gate-verification-export` - passed.
+4. `eas build --profile development --platform android` - first build `54f87dfb-3dcf-4bb7-aac8-ffe263907e11` failed because AsyncStorage `3.0.2` required unresolved Gradle artifact `org.asyncstorage.shared_storage:storage-android:1.0.0`.
+5. `npx expo install @react-native-async-storage/async-storage` - corrected AsyncStorage to `2.2.0`; `firebase.ts` was updated for that API.
+6. `eas build --profile development --platform android` - second build `51fcfd40-9e66-44c4-99f6-f0090b1b21e3` succeeded.
+7. APK install via adb - installed `https://expo.dev/artifacts/eas/b8d16xe1sNKYJc1rE7Akze.apk` on `emulator-5554`; Medifind dev client opened and reached Welcome/Sign In.
+8. `graphify update .` - first PATH attempt failed; rerun with the installed Scripts path succeeded and rebuilt the graph at 273 nodes, 298 edges, and 63 communities.
+
+**Warnings for next agent:**
+- Google/email Firestore persistence is code-verified and bundle-verified, but live credential testing was not completed because emulator automation was interrupted and no account credentials were entered.
+- Run the next test manually in the installed development build and confirm `users/{uid}` in Firestore has profile fields and no client-written `roles` or `permissions`.
+- Phone OTP remains disabled; do not implement SMS until the user approves a supported path.
+- `.expo/*verification-export`, `.expo/builds/*`, and EAS log downloads are local generated output and should remain uncommitted.
+
+**Suggested commit message:**
+`feat(mobile): add auth profile gate and dev build fix`
+
+---
+
+## 2026-04-25 - Persist Google Auth Profiles In Firestore
+**Agent:** Codex
+**Session goal:** Continue Medifind Google auth work by wiring basic Firestore `users/{uid}` profile persistence after successful Google credential sign-in while keeping Phone OTP disabled.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - confirmed Graphify requirements.
+- `graphify-out/GRAPH_REPORT.md` - checked current graph context before code changes.
+- `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/AGENT_LOG.md` - checked mobile/auth/product contracts and current handoff state.
+- `firestore.rules`, `storage.rules`, `firebase.json`, `functions/index.js`, and `dataconnect/` - read for Firebase architecture constraints; no protected files were edited.
+- `apps/mobile/services/firebase.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/services/googleAuth.ts`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/phone-otp.tsx`, `apps/mobile/app/index.tsx`, `apps/mobile/app/home.tsx`, and `apps/mobile/package.json` - reviewed current mobile auth implementation.
+- `apps/mobile/.env` - checked Google OAuth key presence only; values were not printed.
+- Expo official AuthSession/authentication docs and Firebase official Google Auth/Firestore docs - checked current Firebase credential and Firestore write patterns.
+
+**Files created / edited:**
+- `apps/mobile/services/userProfile.ts` - added a Firestore profile upsert service for Firebase Auth users, including Google identity fields, timestamps, default discovery preferences, and no client writes to roles/permissions.
+- `apps/mobile/services/firebase.ts` - exported Firestore `db` from the Firebase JS SDK app.
+- `apps/mobile/services/auth.ts` - made `signInWithGoogleIdToken` await Firebase credential sign-in and then upsert `users/{uid}`.
+- `apps/mobile/app/sign-in.tsx` and `apps/mobile/app/sign-up.tsx` - kept Google active, updated copy, and changed Phone login to disabled "coming soon".
+- `apps/mobile/app/phone-otp.tsx` - disabled the OTP inputs and primary action so the route cannot imply real SMS behavior.
+- `apps/mobile/README.md` - documented that successful Google sign-in now writes a basic Firestore profile.
+- `docs/SESSION_STATE.md` - recorded Firestore profile persistence, verification results, Graphify status, and the remaining Android OAuth blocker.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top Next up section around Google live testing, Firestore profile verification, and disabled Phone OTP.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, and `graphify-out/graph.html` - refreshed by `graphify update .`.
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json` - protected/out of scope.
+- `apps/mobile/.env` - not edited because the missing Android OAuth client ID cannot be inferred; values were not printed.
+- Firestore rules - not edited; current mobile profile write relies on the existing signed-in user write allowance.
+- Phone OTP real Firebase implementation - deferred; no SMS or reCAPTCHA flow was added.
+
+**Decisions made:** No new decision record added. Implementation stays on D-008 Firebase JS SDK and D-009 server-owned roles/permissions. The mobile profile writer intentionally avoids `roles` and `permissions`.
+
+**Commands run:**
+1. `npm run typecheck` in `apps/mobile` - passed.
+2. `rg` scan for React Native Firebase, Firebase analytics, Functions, Storage, Database, fetch, and axios in mobile app code - no matches.
+3. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser --depth=0` - first sandboxed attempt failed with `EPERM: operation not permitted, lstat 'C:\Users\Aditya'`; escalated rerun passed and reported `firebase@12.12.1`, `expo-auth-session@7.0.10`, and `expo-web-browser@15.0.10`.
+4. Mobile `.env` key-presence check - Google Web and iOS client IDs are present; `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is missing.
+5. `npx expo export --platform android --output-dir .expo\google-firestore-verification-export` - first sandboxed attempt failed with the same `EPERM`; escalated rerun passed and bundled Android successfully.
+6. `graphify update .` - passed and rebuilt the graph at 257 nodes, 261 edges, and 62 communities.
+
+**Warnings for next agent:**
+- Google profile persistence is code-verified and bundle-verified, but not live-tested. Android Google sign-in still needs `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` in untracked `apps/mobile/.env` and a Medifind development build.
+- Confirm the live Firestore doc after Google sign-in: it should include identity/profile fields and must not include client-written `roles` or `permissions`.
+- Email/password auth remains wired but does not yet create the mobile Firestore profile document.
+- Phone OTP remains disabled; do not claim SMS OTP is implemented.
+- `.expo/google-firestore-verification-export` is generated local test output and should remain uncommitted.
+
+**Suggested commit message:**
+`feat(mobile): persist Google auth profiles`
+
+---
+
 ## 2026-04-25 - Wire Google AuthSession And Phone OTP Stub
 **Agent:** Codex
 **Session goal:** Reintroduce Google sign-in using Expo AuthSession with Firebase JS SDK credential sign-in, add a Phone OTP UI stub, and document the remaining platform/config blockers.
@@ -525,6 +685,226 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 **Suggested commit message:**
 `docs(mobile): expand Medifind auth screen specs`
+
+---
+
+## 2026-04-25 - Wire up email/password Firestore profile, email verification, forgot password, profile-completion gate
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Take the MVP auth experience from "Google works, email half-works, no verify, no reset, no profile gate" to a complete, emulator-testable end-to-end flow. Phone OTP intentionally left deferred — see "Phone OTP decision required" below.
+
+**Honest scope statement:** I cannot run the Android Studio emulator from this environment. The Bash tool here cannot launch GUI apps or interact with a live device. What I can do is write the code, typecheck it, and hand the user a runbook. That's what I delivered. Live runtime confirmation is the user's step. `tsc --noEmit` is clean after every change in this session.
+
+### What's now wired
+
+**Email sign-in / sign-up writes Firestore profile.**
+- `services/auth.ts:signInWithEmail` and `signUpWithEmail` now both call `upsertUserProfileFromAuthUser(result.user, 'password')` after the Firebase Auth call resolves. Closes the bug surfaced in the prior static review.
+- `signUpWithEmail` accepts an optional `displayName`; if present it calls `updateProfile(user, { displayName })` *before* the Firestore upsert so the trimmed name lands in `users/{uid}.displayName` immediately rather than falling back to the email-prefix.
+- `signUpWithEmail` calls `sendEmailVerification(result.user)` automatically; failures are caught and logged in dev only — they never block sign-up.
+- The mobile client still does NOT write `roles` or `permissions` (per D-009).
+
+**Email verification flow.**
+- New screen `app/verify-email.tsx`. Shows the user's email, polls `reload(currentUser)` every 4 seconds, auto-routes to `/profile-setup` (or `/home` if profile is already complete) the moment `emailVerified` flips true. Manual "I've verified, check now" CTA, "Resend verification email" with a 30-second cooldown, and "Use a different account" sign-out.
+- Email signups now route to `/verify-email` on success (was `/home`). Email sign-ins of unverified accounts also route to `/verify-email`.
+- New helpers in `services/auth.ts`: `sendVerificationEmailToCurrentUser`, `reloadCurrentUser` (also writes the refreshed `emailVerified` back to Firestore via `refreshEmailVerifiedField`).
+
+**Forgot password flow.**
+- New screen `app/forgot-password.tsx`. Email input -> `sendPasswordReset(trimmed)` (delegates to `firebase/auth:sendPasswordResetEmail`) -> success panel with "Back to sign in" / "Send to a different email". Inline error mapping via `getAuthErrorMessage` covers `auth/user-not-found`, `auth/invalid-email`, `auth/too-many-requests`, `auth/missing-email`.
+- `app/sign-in.tsx`'s "Forgot password?" link is now a real `Pressable` that pushes `/forgot-password`.
+- New `services/auth.ts:sendPasswordReset(email)` helper.
+
+**Profile-completion gate at splash + after sign-in/up.**
+- `app/index.tsx` (splash) now does:
+  - signed out -> `/welcome`
+  - signed in but `!emailVerified` -> `/verify-email`
+  - signed in + verified, `users/{uid}.profileComplete === true` -> `/home`
+  - signed in + verified, profile missing or incomplete -> `/profile-setup`
+- `app/sign-in.tsx` and `app/sign-up.tsx` apply the same gate after Google sign-in (Google identities are pre-verified, so they skip the verify-email branch).
+- Failure to load `users/{uid}` does NOT strand the user on splash; it falls through to `/profile-setup` which performs its own retry.
+
+**Profile setup actually saves now.**
+- `app/profile-setup.tsx` rewritten. Reads `users/{uid}` on mount (with auth state subscription), prefills `displayName` and `preferredSearchRadiusKm`. "Continue" calls `markProfileComplete(uid, { displayName, preferredSearchRadiusKm })` which writes `profileComplete: true`, `hasProfile: true`, `displayName`, `name`, `preferences.preferredSearchRadiusKm`, and `updatedAt`. Includes accessible radio-group radius selector and a "Sign out" ghost button.
+- New helpers in `services/userProfile.ts`: `loadUserProfile(uid)`, `markProfileComplete(uid, fields)`, `refreshEmailVerifiedField(user)`. Exported `UserProfile` type.
+
+**Home screen.**
+- `app/home.tsx` reads `users/{uid}` for the welcome-name and exposes a "Sign out" ghost button so the user can leave the signed-in state during testing.
+
+**Phone OTP - intentionally still deferred (see decision below).**
+- `app/phone-otp.tsx`, `services/phoneAuth.ts`, and the disabled "Phone login coming soon" buttons in Sign In / Sign Up unchanged. They remain disabled with the deferred-message panel. No fake SMS, no bypass.
+
+### Files changed this turn
+- `apps/mobile/services/auth.ts` (rewritten — email upserts profile, signup sets displayName + sends verification, new helpers).
+- `apps/mobile/services/userProfile.ts` (new helpers: `loadUserProfile`, `markProfileComplete`, `refreshEmailVerifiedField`; exported `UserProfile` type).
+- `apps/mobile/app/index.tsx` (splash now gates on emailVerified + profileComplete).
+- `apps/mobile/app/sign-in.tsx` (routes to /verify-email when unverified, to /profile-setup or /home based on profile, real /forgot-password link).
+- `apps/mobile/app/sign-up.tsx` (routes to /verify-email after success; passes fullName through to signUpWithEmail; Google path uses profile gate).
+- `apps/mobile/app/verify-email.tsx` (NEW).
+- `apps/mobile/app/forgot-password.tsx` (NEW).
+- `apps/mobile/app/profile-setup.tsx` (rewritten — wired to Firestore via markProfileComplete).
+- `apps/mobile/app/home.tsx` (welcome-name from profile + sign-out CTA).
+
+### Build sanity
+- `npx tsc --noEmit` from `apps/mobile/`: **passes**.
+- No new dependencies added. No `package.json` changes. No `expo prebuild` triggered.
+- `node_modules/` already present from prior session; no `npm install` ran.
+
+### Phone OTP decision required (cannot ship without it)
+The user asked for phone auth to "just work." I did NOT enable it because both viable paths require an architectural call beyond this session:
+
+1. **Option A - Migrate phone auth to `@react-native-firebase/auth`.** This is the only Firebase-supported, in-Expo phone-auth path today (silent verification on Android via Play Integrity, APNs on iOS). Requires:
+   - Adding `@react-native-firebase/app` + `@react-native-firebase/auth` to `apps/mobile/package.json`.
+   - Adding the Expo config plugin and re-running `expo prebuild`.
+   - **The risk:** this introduces a second Firebase Auth instance alongside the JS SDK we already use for everything else. Auth state is then split between RNFirebase (phone) and JS SDK (email + Google). Reconciling the two is non-trivial; the cleanest solution is to migrate ALL auth to RNFirebase, which contradicts D-008.
+   - Best-fit if mobile is the primary product and we want full native auth support for the long term.
+
+2. **Option B - Build a Cloud Function + SMS provider OTP.** Mobile sends a phone number to a callable; the function generates a code, sends via Twilio / MSG91 / Fast2SMS, stores a hash in Firestore with TTL, then verifies a code and returns a Firebase **custom token**. Mobile signs in with `signInWithCustomToken`. Requires:
+   - A new Cloud Function (currently `functions/index.js` is just `helloWorld`).
+   - An SMS provider account + paid SMS sending.
+   - Backend authorization to edit `functions/**` (currently still gated in the protected list per the not-yet-updated handoff protocol).
+   - Best-fit if we want to stay on the JS SDK and keep all auth on a single instance.
+
+I have not implemented either. The user's call.
+
+### Files intentionally NOT touched
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**` (still website team territory).
+- Root configs and secrets: `package.json`, `package-lock.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`, `vite.config.js`, `eslint.config.js`, `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`.
+- `apps/mobile/.env` and `apps/mobile/.env.example` — values are user-managed.
+- `apps/mobile/package.json`, `apps/mobile/app.json`, `apps/mobile/eas.json` — no dependency or config changes.
+- `graphify-out/**` — not regenerated this turn (out of allowed-edit scope by current protocol).
+
+### Hand-runnable Android emulator runbook (for the user)
+
+1. Open `apps/mobile/.env`. Verify these are populated:
+   - `EXPO_PUBLIC_FIREBASE_API_KEY`, `EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN`, `EXPO_PUBLIC_FIREBASE_PROJECT_ID`, `EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET`, `EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`, `EXPO_PUBLIC_FIREBASE_APP_ID`.
+   - `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (required for Google).
+   - `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` (required for Android Google sign-in).
+2. In Firebase Console -> Authentication -> Sign-in method: enable **Email/Password** AND **Google**.
+3. In Google Cloud Console for the same project, confirm the OAuth Web client matches `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`. For the Android client, confirm the SHA-1 of the dev keystore is registered (`eas credentials --platform android` shows it).
+4. In Firebase Console -> Firestore -> Rules: confirm authenticated reads on `users/{uid}` are allowed (the existing rule allows self-read; that's enough). The mobile client only writes to its own `users/{uid}`.
+5. Build a development client for Android (Google sign-in cannot complete in plain Expo Go):
+   - `cd apps/mobile`
+   - `npm install` (only if `node_modules/` is missing).
+   - `eas build --profile development --platform android` -> install the resulting APK on the Android Studio emulator (drag-and-drop, or `adb install <path>`).
+6. Start the dev server: `npx expo start -c --dev-client --lan` (use `--port 8082` if 8081 is blocked).
+7. On the emulator, open the installed Medifind dev build. Press the keyboard `r` shortcut once to load the Metro bundle if needed.
+8. **Email signup test:** Welcome -> "Get started" -> Sign Up. Enter name, email (use a real inbox you can check), password (8+ chars), accept Terms -> "Create account". Expected: route to /verify-email with your email shown. Open the inbox, click the verification link. Within 4 seconds the app should auto-route to /profile-setup (or /home if profile is already complete from a prior run). In Firebase Console -> Firestore -> `users/{your_uid}` confirm: `uid`, `email`, `displayName` (your typed name), `name`, `emailVerified: true` (after the link), `authProvider: 'password'`, `authProviders: ['password']`, `preferences`, `profileComplete: false`, `hasProfile: false`, `createdAt`, `updatedAt`, `lastLoginAt`. NO `roles` or `permissions`.
+9. **Profile setup:** confirm prefilled name; pick a radius; "Continue". Firestore should now show `profileComplete: true`, `hasProfile: true`, `preferences.preferredSearchRadiusKm: <chosen>`.
+10. **Home:** confirm "Welcome, <displayName>" appears.
+11. **Sign-out test:** Home -> "Sign out" -> Welcome.
+12. **Email sign-in test:** Welcome -> "Already have an account? Sign in" -> enter the same email + password. Expected: jumps straight to /home (because profile is complete and email is verified).
+13. **Forgot password test:** Sign In -> "Forgot password?" -> enter email -> "Send reset link" -> success panel. Open inbox, click reset link, set a new password. Return to Sign In and use the new password.
+14. **Google sign-in test:** Welcome -> Sign In -> "Continue with Google" -> pick an account -> consent. Expected: route to /home (or /profile-setup if first time). Firestore `users/{your_uid}` shows `authProvider: 'google.com'`, `authProviders: ['google.com']`, `photoURL` populated.
+15. **Phone OTP:** Sign In -> "Phone login coming soon" should be visibly disabled. Tapping nothing happens. From the Splash test build you can also navigate to `/phone-otp` directly via the URL bar; the screen renders, all inputs are disabled, primary CTA is disabled and labelled "Phone OTP coming soon", deferred-reason warning panel renders in the Rx palette.
+
+If any of step 8 fails, the most common causes are: missing/invalid Firebase env, Email/Password provider not enabled in console (returns `auth/operation-not-allowed`), Firestore rules blocking the write (the existing rule allows self-write on `users/{uid}` so this should be fine), or the device having no internet access.
+
+If step 14 fails, the most common causes are: `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` missing, SHA-1 mismatch in Google Cloud, or running in plain Expo Go (the code detects this and shows a guidance message; you must use the dev build).
+
+### Suggested commit message
+`feat(mobile/auth): wire email Firestore profile, email verification, password reset, profile-completion gate`
+
+---
+
+## 2026-04-25 - Static review of Google Sign-In + Firestore profile + Phone OTP state
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Verify the auth implementation in `apps/mobile/` against MVP doctrine: Google Sign-In flow correctness, `users/{uid}` Firestore write on first sign-in, and Phone OTP "coming soon" UX.
+
+**Honesty disclosure (read this first):**
+- I cannot launch the Expo app, complete a real Google OAuth, or watch a Firestore write land. There is no emulator/device/live Firebase access in this environment.
+- What follows is a **static code review** plus a **hand-runnable test checklist** the user can execute to confirm runtime behavior. It is NOT a runtime test pass. Anything labelled with a green check is verified by reading code; runtime confirmation is pending the user's manual run.
+
+**Repo state surfaced:**
+- The mobile app has been scaffolded since the last logged session. `apps/mobile/` now contains an Expo Router app (TypeScript, expo ~54, expo-router ~6, firebase ^12.12.1), with route files under `app/`, components under `components/`, theme tokens under `theme/`, and a services layer (`firebase.ts`, `auth.ts`, `googleAuth.ts`, `userProfile.ts`, `phoneAuth.ts`).
+- App identity: name = "Medifind", slug = "medifind", scheme = "medifind", android package = "com.nearnest.medifind". Branding is already applied in code.
+- The handoff protocol's old "no edits inside `apps/mobile/`" guard is therefore stale. Phase has moved from planning to implementation.
+
+**Files inspected (read-only):**
+- `apps/mobile/package.json`, `apps/mobile/app.json`, `apps/mobile/.env.example`
+- `apps/mobile/services/firebase.ts`, `apps/mobile/services/googleAuth.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/services/userProfile.ts`, `apps/mobile/services/phoneAuth.ts`
+- `apps/mobile/app/_layout.tsx`, `apps/mobile/app/index.tsx`, `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/phone-otp.tsx`
+
+**Build sanity:**
+- `npx tsc --noEmit` in `apps/mobile/` returned no output, i.e. **typecheck passes**.
+
+### Findings
+
+**Google Sign-In - implementation looks correct (static).**
+- `firebase.ts` initialises Firebase JS SDK with `getReactNativePersistence(AsyncStorage)` (correct for RN; `auth/already-initialized` is handled with a `getAuth(app)` fallback).
+- `googleAuth.ts` uses `expo-auth-session/providers/google` with three client IDs (web/android/ios), `selectAccount: true`, and a clean Expo-Go detection path that returns a guidance message when running in Expo Go (Google OAuth needs a dev client).
+- `auth.ts:signInWithGoogleIdToken` builds `GoogleAuthProvider.credential(idToken)`, calls `signInWithCredential(auth, credential)`, then calls `upsertUserProfileFromAuthUser(result.user, GoogleAuthProvider.PROVIDER_ID)`. This is the expected chain.
+- `sign-in.tsx` and `sign-up.tsx` both:
+  - Use `Google.useIdTokenAuthRequest(getGoogleAuthRequestConfig())` (correct for getting an ID token Firebase can consume).
+  - Dedupe responses via a `handledGoogleResponse` ref so a single response is not consumed twice.
+  - Handle `success | cancel | dismiss | error | locked | opened` shapes.
+  - Reject when `params.id_token` is missing.
+  - Map all auth errors via `getAuthErrorMessage` (covers `auth/account-exists-with-different-credential`, `auth/popup-closed-by-user`, `auth/operation-not-allowed`, `auth/unauthorized-domain`, `auth/network-request-failed`, `auth/api-key-not-valid` etc.).
+- `splash` (`app/index.tsx`) uses `subscribeToAuthState` to route to `/home` if signed in, `/welcome` if not, with a 900 ms minimum splash hold.
+
+**Firestore profile write on Google sign-in - correct (static).**
+- `userProfile.ts:upsertUserProfileFromAuthUser` writes `users/{uid}` with the four required fields plus extras:
+  - `uid`: Firebase UID, also used as doc ID.
+  - `email`: `user.email ?? ''`.
+  - `displayName`: trimmed `user.displayName`, falls back to email-prefix, then to `'Medifind user'`.
+  - `photoURL`: `user.photoURL ?? null`. (Also writes a `photoUrl` legacy mirror.)
+  - Plus: `emailVerified`, `authProvider` (`'password' | 'google.com'`, derived from `providerData`), `authProviders[]`, `updatedAt`, `lastLoginAt`.
+  - On first-create only: `preferences` (defaults), `profileComplete: false`, `hasProfile: false`, `createdAt`.
+- The doc is written via `setDoc(..., { merge: true })`, which is idempotent and safe across re-sign-ins.
+- This satisfies the MVP Auth doctrine (`users/{uid}` shape) for the Google path.
+
+**Bug found - email sign-in / sign-up does NOT write to Firestore.**
+- `signInWithEmail` and `signUpWithEmail` (in `services/auth.ts`) call only the Firebase Auth methods and return. They do **not** call `upsertUserProfileFromAuthUser`.
+- The MVP doctrine in `docs/MOBILE_APP_PLAN.md` §2.1 says every user must have a minimal `users/{uid}` profile before reaching Home, normally created by the `onUserCreate` Cloud Function trigger.
+- `functions/index.js` still contains only `helloWorld` — no `onUserCreate` exists yet.
+- **Net effect today:** an email signup creates a Firebase Auth user but NO Firestore profile doc. The user is then routed to `/home` (or `/profile-setup`) with `users/{uid}` missing.
+- This was not asked about in the current task, but it directly affects the MVP profile guarantee. Surfaced here so the next agent can fix it.
+
+**Profile-completeness gate not yet enforced.**
+- `app/index.tsx` routes signed-in users to `/home` without checking `users/{uid}.profileComplete`. The MVP doctrine asks for routing to `/profile-setup` when profile is incomplete.
+- Not blocking for the current Google sign-in test, but flagged for the next task batch.
+
+**Phone OTP - correctly disabled and clearly marked "coming soon".**
+- `services/phoneAuth.ts` exports a clear deferred-explanation message: *"Phone OTP is not enabled in this Expo build. Firebase JS SDK phone auth requires a supported reCAPTCHA verifier; the old Expo reCAPTCHA package is archived, so this needs a separate approved implementation path."*
+- `app/phone-otp.tsx` keeps the screen visible for navigation continuity but:
+  - Phone-number input has `editable={false}`.
+  - OTP input has `editable={false}`.
+  - "Change number" pressable is `disabled`.
+  - Primary CTA reads **"Phone OTP coming soon"** and is `disabled`.
+  - Warning panel renders the deferred-message in the Rx warning palette (`rxBg`/`rxBorder`/`rxText` tokens).
+- `sign-in.tsx` and `sign-up.tsx` both have a disabled "Phone login coming soon" secondary action.
+- This satisfies the user's requirement that Phone OTP UI remain disabled and clearly marked.
+
+### Hand-runnable verification checklist (for the user to execute)
+
+Until the user runs these, runtime success is **not yet confirmed**.
+
+1. Confirm `apps/mobile/.env` has all six `EXPO_PUBLIC_FIREBASE_*` keys populated for the same Firebase project the website uses, plus `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (required) and the platform-specific `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` for whichever platform you'll test.
+2. In Firebase Console -> Authentication -> Sign-in method, confirm both **Email/Password** and **Google** are enabled.
+3. In Google Cloud Console for the same project, confirm the OAuth client IDs match the values in `.env` and that the SHA-1 of the Android dev keystore is registered (Android only).
+4. Build a development client (Google sign-in does not work in plain Expo Go — the code already detects this and shows a guidance message): `cd apps/mobile && eas build --profile development --platform android` (or `ios`). Install the resulting build on a real device or emulator.
+5. `npx expo start --dev-client` and connect the dev build.
+6. From the Welcome screen tap **Create account** -> on Sign Up tap **Continue with Google** -> complete the Google chooser. Expected: redirect back to app, route to `/home`.
+7. Open Firebase Console -> Firestore -> `users/{your_uid}`. Expected fields: `uid`, `email`, `emailVerified`, `displayName`, `photoURL`, `authProvider: 'google.com'`, `authProviders: ['google.com']`, `preferences`, `profileComplete: false`, `hasProfile: false`, `createdAt`, `updatedAt`, `lastLoginAt`.
+8. Sign out, then re-sign-in with the same Google account. Confirm the doc updates `updatedAt` + `lastLoginAt` but does NOT regenerate `createdAt`.
+9. Visit Sign In -> tap the disabled **Phone login coming soon** button. Expected: button does not respond. Tap **Use email instead** from `/phone-otp` -> route back to Sign In.
+10. Repeat 6-7 from the Sign In screen with **Continue with Google** to confirm the existing-account path also writes correctly.
+
+If any step fails, the static review pinpoints likely culprits: missing client IDs (step 1), provider not enabled (step 2), wrong SHA-1 (step 3), running in Expo Go instead of dev client (step 4), `auth/operation-not-allowed` (step 2 again), `auth/unauthorized-domain` (step 3 again).
+
+**Files updated this turn:**
+- `docs/AGENT_LOG.md` (this entry).
+- `docs/TODO_NEXT_AGENT.md` ("Next up" rewritten around the email-path Firestore bug + manual verification checklist).
+- `docs/SESSION_STATE.md` (phase moved from "planning-only" to "mobile implementation in progress; auth landed").
+
+**Files intentionally NOT touched (still protected):**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`
+- Root config files: `package.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`, `vite.config.js`, `eslint.config.js`
+- `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`
+- `apps/mobile/**` source — this turn only **read** that tree; no edits made. The email-path bug is documented for the next implementation pass to fix.
+
+**Outstanding from prior turn:**
+- The Medifind rename + design specs task (Splash + Welcome detailed designs, DESIGN_SYSTEM Medifind extension) was paused mid-edit before this task arrived. Two edits landed in `MOBILE_APP_PLAN.md` (title + Branding section + Section 1 vision rewrite). The remaining work (MOBILE_UI_SCREEN_SPECS title rename, DESIGN_SYSTEM Medifind extension, full Splash + Welcome design spec) is still to do.
+
+**Suggested commit message:**
+`docs(auth): static review of Google sign-in, Firestore profile, phone OTP state`
 
 ---
 
