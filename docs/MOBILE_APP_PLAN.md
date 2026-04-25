@@ -1,6 +1,6 @@
 # Medifind Mobile App (a Nearnest product) - Product & System Design
 
-_Living planning doc. Updated 2026-04-24: customer-facing mobile app renamed to **Medifind**; MVP scope reconfirmed._
+_Living planning doc. **Latest authoritative section: "Discovery Redesign 2026-04-25" at the bottom of this file.** Sections above remain valid for the auth/Rx doctrine and the canonical MVP definition; the discovery flow (search → results → medicine detail → nearby stores → store detail) is now defined by the redesign at the bottom. When a redesign section conflicts with an earlier section, the redesign wins._
 
 ## Branding (2026-04-24)
 
@@ -358,3 +358,292 @@ Keep schemas documented in backend contracts for future commerce, but do not req
 - Do not scaffold Expo until explicit go-ahead.
 - Do not edit `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, package files, env files, or `apps/mobile/**` during planning.
 - Keep committed secrets (`serviceAccountKey.json`, `.env`, `.env.local`) flagged for rotation and history purge by the website team.
+
+---
+
+# Discovery Redesign 2026-04-25 (authoritative)
+
+This section supersedes the discovery / search / results / medicine / store screens above. Auth, Rx doctrine, canonical MVP, and Phase 2 exclusions remain unchanged. Detailed screen specs for the redesign live in `docs/MOBILE_UI_SCREEN_SPECS.md` under the matching "Discovery Redesign 2026-04-25" appendix.
+
+## Product Thesis
+
+> Medifind is the fastest way to know **which nearby pharmacy actually has the medicine you need right now**, and to **call or walk to it before you leave the house**. It is not a delivery marketplace. It is not a doctor. It is the answer to one question: *is it nearby and is it in stock?*
+
+The user's job-to-be-done: *"My family member needs this medicine. I don't want to drive to three shops. I don't want to wait two hours for delivery. I want to see — right now — which nearby pharmacy has it, then either call to confirm or walk over."*
+
+Two browse modes serve that thesis:
+- **Medicine mode** (default) — start from "what do I need", end at "which nearby store has it".
+- **Medical Stores mode** — start from "which pharmacies are near me", end at "what does this one stock".
+
+## Phase 0: Thinking
+
+### 0.1 Personas (concrete, not generic)
+
+**Persona A — Urgent caregiver (Asha, 38, Bangalore).**
+Her mother woke up at 11:42 pm with high fever. The local pharmacy 200 m away closed at 11 pm. She needs Crocin Advance + ORS within 20 minutes. She is panicked, on a 2-year-old budget Android phone (4 GB RAM), one-handed, in a dim room, and her data is throttled because she's already used 6 GB this month. She fears wasting time at a closed shop, getting the wrong strength, or paying ₹150 for delivery that takes 90 minutes. **What earns trust in 5 seconds:** real-time open/closed state, a phone number she can tap, a verified-pharmacy badge, and the words "in stock as of 11:38 pm".
+
+**Persona B — Chronic-condition patient on monthly repeat (Ravi, 62, Pune).**
+He has type-2 diabetes and BP. He buys the same eight items every month — Metformin 500, Glimepiride 1, Telmisartan 40, Ecosprin 75, plus four supplements. He walks slowly. He distrusts new apps. His daughter installed Medifind for him. He wants to keep going to the same shop because the pharmacist knows his name. He fears being shown a different brand, paying more, or having his prescription details on the internet. **What earns trust in 5 seconds:** the name of the pharmacy he already uses, all eight medicines on one screen with green "In stock" tags, large type, no popups, and a single "Call store" button that's bigger than everything else.
+
+**Persona C — Walk-in user with a paper prescription (Priya, 27, Indore).**
+She just left the clinic. She has a phone photo of a doctor's prescription with seven items, two of which are illegible. She's never used Medifind. She has 4G but the app has to download. She wants to find a pharmacy within 2 km that has *as many of the seven items as possible* so she only has to make one stop. She fears typing the medicine names wrong or being asked to upload her prescription. **What earns trust in 5 seconds:** typing partial names ("dolo 650", "panto 40") works without autocorrect fighting her, results show how many of her list each store has, no upload required, and "Show me on the map" works on the first tap.
+
+### 0.2 The Sharp Wedge — one sentence
+
+> **Medifind tells you, before you leave the house, which verified pharmacy near you actually has the medicine you need — without making you order, pay, or wait for delivery.**
+
+If anything in the app does not pay rent on that sentence, cut it.
+
+### 0.3 Competitive Teardown
+
+| Product | What's good (steal these) | What's bad (avoid) |
+|---|---|---|
+| **1mg / Tata 1mg** | (1) Strong product detail page with composition + manufacturer made obvious. (2) "Search a medicine" is the primary surface. | Pushes you toward delivery and prescription upload; product detail is buried under cross-sell offers and review noise. |
+| **PharmEasy** | (1) Clean product card grid with consistent imagery. (2) Branded vs generic toggle on detail page is easy to grasp. | The home screen is a marketplace, not a discovery tool; "where" is invisible because everything assumes delivery. |
+| **Apollo Pharmacy** | (1) Real store finder with hours + verified-store metadata. (2) Trust visuals — pharmacist face, license number on store pages. | Slow first paint on low-end Android; map UX feels grafted on; non-Apollo stores invisible. |
+| **Google Maps** ("pharmacy near me") | (1) Bottom-sheet + list pattern is the right idiom. (2) "Call" and "Directions" are first-class one-tap actions. (3) Hours + busy times establish trust instantly. | Zero awareness of *what's in stock*. Reviews dominate. Generic, not medical. |
+| **Blinkit / Zepto** | (1) Live category chip carousel. (2) Recent + popular search shortcuts. (3) Fast type-ahead with image thumbs. (4) Clear in-stock state. | Loud colours, urgency timers, gamified copy — entirely wrong tone for medicine. Shopping psychology, not health. |
+
+**The synthesis:** Maps' trust + Blinkit's speed + 1mg's product depth — all three at the *discovery* layer, none of them at the *transaction* layer.
+
+### 0.4 Search — the seven cases
+
+| Input | Detection rule | Result behaviour | Top-of-list shows |
+|---|---|---|---|
+| **Exact brand** ("Crocin") | Token match on `medicine.name` | Group A: exact medicine + variants (Crocin Advance, Crocin Pain Relief). Group B: same composition (Paracetamol generics). | The exact medicine card with manufacturer and pack size, then "Available at 7 nearby stores". |
+| **Misspelled brand** ("crosin", "dolo650", "dolo 650") | Levenshtein ≤ 2 OR digit-strip match to a `searchTokens[]` entry | Same as exact brand, but with a "Showing results for **Crocin**. Search for **crosin** instead?" inline correction. | Corrected brand result, then alternatives. |
+| **Generic / composition** ("paracetamol 500") | Token match on `composition[]` AND optional strength | Group A: branded variants of that composition (Crocin, Calpol, Dolo). Group B: similar compositions. | A "Paracetamol 500 mg" composition header card, then branded options sorted by stock count. |
+| **Symptom-led** ("fever medicine", "acidity") | Token match against a `symptomMap` (small curated table — see §0.4.1) | A neutral header reading **"Searches matching 'fever' usually look for:"** followed by 3-5 commonly-bought OTC items. **No medical claim.** | Composition headers and OTC items only. Never an Rx item at the top. |
+| **Prescription photo** | n/a in MVP | "Paste or scan a prescription" CTA → label as **v2 only**. | n/a. |
+| **Hindi transliteration** ("बुखार", "dard") | Match against a `hindiAliases[]` field on each medicine + symptom map | Same behaviour as symptom-led, with a small "Showing results for **fever**" note. | Same as symptom-led. |
+| **Partial / abbreviated** ("azith 500", "panto") | Prefix match on `searchTokens[]` (first 3 chars min) | Show prefix matches grouped by composition. | The most popular completion first ("Azithromycin 500 — Azee"), then runners-up. |
+
+#### 0.4.1 Symptom map — locked decision
+
+The symptom map is a tiny, curated table of OTC-only mappings. It is **not** medical advice. It is search routing, framed as "people searching X usually look at Y". MVP keeps it to seven entries, all OTC, all with the same neutral framing:
+
+| User term | Routes to (compositions) | Framing copy |
+|---|---|---|
+| fever | Paracetamol 500, Paracetamol 650 | "Searches for **fever** usually look at:" |
+| headache | Paracetamol 500, Ibuprofen 400 | "Searches for **headache** usually look at:" |
+| body pain / dard | Diclofenac topical, Ibuprofen 400 | "Searches for **body pain** usually look at:" |
+| cold / cough | Cetirizine 10, Levocetirizine 5, Dextromethorphan syrup | "Searches for **cold and cough** usually look at:" |
+| acidity | Pantoprazole 40, Antacid suspension | "Searches for **acidity** usually look at:" |
+| diarrhea / loose motion | ORS, Loperamide | "Searches for **loose motion** usually look at:" |
+| allergy | Cetirizine 10, Levocetirizine 5 | "Searches for **allergy** usually look at:" |
+
+If the input matches no symptom and no medicine, fall through to "No match. Try a brand name or composition like *Paracetamol*."
+
+### 0.5 Trust signals — every screen
+
+| Signal | Where it lives | Visual treatment |
+|---|---|---|
+| Verified pharmacy badge | Store cards, store detail header, store row in nearby-stores sheet, store row in availability list | Solid green pill with a small `✓`, label `Verified`. Always shown for verified stores. Absent for non-verified. |
+| License number | Store detail (subdued, below address) | `Drug license: KA-12345/2024`, body-sm muted. Tap reveals the issuing-authority full text. |
+| Stock freshness | Every availability row, every in-store inventory row | `In stock · updated 12 min ago`. After 24 h, switch to amber and `Last updated > 1 day ago — call to confirm`. After 72 h, switch to a neutral disclaimer card and the row dims. |
+| Rx required | Medicine cards, medicine detail, store inventory rows | Rx pill in `--color-rx-text` on `--color-rx-bg`, label `Rx`. On medicine detail, expand to the full Rx warning block from `docs/DESIGN_SYSTEM.md` §7. |
+| "Call to confirm" disclaimer | Permanently visible in the bottom-sheet store list footer and on every medicine detail's availability list footer | One muted line: `Stock can change. Call the store to confirm before you travel.` |
+| Nearnest provenance | About / Legal / Help only | "Medifind is part of Nearnest. Stores are verified through Nearnest's licensing review." |
+| **No** trust theatre | We do **not** show fake review counts, fake "20 people bought this", urgency timers, "limited stock" flames, or pharmacist photos we don't actually have. | n/a |
+
+### 0.6 Accessibility (locked)
+
+- **Large-type mode.** A user-visible toggle in Profile (`Larger text`) maps to a 1.15× type scale. Layouts must reflow without clipping at this scale up to 200% OS-level dynamic type.
+- **High-contrast text by default.** All body copy hits WCAG AA on `--color-bg` and `--color-surface`. We do not use `--color-text-soft` for any *primary* content — only for hints/captions where loss of contrast does not destroy meaning.
+- **Icons + words, never icons alone.** Tab bar items, mode toggle items, action buttons all carry text labels under or beside the icon.
+- **Low-end Android.** No parallax, no entrance animations longer than 300 ms, no blur effects, no auto-playing video, no Lottie above 60 KB. Initial render budget on Home: ≤ 100 KB JS executed before first paint, no images > 60 KB above the fold.
+- **Network resilience.** Every screen defines an explicit offline state and a slow-network state (skeletons + a 4 s "still loading" inline note). No screen is allowed to spin forever.
+- **One-handed thumb zone.** Primary CTAs always live in the bottom 25% of the viewport. Search bar at the top is OK because it's reachable by lowering the device, but the *submit* action is also reachable from the keyboard's `return`.
+- **Hindi/Marathi readiness.** Data model carries `nameLocalised: { en, hi, mr? }` and `aliases[]`. UI strings are routed through a single `t()` shim now even though we ship English first; this prevents shipping unilingual hardcoded copy.
+
+### 0.7 State matrix — every screen, minimum five states
+
+Every screen in the redesign defines: `loading`, `empty`, `partial-results`, `no-results`, `error`, `offline`, `stale-data` (when stock data > 24 h old), `Rx-required` (when applicable). A screen spec missing more than 2 of these is incomplete and must be returned. Templates for the shared states live in §"Empty / error / offline templates" of the screen specs doc.
+
+### 0.8 Non-goals (what Medifind is NOT)
+
+We have caught ourselves being tempted by all of these. They are **out**:
+
+- No doctor consults. No symptom checker. No "ask a pharmacist" chat.
+- No price comparison across stores beyond showing each store's price (we do not score stores by who's cheapest, we score by distance + freshness + open).
+- No home delivery. Not even "delivery available at this store" badging — we do not surface a store's delivery capability anywhere.
+- No reviews. No ratings. No "stars".
+- No loyalty programme, wallet, coins, streaks, badges.
+- No upselling, cross-selling, sponsored medicines, paid placement.
+- No prescription upload in MVP. (v2 only — reserved as a future "scan to fill" entry to search.)
+- No checkout, cart, payment, order tracking.
+- No medical advice, dosage, side effects, contraindications. (See Rx doctrine §2.1.1.)
+- No store management mobile UI. Store owners and admins use the Nearnest web portal; if they sign in to Medifind mobile they see the customer experience.
+
+### 0.9 Success metrics — what proves it works
+
+These are the only metrics the design optimises for in MVP. We instrument all of them via the telemetry events listed under each screen spec.
+
+1. **Search-to-store-action conversion** = `(store_call_clicked + store_navigate_clicked) / search_submitted` per session. **Target ≥ 35%.** Anything below means people are searching but not finding a satisfying store result.
+2. **Time-to-first-store-action** = elapsed time between app open and the first `store_call_clicked` or `store_navigate_clicked`. **P50 ≤ 45 s, P90 ≤ 2 min.** Sub-minute is the wedge against a phone-and-Google-Maps workflow.
+3. **Stale-data frustration** = `% of availability views where freshness > 24 h`. **Keep ≤ 15%.** Above that, the in-stock claim is no longer reliable and trust collapses.
+4. **No-result rate** = `% of search_submitted where results.length == 0` after typo correction. **Target ≤ 8%.** Above that, the catalog or the typo tolerance is broken.
+5. **D1 retention for chronic users (persona B)** = retention of users with ≥ 3 distinct medicines in their last 30-day search history. **Target ≥ 60% D1.** This is the hardest, most valuable user; if they don't return next day, the product isn't sticky.
+
+### 0.10 Telemetry — events emitted
+
+All events are namespaced `medifind.<area>.<event>`. They carry the user uid (when signed in), session id, and a screen id. **No medicine names, no store names, no PII** in the payload — only IDs.
+
+| Event | Where | Payload (beyond default) |
+|---|---|---|
+| `medifind.app.launch` | every cold start | `auth_state`, `cached_profile`, `cold` |
+| `medifind.home.mode_toggle` | mode toggle | `mode` ∈ `medicine` \| `stores` |
+| `medifind.search.submitted` | Search | `q_length`, `mode`, `had_correction` |
+| `medifind.search.no_results` | Search | `q_length`, `mode` |
+| `medifind.search.suggestion_tapped` | Search | `suggestion_kind` ∈ `recent` \| `popular` \| `category` |
+| `medifind.results.medicine_viewed` | Results / Home chip | `medicine_id`, `result_group` |
+| `medifind.results.similar_tapped` | Medicine detail | `medicine_id`, `similar_id` |
+| `medifind.results.find_stores_tapped` | Medicine detail | `medicine_id`, `available_count` |
+| `medifind.stores.list_view_open` | Nearby stores sheet | `medicine_id` (nullable in stores mode) |
+| `medifind.stores.map_view_open` | Nearby stores sheet | `medicine_id` (nullable) |
+| `medifind.stores.store_card_tapped` | Stores list / store detail entry | `store_id` |
+| `medifind.stores.store_call_clicked` | Store cards / store detail | `store_id`, `from_screen` |
+| `medifind.stores.store_navigate_clicked` | Store cards / store detail | `store_id`, `from_screen` |
+| `medifind.store.in_store_search_used` | Store detail in-store search | `store_id`, `q_length` |
+| `medifind.category.opened` | Category card | `category_id` |
+| `medifind.profile.large_type_toggled` | Profile | `enabled` |
+| `medifind.error.shown` | error templates | `screen_id`, `error_code` |
+| `medifind.offline.shown` | offline templates | `screen_id` |
+
+Telemetry sink in MVP: console + Firestore ring buffer (`telemetry/{uid}/events`) capped at the last 200 events. Production sink (Cloud Functions → BigQuery) is a Phase 2 task; the schema is fixed today so the sink swap is a one-line change.
+
+## Data Model (mock-data shape, MVP)
+
+These are TypeScript-style shapes consumed by the redesigned screens. Mock data lives under `apps/mobile/services/mockDiscovery/` (existing folder). Backend wiring later replaces these in place. The shapes intentionally match `docs/FIRESTORE_SCHEMA_CONTRACT.md` so the swap is mechanical.
+
+```ts
+type LocaleCode = 'en' | 'hi' | 'mr';
+
+type Composition = {
+  id: string;                 // 'comp_paracetamol_500'
+  name: string;               // 'Paracetamol 500 mg'
+  saltKey: string;            // 'paracetamol' (for similarity grouping)
+  strengthMg?: number;        // 500
+  form: MedicineForm;         // see below
+};
+
+type MedicineForm =
+  | 'tablet' | 'capsule' | 'syrup' | 'suspension' | 'injection'
+  | 'ointment' | 'cream' | 'drops' | 'inhaler' | 'powder' | 'sachet';
+
+type Manufacturer = {
+  id: string;                 // 'mfr_micro_labs'
+  name: string;               // 'Micro Labs'
+};
+
+type Category = {
+  id: string;                 // 'cat_pain_relief'
+  name: string;               // 'Pain Relief'
+  iconKey: string;            // matches an icon registered in theme/icons
+  order: number;
+};
+
+type Medicine = {
+  id: string;
+  name: string;                          // 'Crocin Advance'
+  nameLocalised?: Partial<Record<LocaleCode, string>>;
+  aliases: string[];                     // ['Crocin', 'Crocin 500']
+  hindiAliases?: string[];               // ['क्रोसिन']
+  manufacturer: Manufacturer;
+  compositions: Composition[];           // multi-component allowed
+  form: MedicineForm;
+  packSize: string;                      // '15 tablets'
+  imageUrl: string;
+  requiresPrescription: boolean;
+  categoryIds: string[];                 // ['cat_pain_relief']
+  searchTokens: string[];                // lowercased prefixes + alias prefixes
+  similarMedicineIds: string[];          // hand-curated for MVP, salt-derived later
+  variantOfMedicineId?: string;          // for siblings (Crocin Pain Relief variant of Crocin)
+  description?: string;                  // ONE neutral line, not medical advice
+};
+
+type StoreContact = {
+  publicPhoneE164: string;               // '+919812345678'
+  whatsapp?: string;                     // optional
+};
+
+type StoreHours = {
+  // 0=Sun..6=Sat; each slot is [openHHmm, closeHHmm] in 24h local time
+  [day: number]: Array<[string, string]>;
+};
+
+type Store = {
+  id: string;
+  name: string;
+  ownerName?: string;                    // optional, not surfaced unless intended public
+  verified: boolean;
+  licenseNumber?: string;                // 'KA-12345/2024'
+  licenseAuthority?: string;             // 'Karnataka State Drugs Control'
+  address: { line1: string; line2?: string; city: string; state: string; pincode: string };
+  location: { lat: number; lng: number; geohash: string };
+  contact: StoreContact;
+  hours: StoreHours;
+  distanceKm: number;                    // computed at fetch time, cached on the model for mock
+  isOpenNow: boolean;                    // derived; server replaces with real time check
+  closesAtLabel?: string;                // 'Open until 11:00 PM'
+  freshnessLabel: string;                // 'Inventory updated 12 min ago'
+  freshnessUpdatedAt: number;            // epoch ms; for stale checks
+};
+
+type StoreInventoryItem = {
+  storeId: string;
+  medicineId: string;
+  inStock: boolean;
+  stockLabel: 'in_stock' | 'low' | 'out';   // never numeric to avoid implying guarantee
+  priceInr?: number;                         // optional; never required for discovery MVP
+  updatedAt: number;                         // epoch ms
+};
+
+type SearchSuggestion = {
+  kind: 'medicine' | 'composition' | 'symptom' | 'category';
+  id: string;
+  display: string;                       // 'Crocin' / 'Paracetamol 500 mg' / 'Pain Relief'
+  hint?: string;                         // 'Brand' / 'Composition' / 'Category'
+  routeHint:
+    | { kind: 'medicine'; medicineId: string }
+    | { kind: 'composition'; compositionId: string }
+    | { kind: 'symptom'; symptomKey: string }
+    | { kind: 'category'; categoryId: string };
+};
+
+type RecentSearch = {
+  query: string;
+  ts: number;                            // epoch ms
+  resolvedTo?: SearchSuggestion['routeHint'];
+};
+```
+
+Screens that consume each shape:
+- `Medicine` → Search results, Medicine detail, Home popular chips, Category browse, In-store search rows.
+- `Store` → Nearby stores sheet, Store detail, Stores mode landing.
+- `StoreInventoryItem` → Medicine detail availability list, Store detail inventory list.
+- `Composition` → Search results "same composition" group, Medicine detail composition row.
+- `SearchSuggestion` + `RecentSearch` → Search live-suggestion list.
+- `Category` → Home category cards, Category browse.
+
+## Phase 4: Self-Critique
+
+**Where this design is weakest.** The two-mode toggle on Home is a real risk. Mode switching is one of the most-fumbled UI patterns on mobile because users don't read pill toggles — they scan. If a user lands on Stores mode by mistake and sees a map of pharmacies instead of a search box, they will likely close the app. Mitigation in the screen spec: the toggle is large, labelled with both icon and word, and the *secondary* mode's landing screen includes a prominent "Search a medicine instead" affordance. But the underlying risk — that the mode is invisible to a 65-year-old user — is not fully mitigated. The honest fix would be a single-mode home with a "Browse pharmacies" link in the search empty state. Marking that as Open Question 1.
+
+**Two decisions I'd change with more time.**
+(1) The symptom map (§0.4.1) is curated by hand. It is therefore brittle, English-centric, and limited to seven entries. With more time I would either drop symptom search entirely (the "no medical advice" rule pushes that direction) or build it from a properly licensed therapeutic dictionary. Today's compromise is informal enough to be safe but too small to be useful.
+(2) "Stock label" is three buckets (`in_stock` / `low` / `out`) rather than a number. This protects us from implying a guarantee but is genuinely worse for chronic users (Persona B) who *want* to know "you have eight strips left, I'll come at 6 pm". A future iteration should let stores opt into showing real counts with an explicit "guaranteed last updated at HH:MM" disclaimer.
+
+**The assumption that, if wrong, breaks the product.** That stores will keep their inventory roughly fresh — at minimum once a day — so that the freshness label is mostly green/amber, not red. If most stores don't update, the entire wedge collapses to "I called five pharmacies and the app was wrong." There is no in-MVP fix for this; the only mitigation is product policy: the Nearnest web portal should nag inactive stores and a store with no inventory updates in 7 days should be hidden from Medifind. That is a policy ask we owe the website team. **Open Question 4.**
+
+**What I copied too closely from Blinkit/Zepto.** The category card grid on Home and the recent-search chip carousel both come straight from quick-commerce. The grid is fine — categories are categories — but the chip carousel should be redesigned for the medical context. Quick-commerce uses chips for *cravings* (chocolate, chips, cola). Medifind uses chips for *needs* (Crocin, Telmisartan, ORS). The same component shape, but the typography needs to be calmer, no emoji, no badges, and the carousel should not auto-scroll. The current spec gets the calmness right; it does not get the auto-scroll wrong because we have it disabled. Net: low-grade copying, mostly fine.
+
+**What a 65-year-old user would struggle with on the home screen.** The mode toggle (already covered above). After that: small chip text (Phase 0 §0.6 enforces 15 px minimum, but chip labels can wrap awkwardly under large-type mode — must verify). Tap targets near the search bar are tight if the keyboard is open and the device is gripped one-handed. Recovery from a typo is currently inline ("Showing results for X") which a 65-year-old may not read; a louder banner or a confirm dialog would be more forgiving but more annoying for everyone else. We picked the inline path for the median user; we should A/B this if possible.
+
+## Open Questions (5, ranked by impact)
+
+1. **Mode toggle visibility for low-tech users.** Should Home default to a single-mode search experience and demote Stores mode to a tab, link, or empty-state action? Recommended default if we ship as-is: mode toggle stays, but a "Browse pharmacies near me" tertiary link lives at the bottom of every empty/no-result state. Decide before public launch.
+2. **Search backend for MVP.** D-013 picks Firestore `searchTokens[]`. With seven search cases (§0.4) including transliteration and symptom mapping, Firestore prefix matching alone will fall short on misspellings. Recommended default: ship Firestore for MVP, watch the no-result rate (§0.9 metric 4); if it crosses 10%, fast-track Typesense per the D-013 fallback. Decide at four-week post-launch checkpoint.
+3. **Localisation timing.** We've designed the data model to carry `nameLocalised` and `hindiAliases`. Do we ship English-only at launch (yes, recommended) and add Hindi at week-six, or hold launch for Hindi? Recommended default: English-only MVP, Hindi week-six.
+4. **Inventory freshness policy with stores.** The Nearnest web portal must enforce a freshness SLA — recommended: hide a store from Medifind discovery after 7 days without inventory writes; show an amber badge after 24 hours. Needs sign-off from the website/backend team.
+5. **Symptom map breadth.** Keep the 7 hand-curated entries (§0.4.1), expand to ~30, or remove the symptom search entirely. Recommended default: ship the 7 as a soft routing heuristic, framed as "people searching X usually look at Y", with explicit copy. Re-evaluate after eight weeks of search-log review.

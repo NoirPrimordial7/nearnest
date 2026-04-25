@@ -4,15 +4,104 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-26, discovery UI mock phase)
+## Next up (as of 2026-04-26, after discovery redesign 2026-04-25)
 
-**Current verified auth state:** Medifind mobile uses Firebase JS SDK only. Email/password and Google sign-in both save or refresh `users/{uid}` in Firestore, then route through: unverified password user -> `/verify-email`; incomplete profile -> `/profile-setup`; complete profile -> `/home`. Google dev-build flow passed on emulator via `10.0.2.2:8081`; Profile Setup routed to Home after save. Email/password + Firestore profile persistence has a direct live smoke test.
+**Discovery redesign — DOCS LOCKED.** A full Phase 0 product strategy + screen specs + design tokens + data model live in:
+- `docs/MOBILE_APP_PLAN.md` § "Discovery Redesign 2026-04-25"
+- `docs/MOBILE_UI_SCREEN_SPECS.md` § "Discovery Redesign 2026-04-25"
+- `docs/DESIGN_SYSTEM.md` § "Discovery Redesign 2026-04-25"
 
-**Phone OTP direction:** `D-015` now explicitly defers Phone OTP until after the medicine discovery MVP. Keep Email/Password + Google as MVP auth. Do not install React Native Firebase, do not disable email/password, and do not build a custom SMS backend yet. The `/phone-otp` route remains a disabled "coming soon" UI.
+These supersede the older single-mode discovery screens. Auth, Rx doctrine, splash/welcome/sign-in/sign-up/verify-email/forgot-password/profile-setup specs are unchanged.
 
-**Discovery UI status:** Home is now the discovery entry page. Mock-only routes exist for `/search`, `/store/[storeId]`, and `/medicine/[medicineId]`, backed by `apps/mobile/services/mockDiscovery.ts` and `apps/mobile/types/discovery.ts`. These screens show medicine search, nearby store previews, availability badges, Rx warnings, public call actions, and native maps URL handoff. They do not call Firestore, Cloud Functions, Maps SDKs, or any real inventory service.
+**Current verified auth state:** Medifind mobile uses Firebase JS SDK only. Email/password and Google sign-in both save or refresh `users/{uid}` in Firestore, then route through: unverified password user -> `/verify-email`; incomplete profile -> `/profile-setup`; complete profile -> `/home`. Google dev-build flow passed on emulator via `10.0.2.2:8081`.
+
+**Phone OTP direction:** D-015 defers Phone OTP until after the medicine discovery MVP. The `/phone-otp` route remains a disabled "coming soon" UI.
 
 **Canonical MVP remains:** find a medicine, show nearby stores with availability, show store detail, guide/navigation, and call/contact store. Delivery, cart, checkout, payment, orders, and prescription delivery are Phase 2.
+
+### Next Codex implementation prompt (paste verbatim)
+
+```
+You are implementing the Medifind discovery redesign defined in:
+- docs/MOBILE_APP_PLAN.md           §"Discovery Redesign 2026-04-25"
+- docs/MOBILE_UI_SCREEN_SPECS.md    §"Discovery Redesign 2026-04-25"
+- docs/DESIGN_SYSTEM.md             §"Discovery Redesign 2026-04-25"
+
+Build under apps/mobile/ ONLY. Do NOT edit src/, functions/, dataconnect/,
+Firebase rules/config, root package files, root env files, or
+serviceAccountKey.json.
+
+Mock data only. No live backend, no Maps SDK, no Phone OTP, no cart, no
+checkout, no payment, no delivery, no medical advice or dosage copy.
+
+Build the routes named in the screen specs route map:
+  app/home.tsx                       (REDESIGN — dual-mode)
+  app/search.tsx                     (REDESIGN — live suggestions)
+  app/results.tsx                    (NEW — grouped results)
+  app/medicine/[medicineId].tsx      (REDESIGN — medicine detail)
+  app/medicine/[medicineId]/stores.tsx  (NEW — nearby stores sheet)
+  app/stores/index.tsx               (NEW — Stores mode landing)
+  app/store/[storeId].tsx            (REDESIGN — inventory + in-store search)
+  app/category/[categoryId].tsx      (NEW — category browse)
+  app/profile.tsx                    (small redesign — add Larger text toggle)
+
+Build (or extract) these components, naming them exactly per
+DESIGN_SYSTEM §R8:
+  ProductCard, StoreCard, CategoryCard, SearchBar, ModeToggle,
+  BottomSheet, Chip, Badge (rx | verified | availableNearby |
+  callToConfirm), EmptyState, ErrorState, OfflineBanner,
+  StaleDataBanner, MapPlaceholder.
+
+Replace apps/mobile/services/mockDiscovery.ts with a mock-data layer that
+matches the data model in MOBILE_APP_PLAN.md §"Data Model" exactly:
+Medicine, MedicineVariant, Composition, Manufacturer, Category, Store,
+StoreInventoryItem, SearchSuggestion, RecentSearch. Seed at least:
+  20 Medicines (across 8 categories, 5 Rx, 15 OTC, including the
+    symptom-mapped compositions in §0.4.1)
+  6 Compositions
+  6 Manufacturers
+  8 Categories matching the home grid
+  10 Stores (8 verified, 2 not)
+  90 StoreInventoryItems with mixed freshness (≥ 1 stale > 24h, ≥ 1
+    very stale > 72h)
+  10 RecentSearch placeholders
+  12 popular SearchSuggestions
+
+Ship telemetry as no-op functions today: medifindTelemetry.emit(name,
+payload) writes to console + a Firestore ring buffer at
+telemetry/{uid}/events (cap 200, drop oldest). Wire every event listed
+in MOBILE_APP_PLAN.md §0.10.
+
+Implement the Larger-text accessibility toggle: persist to
+users/{uid}.preferences.largeType and apply the 1.15× scale via a
+useFontScale() hook.
+
+Hard rules:
+- NO medical advice strings beyond the canonical Rx warning.
+- NO add-to-cart / reserve / order / buy / request CTAs anywhere.
+- NO Phone OTP work.
+- NO real Maps SDK; render the MapPlaceholder.
+- NO new package dependencies without explicit user approval.
+
+After the build:
+  cd apps/mobile && npm run typecheck
+  npx expo export --platform android --output-dir .expo/discovery-redesign-export
+  graphify update . (if in scope)
+  git diff --check
+
+Suggested commit message:
+  feat(mobile): implement discovery redesign with dual-mode home and mock data
+```
+
+### Standing items
+
+1. **Commit the discovery redesign docs.** Suggested message: `docs(mobile): redesign discovery UX for medicine and store modes`.
+2. **Resolve the 5 open questions** in `MOBILE_APP_PLAN.md` § "Open Questions" — especially Open Question 1 (mode toggle visibility for low-tech users) before public launch.
+3. **Backend readiness for replacing mocks.** Required when the redesign UI is shipped: `searchMedicines`, `nearbyStores`, store coordinates/geohash, public store phone/contact fields, verified/open state, inventory availability + freshness timestamps, rules, and indexes.
+4. **Inventory freshness SLA with website team.** Open Question 4 — needs a policy ask: hide a store after 7 days without inventory writes; amber warning after 24 hours.
+5. **Map rendering decision** later. Current `Navigate` opens the OS maps URL only. Add `react-native-maps` or `expo-maps` deliberately after data contract is ready and rebuild the dev client.
+6. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
+7. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
 
 1. **Commit the current discovery UI and D-015 changes.** Suggested message: `feat(mobile): add mock medicine discovery flow`.
 2. **Test the mock UI in the development build.** Start Metro from `apps/mobile` with `npx expo start -c --dev-client --android --port 8081`; if emulator LAN hangs, open the dev-client URL with `10.0.2.2:8081`.

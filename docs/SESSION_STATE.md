@@ -1,6 +1,18 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (Medifind mock medicine discovery UI started; Phone OTP deferred by D-015)
+Last updated: 2026-04-26 (discovery redesign locked in docs; ready for Codex implementation)
+
+## Discovery redesign 2026-04-25 (docs-only this session)
+A full Phase 0 product strategy + screen specs + design tokens + data model are now in:
+- `docs/MOBILE_APP_PLAN.md` § "Discovery Redesign 2026-04-25" — product thesis, three concrete personas, sharp wedge, competitive teardown, seven search cases, symptom map, trust signals, accessibility rules, state matrix, non-goals, success metrics, telemetry events, data model (TS-style), open questions, self-critique.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` § "Discovery Redesign 2026-04-25" — route map, shared empty/error/offline/stale/no-match templates, and full specs for: Home (dual-mode), Search (live suggestions), Search results (grouped), Medicine detail, Nearby stores for medicine (map + bottom sheet), Stores mode landing, Store detail, In-store search overlay, Category browse, Profile small-redesign.
+- `docs/DESIGN_SYSTEM.md` § "Discovery Redesign 2026-04-25" — palette rationale, large-type variant, motion rules, dark-mode policy (deferred), component tokens for ProductCard / StoreCard / CategoryCard / SearchBar / ModeToggle / BottomSheet / Chip / Badge / EmptyState / ErrorState, iconography rules, image asset rules, and a name-to-file mapping for Codex.
+
+These appendices supersede the older single-mode discovery flow. Auth, Rx doctrine, splash/welcome/sign-in/sign-up/verify-email/forgot-password/profile-setup specs are unchanged.
+
+The next Codex task — verbatim implementation prompt — lives in `docs/TODO_NEXT_AGENT.md` § "Next up".
+
+
 
 ## Current phase
 Mobile development has started. Graphify coordination is installed and indexed. The customer-facing mobile app is **Medifind**, with Nearnest remaining the parent/store/admin platform brand.

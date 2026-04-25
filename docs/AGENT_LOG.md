@@ -857,6 +857,69 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Medifind discovery redesign (docs-only, no app code)
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Stop coding for the night and re-plan the discovery experience around Blinkit/Zepto-style medicine search + Google-Maps-style nearby pharmacy finder, with a hard "no commerce, no medical advice" frame. Output is markdown only.
+
+**Phase 0 thinking captured (in MOBILE_APP_PLAN.md):**
+- Product thesis (one-sentence wedge): "Medifind tells you, before you leave the house, which verified pharmacy near you actually has the medicine you need — without making you order, pay, or wait for delivery."
+- Three concrete personas: Asha (urgent caregiver, 11pm fever), Ravi (chronic-condition repeat buyer), Priya (walk-in with paper prescription).
+- Competitive teardown: 1mg, PharmEasy, Apollo Pharmacy, Google Maps, Blinkit/Zepto — what to steal and what to avoid for each.
+- Seven search cases enumerated with detection rules and result behaviour: exact brand, misspelled brand, composition, symptom-led, prescription photo (v2), Hindi transliteration, partial/abbreviated. Symptom map locked at 7 OTC entries with neutral framing.
+- Trust signals matrix and "no trust theatre" rule.
+- Accessibility rules: large-type 1.15× variant, low-end Android budget, no animations > 300 ms, one-handed thumb-zone CTAs, Hindi/Marathi data-model readiness without launch dependency.
+- State matrix: every screen defines loading / empty / partial / no-results / error / offline / stale / Rx.
+- Non-goals locked (no doctor consults, no symptom checker, no price comparison, no delivery, no reviews, no loyalty, no upsell, no Rx upload in MVP, no checkout/cart/payment, no medical advice, no store-management mobile UI).
+- Success metrics: search-to-store-action conversion ≥ 35%, P50 time-to-first-action ≤ 45 s, stale-data ≤ 15%, no-result rate ≤ 8%, chronic-user D1 retention ≥ 60%.
+- Telemetry: 18 events listed with payload contracts and Firestore ring-buffer sink in MVP.
+- Data model: Medicine, MedicineVariant via `variantOfMedicineId`, Composition, Manufacturer, Category, Store, StoreInventoryItem, StoreContact, StoreHours, SearchSuggestion, RecentSearch — TypeScript-style shapes that match `FIRESTORE_SCHEMA_CONTRACT.md` so the swap is mechanical.
+- Phase 4 self-critique: weakest is the mode toggle's discoverability for low-tech users; would change the symptom map and the three-bucket stock label given more time; the load-bearing assumption is store inventory freshness; partial copy from Blinkit (chip carousel) is acceptable today but typography needs a calmer pass.
+- 5 ranked open questions with recommended defaults, top of list: mode-toggle visibility for low-tech users.
+
+**Screen specs added (in MOBILE_UI_SCREEN_SPECS.md):**
+Route map, shared empty/error/offline/stale/no-match templates, then full specs (purpose, mental state, layout zones, components, exact copy, all required states, a11y, telemetry, non-goals) for:
+1. Home (dual-mode with Medicine ↔ Medical Stores toggle, category grid, recent+popular chips, store preview).
+2. Search (live suggestions, recent + popular sections, sectioned suggestions with hint labels, typo-correction inline, Hindi transliteration note).
+3. Search results (grouped into Best match / Same brand / Same composition / Similar by category, with `All`/`OTC`/`Rx` filter chips, `Find nearby stores` per-card CTA).
+4. Medicine detail (hero image, identity block, manufacturer, neutral one-line description, full Rx warning when applicable, availability summary, sticky `Find nearby stores` CTA, similar-medicines rail).
+5. Nearby stores for this medicine (top 40% map placeholder + bottom sheet 60% with List/Map toggle, store cards with `Call` / `Navigate` / `View store`, color-coded freshness, sticky disclaimer).
+6. Stores mode landing (same map + sheet idiom, sheet-scoped pharmacy search, no in-stock line on cards, fallback link back to Medicine mode).
+7. Store detail (verified hero, license number with issuing-authority reveal, action row sticky on scroll, hours panel, address copy, in-store search field, inventory grouped by category).
+8. In-store search (overlay-style, not a separate route).
+9. Category browse (2-column grid, OTC/Rx filter, deterministic alphabetical sort).
+- Profile small redesign: `Larger text` toggle persisted to `users/{uid}.preferences.largeType`.
+
+**Design system additions (in DESIGN_SYSTEM.md):**
+- R1: palette rationale ("loud grocery" / "cold institutional" / "wellness pastel" failure modes the existing tokens were chosen against).
+- R2: large-type variant tokens (1.15× type scale, 1.10× line height, 200% reflow guarantee).
+- R3: motion rules (220 ms in / 180 ms out, no spring on primary surfaces, no animation > 300 ms except splash, bottom-sheet drag is the one exception with controlled spring).
+- R4: dark mode policy — deferred; tokens are abstract enough that the swap is later trivial.
+- R5: component tokens (ProductCard large/compact/grid, StoreCard, CategoryCard, SearchBar pressable + input, ModeToggle, BottomSheet, Chip, Badge variants for Rx/Verified/AvailableNearby/CallToConfirm, EmptyState, ErrorState, OfflineBanner, StaleDataBanner).
+- R6: iconography rules — lucide for system + categories; medicine cards always use real product photography or a typographic placeholder, never a generic icon stand-in.
+- R7: image asset rules.
+- R8: name-to-file mapping for Codex implementation.
+
+**Files touched (this session):**
+- `docs/MOBILE_APP_PLAN.md` — appended ~200 lines under "Discovery Redesign 2026-04-25" with Phase 0, data model, Phase 4 self-critique, open questions. Top-of-file note tells future agents the appendix wins on conflict.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` — appended ~250 lines under "Discovery Redesign 2026-04-25" with all 9 redesigned screens plus shared templates and Profile addendum.
+- `docs/DESIGN_SYSTEM.md` — appended ~150 lines under "Discovery Redesign 2026-04-25" with rationale, motion, large-type, dark-mode, and component tokens.
+- `docs/TODO_NEXT_AGENT.md` — "Next up" rewritten to point at the redesign appendices and to embed a verbatim Codex implementation prompt the user can paste tomorrow.
+- `docs/SESSION_STATE.md` — new section "Discovery redesign 2026-04-25 (docs-only this session)" pinned at the top.
+- `docs/AGENT_LOG.md` — this entry.
+
+**Files intentionally NOT touched (still protected):**
+- `apps/mobile/**` source — design + planning only this session, no code changes.
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**`.
+- Root configs: `package.json`, `package-lock.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`, `vite.config.js`, `eslint.config.js`.
+- Env + secrets: `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`, `apps/mobile/.env`.
+
+**Constraint check:** Effort was set to medium. Task asked for docs-only with no "TBD" anywhere. Every spec in this session has an explicit decision or a recommended default; the open questions list is the only place where decisions are tagged as needing user sign-off. No app code, no backend code, no Firebase rules.
+
+**Suggested commit message:**
+`docs(mobile): redesign discovery UX for medicine and store modes`
+
+---
+
 ## 2026-04-25 - Wire up email/password Firestore profile, email verification, forgot password, profile-completion gate
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Take the MVP auth experience from "Google works, email half-works, no verify, no reset, no profile gate" to a complete, emulator-testable end-to-end flow. Phone OTP intentionally left deferred — see "Phone OTP decision required" below.

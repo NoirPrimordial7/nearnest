@@ -1208,3 +1208,449 @@ Deferred to Phase 2:
 - Service wrappers should be separated by domain: auth, location, stores, search, contact, maps.
 - Do not create cart/order/payment service wrappers in MVP unless they are empty Phase 2 placeholders and the user explicitly approves.
 - Mock data may be used behind service wrappers for discovery screens only; do not mock commerce flows because they are out of scope.
+
+---
+
+# Discovery Redesign 2026-04-25 (authoritative)
+
+This appendix supersedes the discovery screens (Home list, Home map, Search, Search results, Store detail, Product detail, Contact store, Navigation handoff) above. Auth, profile, splash, welcome, verify-email, forgot-password, profile-setup screens above remain valid as written. Empty/error/offline templates here are the canonical shared templates for the whole app.
+
+## Route map (expo-router, mock-data only)
+
+```
+app/
+├── index.tsx                          (existing) Splash
+├── welcome.tsx                        (existing)
+├── sign-in.tsx                        (existing)
+├── sign-up.tsx                        (existing)
+├── verify-email.tsx                   (existing)
+├── forgot-password.tsx                (existing)
+├── profile-setup.tsx                  (existing)
+├── home.tsx                           REDESIGN: dual-mode home
+├── search.tsx                         REDESIGN: live-suggestion search
+├── results.tsx                        NEW: grouped search results
+├── medicine/
+│   └── [medicineId].tsx               REDESIGN: medicine detail
+├── medicine/
+│   └── [medicineId]/stores.tsx        NEW: nearby stores for this medicine (map + sheet)
+├── stores/
+│   └── index.tsx                      NEW: Stores mode landing
+├── store/
+│   └── [storeId].tsx                  REDESIGN: store detail with inventory + in-store search
+├── category/
+│   └── [categoryId].tsx               NEW: category browse
+└── profile.tsx                        REDESIGN: lightweight, plus large-type toggle
+```
+
+A bottom tab is **not** added. Navigation is stack-based; the mode toggle on Home replaces a tab. Profile is reachable via the avatar in the Home header.
+
+## Shared empty / error / offline templates
+
+These are referenced by screen specs below as `Template:Empty`, `Template:Error`, `Template:Offline`, `Template:Stale`, `Template:NoMatch`. Implement once.
+
+### Template:Empty
+Layout: 24 px padding, vertically centered. 56×56 circle in `--color-primary-50` with a neutral icon. h3 title, body line, optional ghost CTA.
+Strings vary by screen (see each spec). Default action label: `Try a search`.
+
+### Template:Error
+Layout: identical container. 56×56 circle in `--color-surface-alt` with a `!` glyph in `--color-danger`.
+Title: `Something went wrong.`
+Body: `We could not load this. Check your connection and try again.`
+Primary CTA (secondary button style): `Try again`. Telemetry: `medifind.error.shown` with `screen_id` and `error_code`.
+
+### Template:Offline
+Top of screen, sticky banner, 36 px tall, `--color-rx-bg`, `--color-rx-text` text. Text: `You are offline. Showing your last saved view.` Plus inline body if no cache exists: `We could not reach Medifind. Please reconnect.` Telemetry: `medifind.offline.shown`.
+
+### Template:Stale
+Inline banner above the list it qualifies. `--color-warning` border at 12% alpha, body text in `--color-text`.
+Strings:
+- ≥ 24 h, < 72 h: `Stock data was last updated more than a day ago. Call the store to confirm.`
+- ≥ 72 h: `Stock data is more than 3 days old. We will hide this store soon if it does not update.`
+
+### Template:NoMatch
+Layout: same as Empty with a 56×56 circle and `?` glyph in `--color-text-muted`.
+Title: `No match.`
+Body: `Try a brand name like "Crocin" or a composition like "Paracetamol 500".`
+Tertiary CTA: `Browse pharmacies near me` (links to /stores).
+
+---
+
+## Screen 1 — Home (dual-mode)
+
+**Purpose.** Get the user from open-app to either a medicine search or a list of nearby pharmacies in one tap.
+
+**User mental state.** Either (a) urgent — knows the medicine name, just wants stores; (b) chronic — wants to glance at "is my usual store open"; or (c) walk-in with a list — wants to start typing.
+
+**Layout zones.**
+1. Header (sticky, 64 px). Left: avatar (32×32) → Profile. Centre: nothing. Right: location chip (`Bengaluru · Indiranagar`, tap → address picker, max 22 chars truncated).
+2. Mode toggle (full-width pill, 48 px tall). Two segments, equal width: `Medicine` (default), `Medical Stores`.
+3. Search bar (Pressable, not focused — tapping pushes /search). 56 px tall, rounded `--radius-lg`, magnifier icon left, placeholder right.
+4. Recent + popular row (medicine mode only). Horizontal scroll, 12 chips max, ordered by recency then popularity.
+5. Categories grid (medicine mode only). 4 columns × 2 rows = 8 cards (`Pain Relief`, `Cold & Cough`, `Diabetes`, `Skin Care`, `Baby Care`, `First Aid`, `Vitamins`, `Rx Medicines`).
+6. Stores preview list (always visible, below). 3 store cards (verified-only, sorted by distance), each with name, distance, open state, freshness. Tap → /store/[storeId].
+7. Footer line (caption, muted): `Stock can change. Call the store to confirm before you travel.`
+
+**Components used.** `AppHeader`, `AvatarButton`, `LocationChip`, `ModeToggle`, `SearchFieldButton`, `MedicineChip`, `CategoryCard`, `StorePreviewCard`, `DisclaimerLine`. (Tokens — see DESIGN_SYSTEM redesign appendix.)
+
+**Exact copy.**
+- Toggle labels: `Medicine`, `Medical Stores`.
+- Search placeholder (medicine mode): `Search a medicine, brand or composition`.
+- Search placeholder (stores mode): `Search a pharmacy by name or area`.
+- Recent + popular section title: `Quick searches`.
+- Categories section title: `Browse by category`.
+- Stores preview section title (medicine mode): `Pharmacies near you`.
+- Stores preview section title (stores mode): `Pharmacies near you` (same — section becomes the primary content).
+- Footer disclaimer: `Stock can change. Call the store to confirm before you travel.`
+- Avatar a11y label: `Open profile, signed in as <displayName>`.
+- Location chip a11y label: `Change search area, currently <area>`.
+
+**States.**
+- `loading`: skeleton chips (8) + skeleton store cards (3). Search bar and toggle never skeletonised.
+- `empty` (no recents AND no popular near you): hide section 4; categories grid is the empty fallback.
+- `partial-results` (only recents, no popular): show recents only.
+- `no-results` (no nearby stores at all in radius): replace section 6 with `Template:Empty` titled `No verified pharmacies near you yet.` body `Try a wider radius or check back later.` CTA: `Change search area`.
+- `error`: section 6 only → `Template:Error` with `screen_id: 'home'`, `error_code: 'nearby_load_failed'`.
+- `offline`: `Template:Offline` banner over section 1; sections 4 and 6 show last-cached results if available.
+- `stale-data`: inline `Template:Stale` 24h variant above the stores preview list when the freshest store's data is > 24 h old.
+
+**Accessibility.**
+- Mode toggle: `role=tablist`, each segment `role=tab`, with `aria-selected`. Touch target 48×48.
+- Category cards: 84 px tall minimum, label below icon, contrast ≥ 4.5:1.
+- All chips at least 44 px tall in large-type mode.
+
+**Telemetry.** `medifind.app.launch` (cold start), `medifind.home.mode_toggle` on toggle, `medifind.search.suggestion_tapped` on chip tap, `medifind.category.opened` on category card tap, `medifind.stores.store_card_tapped` on store preview tap.
+
+**Does NOT do.** No live search on Home (tapping the field opens Search). No map. No filtering. No "buy" CTA, ever.
+
+---
+
+## Screen 2 — Search (live suggestions)
+
+**Purpose.** Capture intent in 2-3 keystrokes and route to a result.
+
+**User mental state.** They know roughly what they want. They are typing one-handed, possibly with autocorrect fighting them.
+
+**Layout zones.**
+1. Header (sticky 64 px). Back chevron left, search field full-width (autofocused), `Cancel` text button right (only when keyboard is open).
+2. Suggestion list (scrollable). Sectioned: **Recent**, **Popular**, **Suggestions** (live as user types).
+3. When suggestions return zero matches: `Template:NoMatch`.
+
+**Components.** `BackButton`, `SearchInput` (autofocus), `CancelButton`, `SuggestionRow`, `SectionHeader`.
+
+**Exact copy.**
+- Field placeholder: `Search a medicine, brand or composition`.
+- `Cancel` button label: `Cancel`.
+- Empty (no input yet): show Recent (max 5) and Popular (max 8) sections. Section titles: `Recent searches`, `Popular medicines near you`.
+- Suggestion row hint labels: `Brand`, `Composition`, `Symptom`, `Category`.
+- Typo correction inline above suggestions: `Showing results for **{corrected}**. Search for **{original}** instead?` — `{original}` is a tappable link.
+- Hindi correction: `Showing results for **{english}** (matched **{hindi}**).`
+- Stores-mode placeholder (when reached from Stores tab): `Search a pharmacy by name or area`.
+
+**States.**
+- `loading` (suggestions debounced): inline thin progress bar under the search field for ≤ 1 s.
+- `empty` (no input): Recent + Popular shown. If both empty: `Template:Empty` with body `Start typing a medicine or brand to see suggestions.`
+- `partial-results` (1-2 suggestions): show what's there + a `See all results` link to /results.
+- `no-results`: `Template:NoMatch`.
+- `error`: `Template:Error` with `error_code: 'suggestions_failed'`.
+- `offline`: search still works against cached recents; live suggestions section shows `Template:Offline` inline strip with text `Live suggestions are not available offline.`
+
+**Accessibility.** Field a11y label: `Search medicines, brands or compositions`. Each suggestion row has `accessibilityRole=button` and `accessibilityHint` listing the hint label. Pressing return fires submit.
+
+**Telemetry.** `medifind.search.submitted` on return key or row tap (with `q_length`, `had_correction`). `medifind.search.suggestion_tapped` for any tapped suggestion. `medifind.search.no_results` when zero matches after debounce.
+
+**Does NOT do.** No filters here. No store list here.
+
+---
+
+## Screen 3 — Search results (grouped)
+
+**Purpose.** Present a search query's matches grouped clearly so the user can pick exact, variant, or composition match.
+
+**Mental state.** They typed and submitted. They want the right card to be obvious in 2 seconds.
+
+**Layout.**
+1. Header (sticky). Back, the query as the title, edit-icon to reopen Search.
+2. Filter strip. Three chips: `All`, `OTC`, `Rx`. Default `All`. (Filter only — never gates results, only narrows.)
+3. Result groups (top to bottom):
+   - **Group A — Best match (single card).** The medicine that exactly matches the typed query. Larger card.
+   - **Group B — Same brand variants.** Other variants from the same manufacturer (e.g. Crocin Advance, Crocin Pain Relief).
+   - **Group C — Same composition.** Other branded medicines with the same composition (e.g. Calpol, Dolo for Paracetamol 500).
+   - **Group D — Similar by category.** Same category but different composition. Capped at 6 entries.
+4. Footer: `Template:Stale` if any rendered card has stale availability.
+
+**Components.** `BackHeader`, `FilterChipRow`, `MedicineCardLarge`, `MedicineCardCompact`, `GroupHeader`, `RxBadge`, `AvailableNearbyBadge`, `DisclaimerLine`.
+
+**Exact copy.**
+- Header back-button a11y: `Back to search`.
+- Filter labels: `All`, `OTC`, `Rx`.
+- Group A header: hidden (the larger card is the header).
+- Group B header: `Other {manufacturer} options`.
+- Group C header: `Same composition`.
+- Group D header: `Similar by category`.
+- Card subtitle pattern: `{manufacturer} · {composition} · {packSize}`.
+- Available-nearby badge label: `Available at {n} nearby`.
+- No-availability badge label: `Not in nearby stores`.
+- Empty (no group A): replace with `Template:NoMatch` titled `No match for "{query}".`
+- Per-card CTA label: `Find nearby stores`.
+- Tap target on card body opens medicine detail; tap on the CTA opens the medicine's nearby-stores screen directly.
+
+**States.**
+- `loading`: 1 large skeleton + 4 compact skeletons.
+- `empty` (no group A, no group B, no group C): `Template:NoMatch`.
+- `partial-results` (only Groups B+C, no exact A): show groups present, hide A. Add a small note above: `No exact match. Showing close options.`
+- `no-results`: `Template:NoMatch`.
+- `error`: `Template:Error`, `error_code: 'results_failed'`.
+- `offline`: `Template:Offline` banner. If cached results exist, show them dimmed by 8% with a stale note.
+- `Rx-required`: every Rx card carries the Rx badge; no special screen treatment.
+
+**Accessibility.** Group headers are `role=heading aria-level=2`. Cards expose `accessibilityLabel` combining name + manufacturer + Rx status + nearby count. Touch targets ≥ 56 px tall.
+
+**Telemetry.** `medifind.results.medicine_viewed` when a medicine card tap navigates away; `medifind.results.find_stores_tapped` when the card's primary CTA fires.
+
+**Does NOT do.** No price comparison ranking. No reviews. No add-to-cart.
+
+---
+
+## Screen 4 — Medicine detail
+
+**Purpose.** Confirm "yes, this is the medicine" and route to nearby stores that have it.
+
+**Mental state.** The user is verifying. They want to read the manufacturer, composition, pack size, and Rx status — then move on.
+
+**Layout zones.**
+1. Header. Back, share-icon (system share, optional in MVP), bookmark-icon (local-only "save for later", v2 toggle).
+2. Hero (240 px). Centered medicine image (180 px square), `--color-surface-alt` background.
+3. Identity block. h2 medicine name, body composition line, caption pack-size + form, Rx badge inline if applicable.
+4. Manufacturer line. Body, `--color-text-muted`. Format: `By {manufacturer}`.
+5. Description (one neutral sentence, max 120 chars). Example for Paracetamol: `Paracetamol is an over-the-counter analgesic and antipyretic.` No dosage. No indications. No "consult".
+6. Rx warning block (full Rx pattern from DESIGN_SYSTEM §7) — only when `requiresPrescription === true`.
+7. Nearby availability summary card. `Available at {n} nearby pharmacies` + a stub of the top-3 store names with distance.
+8. Primary CTA (sticky bottom, 16 px above safe-area): `Find nearby stores` (full-width, `--color-primary-500`).
+9. Similar medicines section (below the fold). h3 `Similar medicines`, horizontal scroll of 6 compact cards.
+
+**Components.** `MedicineHeroImage`, `MedicineIdentityBlock`, `RxWarningBlock`, `AvailabilitySummaryCard`, `PrimaryCTA`, `SimilarMedicineRail`.
+
+**Exact copy.**
+- Hero a11y label: `Photo of {medicineName}, {form}, {packSize}`.
+- Manufacturer line: `By {manufacturer}`.
+- Description: one sentence per medicine, supplied in mock data. **Never dosage or indication.** Paracetamol example above is the canonical pattern.
+- Rx warning block (full): title `Prescription required`, body `Please carry a valid prescription when you visit or call the store.` Sub-line: `Medifind does not take prescriptions or fulfil orders.` No CTA inside the block.
+- Availability card title (with stores): `Available at {n} nearby pharmacies`.
+- Availability card title (zero): `Not currently in nearby pharmacies.`
+- Availability card sub-line: stub of 3 store names: `{store1}, {store2}, {store3} +{n-3} more`.
+- CTA label (with stores): `Find nearby stores`.
+- CTA label (no stores): `Show pharmacies anyway` (greyed primary; opens the nearby-stores screen with empty state).
+- Similar header: `Similar medicines`.
+- Similar a11y for each card: `{name} by {manufacturer}, similar to {currentMedicineName}`.
+
+**States.**
+- `loading`: image skeleton + identity skeleton + sticky CTA disabled with `Loading availability`.
+- `empty` (no medicine matched): `Template:Error`, `error_code: 'medicine_not_found'`.
+- `partial-results` (medicine loaded but availability still loading): show identity + Rx + skeleton availability + CTA disabled.
+- `no-results` (medicine loaded, zero nearby): availability card collapses to the zero variant; CTA reads `Show pharmacies anyway`.
+- `error`: `Template:Error`, `error_code: 'medicine_failed'`.
+- `offline`: render from cache if present. If image is uncached, show neutral placeholder block with the medicine's first letter.
+- `stale-data`: if availability data is stale, show `Template:Stale` 24 h or 72 h variant above the availability card.
+- `Rx-required`: full Rx warning block (above) renders.
+
+**Accessibility.** Sticky CTA passes 4.5:1 contrast white-on-primary. Description font size scales with the user's large-type setting. Hero image always has alt text.
+
+**Telemetry.** `medifind.results.medicine_viewed` on screen open. `medifind.results.find_stores_tapped` on CTA tap. `medifind.results.similar_tapped` on similar card tap. If Rx warning block renders, emit no extra event (it's deterministic from the data).
+
+**Does NOT do.** No dosage. No indications. No "how to take". No reviews. No price across stores. No add-to-cart. No prescription upload.
+
+---
+
+## Screen 5 — Nearby stores for this medicine (map + bottom sheet)
+
+**Purpose.** Let the user pick a pharmacy that actually has this medicine, then call or navigate.
+
+**Mental state.** Decision time. They want one tap to call, one tap to drive there.
+
+**Layout.**
+1. Top 40% of viewport: map (mock placeholder for MVP — see "Map placeholder" below). Header floating: back-button + medicine name compact.
+2. Bottom sheet, 60% default height, draggable to 95%. Sticky inside the sheet:
+   - Sheet handle (32×4 pill, centered, `--color-borderSoft`).
+   - Sticky toggle row: `List` / `Map` (Map collapses sheet to 25%; List re-expands to 60%).
+3. Sheet content: store cards, sorted by distance, cap 25.
+
+**Map placeholder (MVP).** No live map SDK. Render `--color-surfaceAlt` rectangle with `Pharmacies near you` centered, plus a faint dot for each store roughly positioned. Codex implements this as a static `<View>`. Replacing with `react-native-maps` later is a swap of the placeholder component only.
+
+**Components.** `MapPlaceholder`, `BottomSheet`, `SheetHandle`, `SheetToggle`, `StoreAvailabilityCard`, `RxBadge`, `DisclaimerLine`.
+
+**Store availability card (per row).**
+- Top row: store name (h3) on left, verified pill on right.
+- Sub line: `{distanceKm} km · {locality} · {open|closed}`.
+- Stock line: `In stock · updated {x} min ago`. Color-coded: green up to 24 h, amber 24-72 h, neutral grey > 72 h.
+- Action row (3 buttons, equal width): `Call`, `Navigate`, `View store`.
+- Card height: 132 px. Tap on card body opens store detail (same as `View store`).
+
+**Exact copy.**
+- Header title: medicine name, max 28 chars.
+- Sheet toggle labels: `List`, `Map`.
+- Card actions: `Call`, `Navigate`, `View store`.
+- Footer disclaimer (sticky at sheet bottom): `Stock can change. Call the store to confirm before you travel.`
+- Empty body when zero stores: `Template:Empty` titled `No nearby pharmacies have this right now.` body `Try a wider radius or browse pharmacies and ask in person.` CTA `Change search area`.
+
+**States.**
+- `loading`: 4 skeleton cards in the sheet, map placeholder static.
+- `empty` (zero results in radius): empty template above.
+- `partial-results` (some stores stale): mixed list with stale rows visually de-emphasised.
+- `no-results`: same as empty.
+- `error`: `Template:Error` filling the sheet, `error_code: 'nearby_for_medicine_failed'`.
+- `offline`: sheet shows last-known cache of these stores; banner template:offline pinned to the top of the sheet.
+- `stale-data`: per-row colouring + `Template:Stale` banner at the top of the sheet.
+- `Rx-required`: medicine carries Rx badge in the header; cards do not change.
+
+**Accessibility.** Bottom sheet handle has `accessibilityRole=adjustable` with `accessibilityActions: increment, decrement`. Action buttons inside cards keep ≥ 44 px touch targets. Map placeholder is `accessibilityElementsHidden=true` because it is decorative in MVP.
+
+**Telemetry.** `medifind.stores.list_view_open` on entry, `medifind.stores.map_view_open` on toggle to map view. `medifind.stores.store_card_tapped`, `store_call_clicked`, `store_navigate_clicked` with `from_screen: 'medicine_stores'`.
+
+**Does NOT do.** No real map in MVP. No driving directions inside the app — `Navigate` opens the OS maps app via a `geo:` / `maps:` URL.
+
+---
+
+## Screen 6 — Stores mode landing
+
+**Purpose.** Browse all nearby pharmacies (no medicine context).
+
+**Mental state.** Either (a) chronic patient looking for "my usual store"; (b) walk-in user wanting to see what's nearby in case they forgot the medicine name; (c) user who tapped the wrong mode and needs an exit.
+
+**Layout.** Identical to Screen 5 (map + bottom sheet) with two differences:
+- Header title is `Pharmacies near you` instead of a medicine name.
+- The sheet has a sticky search field at the top: `Search a pharmacy by name or area`. Tapping pushes a stores-scoped Search.
+- Cards omit the "in stock" line because there is no medicine context. They still show name, verified, distance, locality, open state, freshness label.
+
+**Exact copy.**
+- Sheet field placeholder: `Search a pharmacy by name or area`.
+- Card stock line absent.
+- Empty: `Template:Empty` titled `No verified pharmacies near you yet.` body `Try a wider radius or check back later.`
+- Mode-fallback link at bottom: `Looking for a medicine? Switch to Medicine mode.` (Tertiary, body-sm, `--color-primary-700`.)
+
+**States.** Same as Screen 5, minus `stale-data` (no inventory shown).
+
+**Accessibility.** Same as Screen 5.
+
+**Telemetry.** `medifind.stores.list_view_open`, `map_view_open`, `store_card_tapped`, `store_call_clicked`, `store_navigate_clicked` with `from_screen: 'stores_landing'`.
+
+**Does NOT do.** No medicine search from this screen — it routes back to mode-toggled Search.
+
+---
+
+## Screen 7 — Store detail
+
+**Purpose.** Confirm the store is real, verified, currently open, and learn what's in stock — then call or navigate.
+
+**Mental state.** "Should I trust this place enough to drive there." Trust signals must dominate the first viewport.
+
+**Layout.**
+1. Header (sticky, 64 px). Back, share, bookmark.
+2. Hero block (240 px). `--color-surface` card with: store name (h2), verified pill, distance + locality + open/closed (caption muted), `Drug license: {value}` line.
+3. Action row (3 buttons, equal width, sticky just below the hero on scroll). `Call`, `Navigate`, `Hours`. (The `Hours` button toggles a hours panel.)
+4. Hours panel (collapsed by default). 7-day grid; today highlighted; closed days in muted text.
+5. Address block. Body, full address; tap to copy.
+6. In-store search field. Sticky just above the inventory list. Placeholder: `Search items in this store`.
+7. Inventory list. Grouped by category (Pain Relief, Cold & Cough, …). Each row: medicine name + composition + Rx pill + stock label.
+8. Footer disclaimer.
+
+**Components.** `StoreHero`, `VerifiedPill`, `LicenseLine`, `StoreActionRow`, `HoursPanel`, `AddressLine`, `InStoreSearchField`, `InventoryRow`, `CategoryHeader`, `DisclaimerLine`.
+
+**Exact copy.**
+- Hero a11y: `{name}, verified pharmacy, {distanceKm} km away, {open|closed}, {locality}`.
+- License line: `Drug license: {licenseNumber}`. Tap reveals: `Issued by {licenseAuthority}.`
+- Action labels: `Call`, `Navigate`, `Hours`.
+- Hours panel toggle expanded label (a11y): `Collapse store hours`.
+- Address tap copy toast: `Address copied`.
+- In-store search placeholder: `Search items in this store`.
+- Inventory empty (store has zero in-stock items): `Template:Empty` body `This pharmacy has not posted recent stock. Call to ask in person.` CTA: `Call store`.
+- Footer: `Stock can change. Call the store to confirm before you travel.`
+
+**States.**
+- `loading`: hero skeleton + 6 inventory skeleton rows.
+- `empty` (no inventory at all): empty template above.
+- `partial-results` (in-store search returns 0 of N): inline note `No items match "{query}"` and a `Clear search` ghost button.
+- `no-results` (search returns nothing): same.
+- `error`: `Template:Error`, `error_code: 'store_failed'`.
+- `offline`: render from cache; banner template:offline.
+- `stale-data`: row-level greying for stale items, top-of-list `Template:Stale`.
+- `Rx-required`: rows for Rx items show Rx badge.
+
+**Accessibility.** Action row buttons ≥ 64 px tall. Hours panel is keyboard-traversable. License line has `accessibilityHint: 'Tap to see issuing authority'`.
+
+**Telemetry.** `medifind.stores.store_card_tapped` (entry), `store_call_clicked`, `store_navigate_clicked` with `from_screen: 'store_detail'`. `medifind.store.in_store_search_used` when the in-store search field is submitted.
+
+**Does NOT do.** No reviews. No driving directions inside the app. No "delivery available" badge.
+
+---
+
+## Screen 8 — In-store search (modal-style overlay on store detail)
+
+**Purpose.** Quickly check whether *this* store has a specific item, without leaving store detail.
+
+**Behaviour.** Tapping the in-store search field on Screen 7 expands an overlay (not a separate route) that:
+- Replaces sections 7 + 8 with a search input + suggestion list scoped to this store's inventory only.
+- Suggestions are full inventory rows (same shape as Screen 7).
+- Keyboard `return` filters the underlying list and dismisses the overlay.
+- `Cancel` button dismisses without filtering.
+
+This is a within-screen state, not a separate route. Treated as a single screen so a back-press collapses the overlay first, then leaves /store/[id].
+
+**Exact copy.** Same field placeholder as Screen 7 plus the overlay CTAs `Cancel`, `Apply`. Empty within-store: `No items match "{query}" at this pharmacy.` plus `Clear search` ghost.
+
+**States.** `loading` (rare — store inventory is already loaded), `empty`, `no-results`, `error` (defer to store-detail's error). No offline-specific state because overlay shares cache.
+
+**Accessibility.** Trap focus inside overlay while open; `Esc`/back collapses.
+
+**Telemetry.** `medifind.store.in_store_search_used` on submit.
+
+---
+
+## Screen 9 — Category browse
+
+**Purpose.** Provide a calm browsing experience for chronic / first-aid / household categories.
+
+**Mental state.** Either a chronic patient knowing the family of medicines they want (Diabetes), or a parent restocking First Aid.
+
+**Layout.**
+1. Header. Back, category title (e.g. `Pain Relief`).
+2. Header sub-line. Body-muted: `{n} medicines stocked nearby` (where `n` is the count summed across nearby stores that carry any item in this category).
+3. Filter strip. `All`, `OTC`, `Rx`. Default `All`.
+4. Medicine grid (2 columns). Each tile: image (1:1, 152 px wide), name (body), manufacturer (caption muted), Rx pill if applicable, available-nearby pill if `n > 0`.
+5. Footer disclaimer.
+
+**Components.** `CategoryHeader`, `FilterChipRow`, `MedicineGridCard`, `RxBadge`, `AvailableNearbyBadge`.
+
+**Exact copy.**
+- Sub-line zero-state: `No medicines from this category are stocked at nearby pharmacies right now.`
+- Tile CTA on tap (whole tile): opens medicine detail.
+- Empty: `Template:Empty` titled `Nothing in {categoryName} nearby right now.` body `Browse other categories or try a search.`
+- Header back-button a11y: `Back to home`.
+
+**States.**
+- `loading`: 6 grid skeletons.
+- `empty`: empty template.
+- `partial-results`: filtered grid; if filter eliminates all, inline note `No {filter} matches in {category}.`.
+- `no-results`: empty template.
+- `error`: `Template:Error`, `error_code: 'category_failed'`.
+- `offline`: cached if any.
+- `Rx-required`: tiles show Rx badge.
+
+**Accessibility.** Grid tiles ≥ 200 px tall to fit name + manufacturer + badges without truncation in large-type mode. Color of the available-nearby pill never the only signal — text always says `Available at {n}`.
+
+**Telemetry.** `medifind.category.opened`, `medifind.results.medicine_viewed` on tile tap.
+
+**Does NOT do.** No price ranking. No "popular this week" dynamic ordering in MVP — sort by manufacturer alphabetical, deterministic.
+
+---
+
+## Profile (small redesign)
+
+Add a `Larger text` toggle at the top of the existing Profile screen, persisted to `users/{uid}.preferences.largeType: boolean`. Wire to a global font-scale multiplier of 1.15 when on. Keep the existing fields (display name, saved areas, recent searches, sign out) unchanged.
+
+**Telemetry.** `medifind.profile.large_type_toggled` with `enabled: true|false`.
+
+---
+
+## Phone OTP (deferred — design preserved above)
+
+Phone OTP screen and entry buttons remain disabled and "coming soon" per D-015. The earlier detailed Phone OTP design above remains the future flow. No work in MVP.
