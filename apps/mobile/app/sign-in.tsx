@@ -1,19 +1,72 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import * as Google from 'expo-auth-session/providers/google';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
-import { getAuthErrorMessage, signInWithEmail } from '../services/auth';
+import { getAuthErrorMessage, signInWithEmail, signInWithGoogleIdToken } from '../services/auth';
+import {
+  getGoogleAuthRequestConfig,
+  getGoogleAuthResultMessage,
+  getGoogleAuthUnavailableMessage,
+} from '../services/googleAuth';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 
-type LoadingAction = 'email' | null;
+type LoadingAction = 'email' | 'google' | null;
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
+  const [googleRequest, googleResponse, promptGoogleSignIn] = Google.useIdTokenAuthRequest(
+    getGoogleAuthRequestConfig(),
+  );
+  const handledGoogleResponse = useRef<typeof googleResponse>(null);
+
+  useEffect(() => {
+    if (
+      !googleResponse ||
+      loadingAction !== 'google' ||
+      handledGoogleResponse.current === googleResponse
+    ) {
+      return;
+    }
+
+    handledGoogleResponse.current = googleResponse;
+
+    async function completeGoogleSignIn() {
+      if (!googleResponse || googleResponse.type === 'opened') {
+        return;
+      }
+
+      if (googleResponse.type !== 'success') {
+        setFormError(getGoogleAuthResultMessage(googleResponse));
+        setLoadingAction(null);
+        return;
+      }
+
+      const idToken = googleResponse.params.id_token;
+
+      if (!idToken) {
+        setFormError('Google did not return an ID token. Check the Google client ID setup.');
+        setLoadingAction(null);
+        return;
+      }
+
+      try {
+        await signInWithGoogleIdToken(idToken);
+        router.replace('/home');
+      } catch (error) {
+        setFormError(getAuthErrorMessage(error));
+      } finally {
+        setLoadingAction(null);
+      }
+    }
+
+    void completeGoogleSignIn();
+  }, [googleResponse, loadingAction]);
 
   async function handleEmailSignIn() {
     if (!email.trim()) {
@@ -38,6 +91,30 @@ export default function SignInScreen() {
     }
   }
 
+  async function handleGoogleSignIn() {
+    const unavailableMessage = getGoogleAuthUnavailableMessage();
+
+    if (unavailableMessage) {
+      setFormError(unavailableMessage);
+      return;
+    }
+
+    if (!googleRequest) {
+      setFormError('Google sign-in is still loading. Try again in a moment.');
+      return;
+    }
+
+    setFormError('');
+    setLoadingAction('google');
+
+    try {
+      await promptGoogleSignIn();
+    } catch (error) {
+      setFormError(getAuthErrorMessage(error));
+      setLoadingAction(null);
+    }
+  }
+
   const isBusy = loadingAction !== null;
 
   return (
@@ -54,15 +131,19 @@ export default function SignInScreen() {
             onPress={handleEmailSignIn}
           />
           <ActionButton
-            disabled
-            label="Google sign-in coming soon"
+            disabled={isBusy}
+            label="Continue with Google"
             leadingLabel="G"
+            loading={loadingAction === 'google'}
+            loadingLabel="Opening Google"
+            onPress={handleGoogleSignIn}
             variant="secondary"
           />
           <ActionButton
-            disabled
-            label="Phone login coming soon"
+            disabled={isBusy}
+            label="Continue with phone"
             leadingLabel="Ph"
+            onPress={() => router.push('/phone-otp')}
             variant="secondary"
           />
           <ActionButton
@@ -109,7 +190,7 @@ export default function SignInScreen() {
         ) : (
           <View style={styles.infoPanel}>
             <Text style={styles.infoText}>
-              Email sign-in uses Firebase Auth from Expo environment config.
+              Email uses Firebase Auth now. Google requires a Medifind development build and OAuth client IDs.
             </Text>
           </View>
         )}

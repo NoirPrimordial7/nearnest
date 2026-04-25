@@ -20,7 +20,7 @@ This scaffold contains early MVP auth screens and placeholder app screens:
 - Profile Setup
 - Home
 
-Firebase app/Auth initialization lives in `services/firebase.ts` and reads only Expo public env variables. Sign In and Sign Up call Firebase email/password Auth through the Firebase JS SDK with React Native AsyncStorage persistence. Google auth, Phone auth, Firestore, Functions, analytics, and backend wiring are not implemented yet.
+Firebase app/Auth initialization lives in `services/firebase.ts` and reads only Expo public env variables. Sign In and Sign Up call Firebase email/password Auth through the Firebase JS SDK with React Native AsyncStorage persistence. Google auth is wired through Expo AuthSession and Firebase `GoogleAuthProvider`, but requires a Medifind development build plus valid OAuth client IDs. Phone auth, Firestore, Functions, analytics, and backend wiring are not implemented yet.
 
 ## Environment
 
@@ -35,13 +35,15 @@ EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 EXPO_PUBLIC_FIREBASE_APP_ID=
 ```
 
-Google auth is UI-only right now. Before implementing it later, add a real Android client ID from the Medifind development/production build credentials:
+Google auth requires real OAuth client IDs from Google Cloud / Firebase Auth. Add them only to local `.env`, never to committed files:
 
 ```bash
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
 EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=
 EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=
-EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=
 ```
+
+Google OAuth cannot be reliably tested in Expo Go because the app-specific OAuth redirect needs the Medifind development/production build. Install a development build before testing Google sign-in.
 
 ## Commands
 
@@ -57,6 +59,6 @@ npm run typecheck
 
 - Do not import from the root web portal `src/`.
 - Do not commit real Firebase values. Use local Expo public env variables only.
-- Do not commit real Google OAuth client IDs. Google auth remains disabled until explicitly reintroduced.
+- Do not commit real Google OAuth client IDs.
 - MVP stays focused on medicine discovery, nearby store availability, store contact, and navigation.
 - Cart, checkout, payment, order tracking, delivery, and Phone OTP remain out of MVP unless explicitly approved.

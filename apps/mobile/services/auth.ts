@@ -1,7 +1,9 @@
 import { FirebaseError } from 'firebase/app';
 import {
+  GoogleAuthProvider,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   type NextOrObserver,
@@ -16,6 +18,11 @@ export function signInWithEmail(email: string, password: string) {
 
 export function signUpWithEmail(email: string, password: string) {
   return createUserWithEmailAndPassword(auth, email.trim(), password);
+}
+
+export function signInWithGoogleIdToken(idToken: string) {
+  const credential = GoogleAuthProvider.credential(idToken);
+  return signInWithCredential(auth, credential);
 }
 
 export function signOut() {
@@ -44,8 +51,12 @@ export function getAuthErrorMessage(error: unknown) {
       return 'Email or password is incorrect.';
     case 'auth/account-exists-with-different-credential':
       return 'An account already exists for this email. Sign in with the original method first.';
+    case 'auth/popup-closed-by-user':
+      return 'Google sign-in was closed before it finished.';
     case 'auth/operation-not-allowed':
       return 'This sign-in method is not enabled yet. Enable it in Firebase Authentication.';
+    case 'auth/unauthorized-domain':
+      return 'Google sign-in is not authorized for this app yet. Check Firebase Auth settings.';
     case 'auth/network-request-failed':
       return 'We could not reach Firebase. Check your connection and try again.';
     case 'auth/api-key-not-valid':

@@ -4,6 +4,65 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-25 - Wire Google AuthSession And Phone OTP Stub
+**Agent:** Codex
+**Session goal:** Reintroduce Google sign-in using Expo AuthSession with Firebase JS SDK credential sign-in, add a Phone OTP UI stub, and document the remaining platform/config blockers.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - confirmed Graphify requirements.
+- `graphify-out/GRAPH_REPORT.md` - checked current graph context before code changes.
+- `docs/MOBILE_APP_PLAN.md` - checked current auth scope and MVP guardrails.
+- `docs/SESSION_STATE.md` - checked latest auth verification state.
+- `docs/TODO_NEXT_AGENT.md` - checked current next-agent priorities.
+- `docs/MOBILE_UI_SCREEN_SPECS.md` - checked Sign In/Sign Up and Phone OTP design requirements.
+- `docs/AGENT_LOG.md` - checked prior handoff entries.
+- Expo official authentication/AuthSession docs and Firebase official Phone Auth docs - checked current OAuth and reCAPTCHA constraints.
+- `apps/mobile/package.json`, `apps/mobile/app.json`, `apps/mobile/services/firebase.ts`, `apps/mobile/services/auth.ts`, `apps/mobile/app/sign-in.tsx`, and `apps/mobile/app/sign-up.tsx` - reviewed current mobile auth implementation.
+- `apps/mobile/.env` - checked key presence only; values were not printed.
+
+**Files created / edited:**
+- `apps/mobile/services/googleAuth.ts` - added Google AuthSession config helpers, Expo Go runtime guard, env-missing messages, and AuthSession result messaging.
+- `apps/mobile/services/phoneAuth.ts` - added Phone OTP deferred reason and phone-number normalization helper.
+- `apps/mobile/app/phone-otp.tsx` - added Medifind-styled Phone OTP UI stub with explicit deferred status.
+- `apps/mobile/services/auth.ts` - added Firebase JS SDK `GoogleAuthProvider` credential sign-in.
+- `apps/mobile/app/sign-in.tsx` - enabled Google button through AuthSession/Firebase flow and routed Phone to `/phone-otp`.
+- `apps/mobile/app/sign-up.tsx` - enabled Google button through the same AuthSession/Firebase flow and routed Phone to `/phone-otp`.
+- `apps/mobile/.env.example` - documented Google OAuth env keys for local setup.
+- `apps/mobile/README.md` - documented Google development-build requirement and Phone/Auth status.
+- `apps/mobile/package.json` and `apps/mobile/package-lock.json` - added `expo-auth-session` and `expo-web-browser`.
+- `apps/mobile/app.json` - added the `expo-web-browser` config plugin.
+- `docs/SESSION_STATE.md` - recorded Google/Phone status, verification results, and Graphify update.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top Next up section around Android OAuth client ID, dev-build testing, and Phone OTP blocker.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/GRAPH_REPORT.md`, `graphify-out/graph.json`, and `graphify-out/graph.html` - refreshed by `graphify update .`.
+
+**Files intentionally NOT touched:**
+- `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json` - protected/out of scope.
+- `apps/mobile/.env` - not edited because the missing Android OAuth client ID cannot be inferred; values were not printed.
+- Firestore/profile integration - deferred until auth is stable and profile rules/contracts are approved.
+
+**Decisions made:** No new decision record added. Implementation stays on D-008 Firebase JS SDK. Phone OTP remains a UI stub because Firebase JS SDK Phone Auth requires a reCAPTCHA verifier with browser DOM, while Expo's old Firebase reCAPTCHA package is archived.
+
+**Commands run:**
+1. `npx expo install expo-auth-session expo-web-browser` in `apps/mobile` - succeeded and added the `expo-web-browser` plugin.
+2. `npm run typecheck` in `apps/mobile` - passed.
+3. Mobile `.env` key-presence check - Firebase keys, Google Web client ID, and Google iOS client ID are present; `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is missing.
+4. `rg` scan for React Native Firebase, Firebase analytics, Firestore, Functions, Storage, Database, fetch, and axios in mobile app code - no matches.
+5. `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` - first sandboxed attempt failed with `EPERM: operation not permitted, lstat 'C:\Users\Aditya'`; escalated rerun passed and reported `firebase@12.12.1`, `expo-auth-session@7.0.10`, `expo-web-browser@15.0.10`, and `@react-native-async-storage/async-storage@3.0.2` only.
+6. `npx expo export --platform android --output-dir .expo\google-auth-verification-export` - first sandboxed attempt failed with the same `EPERM`; escalated rerun passed and bundled Android successfully.
+7. `graphify update .` - passed and rebuilt the graph at 252 nodes, 253 edges, and 62 communities.
+
+**Warnings for next agent:**
+- Google code is present but Android Google sign-in is not functional until `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is added locally and a Medifind development build is installed. Expo Go intentionally shows a blocking message for Google OAuth.
+- Do not claim Phone OTP is implemented. It is a UI stub with a documented platform blocker.
+- Do not add Firestore profile writes yet.
+- `.expo/google-auth-verification-export` is generated local test output and should remain uncommitted.
+
+**Suggested commit message:**
+`feat(mobile): wire Google auth and phone OTP stub`
+
+---
+
 ## 2026-04-25 - Verify Medifind Auth And Document Current State
 **Agent:** Codex
 **Session goal:** Review today's Medifind mobile auth/scaffold/UI updates, verify the current Expo/Firebase state, and create a summary report with blockers and next steps.

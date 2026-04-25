@@ -4,7 +4,7 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-25, after auth verification report)
+## Next up (as of 2026-04-25, after Google AuthSession wiring)
 
 **Canonical MVP:**
 - Find a medicine.
@@ -17,36 +17,39 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 **Phase 2 / optional (not MVP):** delivery, cart, checkout, payment, order tracking, prescription delivery flow.
 
-**Auth implementation now:** Firebase Authentication is wired with email/password through the Firebase JS SDK only. Splash now gates on Firebase Auth state. Google and Phone buttons are disabled UI-only placeholders.
+**Auth implementation now:** Firebase Authentication is wired with email/password through the Firebase JS SDK. Splash gates on Firebase Auth state. Google AuthSession code is wired through Firebase JS SDK `GoogleAuthProvider`, but Android Google sign-in is blocked until `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is added locally and a Medifind development build is installed.
 
-**Google auth status:** do not reintroduce Google OAuth yet. `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is still required before Google auth can be implemented against a development/production build. `expo-auth-session`, `expo-web-browser`, `GoogleAuthProvider`, and all `@react-native-firebase/*` usage have been removed from the mobile app.
+**Google auth status:** code is present, not fully functional locally. Expo Go should not be used as the final OAuth test environment because Expo's OAuth guidance requires a development build for app-specific redirects. The local `.env` has Google Web and iOS client IDs present, but `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` is missing.
 
-**Phone auth status:** Phone OTP is Phase 2.
+**Phone auth status:** `/phone-otp` UI stub exists. Real SMS is deferred because Firebase JS SDK Phone Auth requires a reCAPTCHA verifier with a browser DOM, and Expo's old Firebase reCAPTCHA package is archived. Do not fake SMS or bypass reCAPTCHA.
 
 **Future profile gate:** every user should eventually have a minimal profile in `users/{uid}` before reaching Home, but there is no Firestore profile gate in the app yet. Do not add direct profile writes until the profile contract and rules are approved.
 
 **Rx in MVP:** Rx medicines appear in discovery with a strong "Prescription required" badge and warning. Discovery and navigation are not blocked. No reserve/order/delivery. No medical advice, dosage, usage, or side-effect copy, even if the data exists in `medicines/{id}`.
 
-1. **Commit and push the auth verification report.** Include `docs/MOBILE_AUTH_VERIFICATION_REPORT_2026-04-25.md`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md`. Suggested message: `docs(mobile): add auth verification report`.
-2. **Restart Expo after pulling this change:**
+1. **Commit the Google AuthSession wiring and Phone OTP stub.** Include `apps/mobile/app/sign-in.tsx`, `apps/mobile/app/sign-up.tsx`, `apps/mobile/app/phone-otp.tsx`, `apps/mobile/services/auth.ts`, `apps/mobile/services/googleAuth.ts`, `apps/mobile/services/phoneAuth.ts`, `apps/mobile/.env.example`, `apps/mobile/README.md`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/package-lock.json`, `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and tracked Graphify outputs. Suggested message: `feat(mobile): wire Google auth and phone OTP stub`.
+2. **Add the missing Android Google client ID locally.** Add this only to untracked `apps/mobile/.env`, never to committed files:
+   `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=`
+3. **Restart Expo after changing env values:**
    `cd C:\projects\nearnest\web-portal\apps\mobile`
    `npx expo start -c --lan`
-3. **Run a manual live auth pass with a known Firebase test account.** Automated verification passed (`npm run typecheck`, Android Expo export, SDK/dependency scans), but a credentialed device/simulator test still needs a test account.
-4. **Decide Google Auth direction before coding.** If Google must work now, explicitly approve reimplementation, add `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` to untracked `apps/mobile/.env`, and use Firebase JS SDK only. If not, keep the disabled "coming soon" buttons.
-5. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
+4. **Use a Medifind development build for Google OAuth testing.** Expo Go can load the app, but the Google button intentionally blocks in Expo Go with a clear message.
+5. **Run a manual live auth pass with a known Firebase test account.** Automated verification passed (`npm run typecheck`, Android Expo export, SDK/dependency scans), but a credentialed device/simulator test still needs a test account.
+6. **If phone browser cannot reach Metro, fix Windows firewall from Administrator PowerShell:**
    `netsh advfirewall firewall add rule name="Medifind Expo Node Private" dir=in action=allow program="C:\Program Files\nodejs\node.exe" enable=yes profile=private`
    `netsh advfirewall firewall add rule name="Medifind Expo Metro 8081 Private" dir=in action=allow protocol=TCP localport=8081 profile=private`
    `netsh advfirewall firewall add rule name="Medifind Expo Metro 8082 Private" dir=in action=allow protocol=TCP localport=8082 profile=private`
-6. **If LAN still fails, try fallback port:**
+7. **If LAN still fails, try fallback port:**
    `npx expo start -c --lan --port 8082`
    Then test `http://192.168.1.149:8082` and `exp://192.168.1.149:8082`.
-7. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
-8. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
-9. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
-10. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
-11. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
-12. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
-13. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
+8. **Choose the real Phone OTP implementation path before enabling SMS.** The current screen is a UI stub with a clear blocker. Do not use Firebase JS SDK phone auth in native Expo unless a supported reCAPTCHA verifier path is approved.
+9. **Add Email Verification and Forgot Password next.** Use Firebase JS SDK email verification/reset APIs, then update navigation around verified/unverified users.
+10. **Resolve the post-sign-up route.** Current Firebase success path routes Sign Up to Home per the latest auth-wiring request; product docs still require a minimal profile before Home, so add a profile-completion guard before release.
+11. **Add Profile Setup persistence only after Firestore/profile rules are approved.** Do not add direct profile writes until the mobile-safe profile contract is clear.
+12. **Do not scaffold commerce routes in MVP.** No cart, checkout, payment status, orders, delivery tracking, or prescription upload/review screens unless the user explicitly expands scope.
+13. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
+14. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
+15. **End every session by updating handoff memory.** Append to `docs/AGENT_LOG.md`, rewrite this "Next up" section, and update `docs/SESSION_STATE.md`.
 
 ---
 
