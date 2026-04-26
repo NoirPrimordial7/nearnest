@@ -4,6 +4,72 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Verify live discovery backend integration and deployment readiness
+**Agent:** Codex
+**Session goal:** Re-read the repo from local files, verify the current Medifind discovery backend/mobile integration, prepare deployment status without deploying, run static/mobile checks, and leave a clear next-agent handoff.
+
+**Files inspected (read-only):**
+- `AGENTS.md`, `CLAUDE.md`, `graphify-out/GRAPH_REPORT.md` - confirmed Graphify instructions and current graph hubs before codebase verification.
+- `docs/AI_HANDOFF_PROTOCOL.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md`, `docs/DECISIONS.md`, `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md` - loaded project memory and current constraints.
+- `functions/index.js` - verified `searchMedicines` and `nearbyStores` callables exist in `asia-south1`, normalize/whitelist returned medicine/store/inventory fields, but do not currently require `context.auth`.
+- `firestore.rules` - verified discovery reads require `signedIn()` on explicit medicine/store/inventory paths, but also found the global fallback `match /{document=**} { allow read: if signedIn(); }`, which still permits signed-in reads broadly.
+- `firestore.indexes.json` - verified discovery indexes and the `inventory.medicineId` field override exist.
+- `apps/mobile/services/firebase.ts` - verified regional `firebaseFunctions = getFunctions(firebaseApp, 'asia-south1')`.
+- `apps/mobile/services/discoveryApi.ts` - verified `searchMedicinesApi` / `getNearbyStoresApi` call Functions with mock fallback, and verified detail/category/store paths still use direct Firestore reads with mock fallback.
+- `apps/mobile/app/home.tsx`, `results.tsx`, `medicine/[medicineId].tsx`, `medicine/[medicineId]/stores.tsx`, `stores/index.tsx`, `store/[storeId].tsx`, `category/[categoryId].tsx` - verified mobile discovery screens call `discoveryApi`.
+- `functions/scripts/seedDiscoveryData.js` and `functions/scripts/verifyDiscoveryData.js` - verified seed/verification scripts exist and cover `medicines`, `stores`, and `stores/{storeId}/inventory/{medicineId}`.
+- `.firebaserc`, `firebase.json`, `functions/package.json` - verified Firebase project/config/deploy surfaces.
+
+**Files created / edited:**
+- `docs/AGENT_LOG.md` - appended this verification entry.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top "Next up" section around the verified blockers and next priority.
+- `docs/SESSION_STATE.md` - added the current verification/deploy/test state.
+
+**Verification results:**
+- `git status --short` before edits showed only protected/unrelated local files dirty: `.claude/settings.local.json` and untracked `.codex/medifind-*.png`; these were not touched.
+- `firebase projects:list` - authenticated; current project is `nearnest-platform`.
+- `firebase use` - `nearnest-platform`.
+- `firebase target` - no resource targets configured.
+- `firebase functions:list --project nearnest-platform` - live functions include `searchMedicines` and `nearbyStores` in `asia-south1` on Node 22, plus existing remote functions outside local source.
+- Direct live callable check: `searchMedicines` for `Dolo` near the seeded Pune coordinate returned `Dolo 650`, 3 availability rows, first store `Greenleaf Pharmacy`, first stock `in_stock`.
+- Direct live callable check: `nearbyStores` near the seeded Pune coordinate returned 4 stores, first store `Greenleaf Pharmacy`, public phone present.
+- `cd apps/mobile && npm run typecheck` - passed.
+- `cd apps/mobile && npx expo export --platform android --output-dir .expo/live-discovery-export` - passed.
+- `cd functions && node --check index.js` - passed.
+- `cd functions && npm run lint` - passed.
+- Android dev-client: Metro started with `npx expo start -c --dev-client --android --port 8081`; installed package `com.nearnest.medifind` launched on `emulator-5554`.
+- Emulator route checks: `/home`, `/results?q=Dolo`, `/medicine/med_dolo_650`, `/medicine/med_dolo_650/stores`, `/stores`, `/store/medifind_demo_greenleaf`, and `/category/cat_pain_relief` were opened via deep link/UIAutomator where possible. Home/results/medicine/nearby-stores/stores rendered; store-detail/category seeded backend detail could not be fully verified without a signed-in session because those paths still use direct Firestore reads.
+- Call/Navigate fallback check: tapping Call and Navigate from the medicine-stores route emitted telemetry and showed `external_link_failed` on this emulator, confirming the failure fallback path when no handler is available.
+- Forced backend-failure/mock-fallback runtime test was not completed. Code-level fallback is present in `discoveryApi.ts`; unauthenticated direct-detail routes also fell back to mock where backend reads were denied.
+
+**Deploy / seed status:**
+- No deploy was run in this session.
+- No seed script was run in this session.
+- Prepared deploy command, if the user explicitly approves production Firebase changes: `firebase deploy --only functions,firestore:rules,firestore:indexes --project nearnest-platform`.
+- Safer explicit Functions-only deploy, if needed: `firebase deploy --only functions:searchMedicines,functions:nearbyStores --project nearnest-platform`.
+- Do not run an all-functions deploy casually: Firebase has remote functions not represented in local source (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`).
+
+**Security findings / blockers:**
+- Cannot confirm "public store reads do not expose owner/member/private/internal fields" end to end. Callable responses are whitelisted, but mobile still directly reads `stores/{storeId}` and `stores/{storeId}/inventory`, and Firestore rules still contain a signed-in global read fallback.
+- `searchMedicines` and `nearbyStores` callables do not enforce `context.auth`, so anonymous callable access is possible even though explicit Firestore discovery reads require `signedIn()`.
+- Seeded public store docs are mostly public-safe and `assertStoreDocsSafe` blocks key private fields before overwrite, but seeded store docs include `licenseNumber`, `licenseAuthority`, `seededBy`, and timestamp metadata in the public `stores` docs. Decide whether those fields are intentionally public before onboarding real stores.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**`, root web routing/layout/design, store-admin/admin web code - protected.
+- `.env`, `.env.local`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets.
+- `.claude/settings.local.json`, `.codex/*.png` - pre-existing local/protected changes.
+- `functions/index.js`, `firestore.rules`, `firestore.indexes.json`, `apps/mobile/**` - inspected and tested only; no code changes made.
+
+**Warnings for next agent:**
+- First priority is a security hardening pass, not another blind deploy: require auth in callables, remove or replace direct public store reads, and remove/tighten the global signed-in read fallback only after checking web portal impact.
+- A full authenticated Android walkthrough still needs a verified Google or email test account. The current emulator was at Sign In; discovery routes were deep-linked for partial runtime checks.
+- Keep Phone OTP deferred per D-015. No `@react-native-firebase/*`, SMS backend, cart, checkout, payment, delivery, order tracking, prescription upload, or medical-advice work was done.
+
+**Suggested commit message:**
+`test(mobile): verify live discovery backend integration`
+
+---
+
 ## 2026-04-26 - Discovery rules: tighten public reads to require signed-in (incremental hardening on top of Codex deploy)
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Take over after Codex hit usage limit. Verify the discovery backend that Codex already DEPLOYED, do a security pass before any further deploy, and apply the smallest safe hardening that does not regress the working flow. Do not deploy.

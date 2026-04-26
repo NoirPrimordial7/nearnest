@@ -1,6 +1,21 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (Codex deployed discovery backend; Claude tightened public-read rules to require signed-in; tightening NOT yet deployed)
+Last updated: 2026-04-26 (Codex re-verified live discovery backend; no deploy/seed this session; security blockers remain before next deploy)
+
+## Live discovery backend verification 2026-04-26 (Codex follow-on)
+- Re-read local repo files first. Current `git status --short` before edits showed only unrelated/protected local files: modified `.claude/settings.local.json` and untracked `.codex/medifind-*.png`; these were not touched.
+- Verified `functions/index.js` exports `searchMedicines` and `nearbyStores` callables in `asia-south1`.
+- Verified `apps/mobile/services/firebase.ts` exports regional `firebaseFunctions`, and `apps/mobile/services/discoveryApi.ts` calls `searchMedicines` / `nearbyStores` with mock fallback on errors.
+- Verified mobile discovery screens call `discoveryApi`: `/home`, `/results`, `/medicine/[medicineId]`, `/medicine/[medicineId]/stores`, `/stores`, `/store/[storeId]`, and `/category/[categoryId]`.
+- Firebase CLI is authenticated and active project is `nearnest-platform`; `.firebaserc` points default to `nearnest-platform`; `firebase target` shows no resource targets.
+- Live direct callable verification passed again: `searchMedicines` for `Dolo` returned `Dolo 650` with 3 availability rows; `nearbyStores` returned 4 stores with public phone data.
+- Static verification passed: `apps/mobile npm run typecheck`, `apps/mobile npx expo export --platform android --output-dir .expo/live-discovery-export`, `functions node --check index.js`, and `functions npm run lint`.
+- Android dev-client launched on `emulator-5554` via `npx expo start -c --dev-client --android --port 8081`. Deep-link route checks rendered Home, Results, Medicine detail, Nearby stores, Stores mode, Store detail, and Category screens where auth/rules permitted. A full signed-in walkthrough was not completed because no verified test credential/session was available in the emulator.
+- Call/Navigate fallback was exercised from a medicine-stores route. The emulator had no usable external handler, so the app emitted `external_link_failed`; this verifies the fallback error path, not a successful dialer/maps handoff.
+- **No deploy was run.** Prepared command only: `firebase deploy --only functions,firestore:rules,firestore:indexes --project nearnest-platform`. Use explicit targets `functions:searchMedicines,functions:nearbyStores` if avoiding unrelated remote Functions.
+- **No seed was run.** Existing seed scripts are present and previous seed data still responds through live callables.
+- **Security blockers remain:** callables do not require `context.auth`; mobile detail/category/store APIs still use direct Firestore reads; `firestore.rules` still has a global `allow read: if signedIn()` fallback. Because of this, do not claim public store reads are field-safe end to end yet.
+- Graphify was not run because this session changed documentation only, not code files.
 
 ## Discovery rules incremental hardening 2026-04-26 (Claude follow-on)
 - Verified Codex's deployed backend by inspection: `searchMedicines` + `nearbyStores` callables in `asia-south1`, indexes in place, mobile `discoveryApi.ts` uses callables with mock fallback, seed script seeded 8 medicines + 4 stores + 17 inventory rows in `nearnest-platform`, `@react-native-firebase/*` NOT added.

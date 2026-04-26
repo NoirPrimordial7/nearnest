@@ -4,33 +4,40 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-26, after live Firebase discovery deploy and seed)
+## Next up (as of 2026-04-26, after Codex live-backend verification)
 
-**Backend discovery is deployed and seeded for live testing.** Current state:
-- Firestore rules and indexes were deployed to `nearnest-platform`.
-- `searchMedicines` and `nearbyStores` callables are deployed in `asia-south1`.
-- Production seed data exists for 8 medicines, 4 public discovery stores, and 17 inventory rows.
-- Live callable verification passed for Dolo search and nearby stores.
-- Mobile discovery screens use `apps/mobile/services/discoveryApi.ts` with Firebase backend calls and mock fallback.
+**Live discovery backend is reachable, but do not deploy again until the public-read blockers are handled or explicitly accepted.** Current verified state:
+- Firebase CLI is authenticated; active project is `nearnest-platform`.
+- `searchMedicines` and `nearbyStores` are deployed in `asia-south1` and returned live seeded data during direct callable checks.
+- `searchMedicines` for `Dolo` returned `Dolo 650` with 3 availability rows.
+- `nearbyStores` near the seeded Pune coordinate returned 4 public stores with public phone data.
+- Mobile `discoveryApi.ts` calls those callables for search and nearby stores and falls back to mock data on errors.
+- Static verification passed: mobile typecheck, Android export, Functions syntax check, Functions lint.
+- Android dev-client launched on `emulator-5554`; route checks were partial because no verified signed-in test session was available.
+
+**Blockers found:**
+- `searchMedicines` and `nearbyStores` do not require `context.auth`; anonymous callable access is still possible.
+- Mobile detail/category/store paths still use direct Firestore reads (`getDoc`/`getDocs`) for `medicines`, `stores`, and `inventory`.
+- `firestore.rules` has a global signed-in read fallback: `match /{document=**} { allow read: if signedIn(); }`. This undermines field-safety assumptions for signed-in clients.
+- Therefore, do **not** claim public store reads are field-safe yet. Callable responses are whitelisted, but direct reads can still expose full docs to signed-in clients.
 
 **Current verified auth state remains unchanged:** Firebase JS SDK only. Email/password and Google sign-in work with Firestore profile persistence. Phone OTP stays deferred by D-015.
 
-**Still needed:** manual Android dev-build UI smoke testing against the live backend. Static/mobile export checks passed, but no final on-device discovery walkthrough was completed after the production seed.
-
 ### Next steps
 
-1. **Commit the backend/mobile live discovery work intentionally.** Suggested message: `feat(discovery): deploy and seed Firebase-backed medicine search`.
-2. **Run dev-build discovery QA against live data:** Home -> Search `Dolo` -> Results -> Medicine detail -> Find nearby stores -> Store detail -> Call/Navigate. Confirm mock fallback copy does not appear while Firebase is healthy.
-3. **Test edge states:** no results, Rx medicine warning, low stock, call-to-confirm copy, stale inventory warning, closed store, missing phone, and unavailable Maps handler.
-4. **Review public store document shape before adding real stores.** Public reads require `publicDiscovery: true` plus verified/approved status, but public store docs should still avoid owner/member/internal fields.
-5. **Replace the fallback Pune coordinate.** Add location permission/manual search-area state before trusting distance ranking in production.
-6. **Scale the backend query model.** Current availability lookup reads inventory per public store to avoid production collection-group precondition issues. Add denormalized public availability summaries or maintained search documents before large catalogs.
-7. **Keep Map SDK deferred.** Current UI still uses `MapPlaceholder` and external Google Maps URLs. Add `react-native-maps` or `expo-maps` only after API-key restrictions and location UX are ready.
-8. **Add App Check / abuse controls before wider launch.** Callables currently prioritize MVP validation over throttling/rate limiting.
-9. **Do not delete existing remote Functions or indexes casually.** Firebase CLI reported remote functions not present in local source and one remote index not present in `firestore.indexes.json`; review before any destructive deploy flags.
-10. **Keep Rx discovery informational.** No reserve, upload, order, delivery, buy, request, cart, checkout, medical advice, dosage, or substitution guidance.
-11. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP until after discovery MVP; do not add `@react-native-firebase/*` or SMS backend work here.
-12. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
+1. **Security hardening first:** require auth in `searchMedicines` / `nearbyStores`, add callable-only detail paths (`medicineDetail`, `storeDetail`, `categoryMedicines`), and refactor `discoveryApi.ts` away from direct public store/inventory reads.
+2. **Rules cleanup after web-impact review:** remove or tighten the global signed-in read fallback and make direct `stores/{id}` / `inventory/{sku}` public reads unavailable to ordinary mobile users.
+3. **Run a full authenticated Android walkthrough with a real verified account:** Home -> Search `Dolo` -> Results -> Medicine detail -> Nearby stores -> Store detail -> Call/Navigate.
+4. **Deploy only after explicit approval:** preferred command remains `firebase deploy --only functions,firestore:rules,firestore:indexes --project nearnest-platform`; use explicit function targets if avoiding unrelated remote Functions.
+5. **Do not run `firebase deploy --only functions` blindly.** Remote functions not present in local source still exist (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`).
+6. **Do not reseed blindly.** Existing seed data appears live; rerun `node functions/scripts/seedDiscoveryData.js` only when intentionally refreshing demo data.
+7. **Review seeded store doc shape before real stores.** Seed docs are protected against key private fields, but contain `licenseNumber`, `licenseAuthority`, `seededBy`, and timestamps in public store docs.
+8. **Test forced mock fallback at runtime.** Code fallback is present, but a deliberate backend-failure emulator test was not completed in the latest verification.
+9. **Replace the fallback Pune coordinate** before trusting distance ranking in production.
+10. **Keep Map SDK deferred** until API-key restrictions and location UX are ready.
+11. **Keep Rx discovery informational.** No reserve, upload, order, delivery, buy, request, cart, checkout, medical advice, dosage, or substitution guidance.
+12. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP; do not add `@react-native-firebase/*` or SMS backend work here.
+13. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
 
 ---
 
