@@ -2,7 +2,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
-import { useProfileComplete } from "../user/userProfile";
+import { useProfileComplete } from "./userProfile";
 
 export default function RequireProfile({ children }) {
   const { user } = useAuth();

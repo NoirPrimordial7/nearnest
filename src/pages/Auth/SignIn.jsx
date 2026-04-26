@@ -22,17 +22,7 @@ async function fetchRoles(uid) {
 }
 
 async function redirectByRole(navigate, uid) {
-  const { role, roles } = await fetchRoles(uid);
-
-  if (role === "admin" || roles.includes("admin")) {
-    return navigate("/admin", { replace: true });
-  }
-  if (roles.includes("storeAdmin") || roles.some((r) => r.endsWith(":Owner"))) {
-    return navigate("/store-admin/home", { replace: true });
-  }
-  if (roles.some((r) => r.includes(":"))) {
-    return navigate("/store-staff/home", { replace: true });
-  }
+  await fetchRoles(uid);
   return navigate("/home", { replace: true });
 }
 

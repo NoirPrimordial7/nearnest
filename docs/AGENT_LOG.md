@@ -4,6 +4,67 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Fix web portal routing and split mobile profile data
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix Nearnest web portal route/path bugs that made `/home` and store-admin routing misleading, document the UID/store ownership diagnosis, and separate Medifind mobile customer profiles from web/admin `users/{uid}` role data. No Firebase deploy.
+
+### What changed
+- `src/App.jsx`
+  - Removed unused `AuthProvider` and `useParams` imports.
+  - Fixed user-route imports to match tracked repo casing: `./pages/User/...`.
+  - Fixed `StoreAdvertisement` import to the actual `storeadvertisement.jsx` casing.
+  - Removed role allowlists from `/home`, `/setup-profile`, and store onboarding routes so owner/staff custom roles are not locked out before Firestore rules evaluate store access.
+  - Added protected `/store-admin/home -> /home` alias.
+  - Wrapped `/store-admin/:storeId` in `ProtectedRoute`.
+  - Added `/store-admin/:storeId` index redirect to `dashboard`.
+- `src/pages/Auth/AuthContext.jsx` and `src/pages/Auth/SignIn.jsx`
+  - Changed post-auth role redirects to `/home` instead of fake `/store-admin/home` or missing `/store-staff/home` routes.
+- `src/pages/StoreAdmin/StoreAdminLayout.jsx`
+  - Fixed string interpolation for settings/support navigation.
+  - Removed the Analytics / Reports menu entry because the route is not active.
+- `src/pages/User/UserHome.jsx`, `RequireProfile.jsx`, `UserProfiles.jsx`
+  - Fixed local profile imports to same-folder `./userProfile`.
+  - Added missing `signOut` import.
+  - Updated empty-store UX to explain "No stores registered for this account" and direct users to ask an admin to add the login UID as owner/member.
+- `apps/mobile/services/userProfile.ts`
+  - Moved mobile customer profile reads/writes to `mobileUsers/{uid}`.
+  - Added one-time safe migration from legacy `users/{uid}` into `mobileUsers/{uid}` for customer-safe fields only; no roles or permissions are copied or written.
+- `firestore.rules`
+  - Added `mobileUsers/{uid}` rules: user can read/write own mobile profile, admin can read, role/permission keys are rejected in mobile profile writes.
+- `docs/DECISIONS.md`
+  - Added D-016 documenting one Auth identity with separate `users/{uid}` and `mobileUsers/{uid}` domain data.
+- `graphify-out/**`
+  - Updated because code files changed.
+
+### UID/store ownership diagnosis
+- `/home` uses `listenUserStores(user.uid)` from `src/pages/register-store/stores.js`.
+- Non-admin users see stores only when `stores/{storeId}.ownerId == auth.uid` or `stores/{storeId}.membersArr` contains `auth.uid`.
+- Admin store lists can make a store look associated by email or owner metadata, but `/home` is UID-linked.
+- For `adityagholap19.06@gmqaicl.com`, check:
+  - `users/{uid}.email`
+  - `stores/{storeId}.ownerId`
+  - `stores/{storeId}.ownerEmail` if present
+  - `stores/{storeId}.membersArr`
+  - `stores/{storeId}.members`
+  - `stores/{storeId}.visibleTo`
+- No production data was modified.
+
+### Verification
+- `git status --short` run before edits and after edits.
+- `npm run build` initially hit sandbox `EPERM` on `C:\Users\Aditya`; rerun with approval passed. Vite emitted only the existing large-chunk warning.
+- `cd apps/mobile && npm run typecheck` passed.
+- `cd functions && npm run lint` passed.
+- `git diff --check` passed after docs/graphify finalization.
+- `graphify update .` was not on PATH; rerun with `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .` passed.
+
+### Protected files
+- Did not deploy Firebase.
+- Did not touch `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, `.codex/*.png`, or `dataconnect/**`.
+
+**Suggested commit message:** `fix(web): repair portal routing and account store ownership UX`
+
+---
+
 ## 2026-04-27 - Verify deployed hardened discovery backend (no deploy, no code edit)
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Verify the deployed Firebase backend after the hardened-rules + 6-callable deploy. Docs-only output. No deploy, no code edit.

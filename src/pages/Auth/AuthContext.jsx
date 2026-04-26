@@ -80,14 +80,10 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => useContext(AuthContext);
 
 export const RoleRedirect = () => {
-  const { user, roles, authLoading } = useAuth();
+  const { user, authLoading } = useAuth();
 
   if (authLoading) return null;
 
   if (!user) return <Navigate to="/signin" replace />;
-  if (roles.includes("admin")) return <Navigate to="/admin" replace />;
-  if (roles.includes("storeAdmin")) return <Navigate to="/store-admin/home" replace />;
-  if (roles.includes("storeStaff")) return <Navigate to="/store-staff/home" replace />;
-
   return <Navigate to="/home" replace />;
 };

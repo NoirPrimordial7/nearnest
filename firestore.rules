@@ -190,6 +190,18 @@ service cloud.firestore {
         );
     }
 
+    function isSafeMobileUserProfile(profileData) {
+      return profileData != null
+        && !profileData.keys().hasAny([
+          'role',
+          'roles',
+          'permission',
+          'permissions',
+          'admin',
+          'isAdmin'
+        ]);
+    }
+
     function canAccessStore(storeId) {
       let s = storeDoc(storeId);
       return isOwner(s.data.ownerId)
@@ -203,6 +215,16 @@ service cloud.firestore {
       allow read: if signedIn() && (request.auth.uid == uid || canVerifyDocs());
       allow update: if signedIn() && (request.auth.uid == uid || canVerifyDocs());
       allow create: if signedIn();
+    }
+
+    // ---------- MOBILE USERS ----------
+    // Mobile customer profile data is separate from web/admin user roles.
+    match /mobileUsers/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || canAdmin());
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && isSafeMobileUserProfile(request.resource.data);
+      allow delete: if signedIn() && request.auth.uid == uid;
     }
 
     // ---------- MEDICINES ----------

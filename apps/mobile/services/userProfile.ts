@@ -20,6 +20,16 @@ const defaultPreferences = {
   },
 };
 
+const MOBILE_USERS_COLLECTION = 'mobileUsers';
+
+function mobileUserRef(uid: string) {
+  return doc(db, MOBILE_USERS_COLLECTION, uid);
+}
+
+function legacyUserRef(uid: string) {
+  return doc(db, 'users', uid);
+}
+
 function getDisplayName(user: User) {
   return user.displayName?.trim() || user.email?.split('@')[0] || 'Medifind user';
 }
@@ -56,13 +66,28 @@ function requiresEmailVerification(user: User) {
   return Boolean(user.email && !user.emailVerified && !hasGoogleProvider);
 }
 
+function getLegacyPhone(profile: DocumentData | null) {
+  const directPhone = typeof profile?.phone === 'string' ? profile.phone.trim() : '';
+  const nestedPhone =
+    profile?.profile && typeof profile.profile.phone === 'string'
+      ? profile.profile.phone.trim()
+      : '';
+
+  return directPhone || nestedPhone || null;
+}
+
 export async function upsertUserProfileFromAuthUser(
   user: User,
   fallbackProvider: AuthProviderId,
   options: { displayName?: string } = {},
 ) {
-  const userRef = doc(db, 'users', user.uid);
+  const userRef = mobileUserRef(user.uid);
   const existingProfile = await getDoc(userRef);
+  const legacyProfile = existingProfile.exists()
+    ? null
+    : await getDoc(legacyUserRef(user.uid))
+        .then((snapshot) => (snapshot.exists() ? snapshot.data() : null))
+        .catch(() => null);
   const now = serverTimestamp();
   const displayName = getDisplayNameWithOverride(user, options.displayName);
   const authProvider = getPrimaryAuthProvider(user, fallbackProvider);
@@ -82,18 +107,29 @@ export async function upsertUserProfileFromAuthUser(
     updatedAt: now,
     lastLoginAt: now,
   };
+  const legacyPreferences =
+    legacyProfile?.preferences && typeof legacyProfile.preferences === 'object'
+      ? legacyProfile.preferences
+      : defaultPreferences;
+  const legacyProfileComplete = Boolean(
+    legacyProfile?.profileComplete ?? legacyProfile?.hasProfile ?? false,
+  );
+  const initialProfileData: Record<string, unknown> = {
+    ...sharedProfileData,
+    preferences: legacyPreferences,
+    profileComplete: legacyProfileComplete,
+    hasProfile: legacyProfileComplete,
+    createdAt: legacyProfile?.createdAt ?? now,
+  };
+  const legacyPhone = getLegacyPhone(legacyProfile);
+
+  if (legacyPhone) {
+    initialProfileData.phone = legacyPhone;
+  }
 
   await setDoc(
     userRef,
-    existingProfile.exists()
-      ? sharedProfileData
-      : {
-          ...sharedProfileData,
-          preferences: defaultPreferences,
-          profileComplete: false,
-          hasProfile: false,
-          createdAt: now,
-        },
+    existingProfile.exists() ? sharedProfileData : initialProfileData,
     { merge: true },
   );
 }
@@ -121,7 +157,7 @@ export type UserProfile = DocumentData & {
 };
 
 export async function loadUserProfile(uid: string): Promise<UserProfile | null> {
-  const userRef = doc(db, 'users', uid);
+  const userRef = mobileUserRef(uid);
   const snapshot = await getDoc(userRef);
 
   if (!snapshot.exists()) {
@@ -138,7 +174,7 @@ export async function markProfileComplete(
     preferredSearchRadiusKm?: number;
   },
 ) {
-  const userRef = doc(db, 'users', uid);
+  const userRef = mobileUserRef(uid);
   const now = serverTimestamp();
   const update: Record<string, unknown> = {
     profileComplete: true,
@@ -164,7 +200,7 @@ export async function markProfileComplete(
 }
 
 export async function refreshEmailVerifiedField(user: User) {
-  const userRef = doc(db, 'users', user.uid);
+  const userRef = mobileUserRef(user.uid);
   await setDoc(
     userRef,
     {

@@ -4,43 +4,35 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after support-ticket rules fix)
+## Next up (as of 2026-04-27, after web routing/account UX fix)
 
-**Firestore rules deploy blocker is fixed locally but not deployed.**
-- `supportTickets/{ticketId}` now has explicit least-privilege rules.
-- Admin/support can list, get, create, and update support tickets.
-- Only admin can delete support tickets.
-- Normal signed-in users cannot list all tickets and cannot update tickets.
-- Ticket creators can create/get only tickets carrying a safe owner uid field (`createdBy`, `userId`, `uid`, `customerId`, or `submitterUid`) equal to their auth uid.
-- Global fallback remains `allow read, write: if false`.
-- Medifind discovery hardening remains intact.
+**Current local state:** web portal routing fixes, mobile profile separation, Firestore `mobileUsers` rules, docs, and graphify updates are local and not committed yet. No Firebase deploy was run.
 
-**Known safe from the web-impact audit:**
-- Web does not currently make active Firestore reads of `medicines/{medicineId}`.
-- Web does not use collection-group inventory queries.
-- Store owner/member/admin/verifier store reads are still covered by `canAccessStore(storeId)`.
-- Store verification docs/logs are still covered through `canAccessStore(storeId)`.
-- Existing web inventory uses `stores/{storeId}/products`, not the mobile discovery `stores/{storeId}/inventory`; `products` reads remain covered by the store fallback.
-- `users/{uid}` self reads/writes and admin/verifier reads/updates remain explicitly covered.
-- `roles/{roleId}` reads remain allowed for signed-in users.
-- `supportTickets` rules compiled successfully in Firebase dry-run.
+**What changed locally:**
+- Web `/home` and onboarding routes are protected by authentication only, not narrow role allowlists.
+- `/store-admin/home` now safely redirects to `/home`.
+- `/store-admin/:storeId` is protected and its index redirects to `dashboard`.
+- Store admin layout settings/support navigation now uses real template strings.
+- The dead Analytics / Reports menu item is hidden until a real route is active.
+- User/profile imports now use tracked repo casing: `src/pages/User/**`.
+- Mobile customer profile data now writes to `mobileUsers/{uid}`, with a safe legacy migration from `users/{uid}`.
+- Firestore rules now include `mobileUsers/{uid}` self read/write rules and reject role/permission keys in mobile profile writes.
+- D-016 records the one-Auth-identity, split-domain-data decision.
 
-**Current production state:** unchanged until deployment. Production still has the previously deployed Functions/rules.
-
-**Current verified auth state remains unchanged:** Firebase JS SDK only. Email/password and Google sign-in work with Firestore profile persistence. Phone OTP stays deferred by D-015.
+**UID/store ownership diagnosis to carry forward:**
+- `/home` lists stores by UID, not email.
+- Non-admin web users see stores only when `stores/{storeId}.ownerId == auth.uid` or `stores/{storeId}.membersArr` contains `auth.uid`.
+- If global admin shows stores for `adityagholap19.06@gmqaicl.com` but `/home` is empty, compare the signed-in Firebase Auth UID to `ownerId`, `membersArr`, `members`, and `visibleTo` on the relevant store docs. Do not create a second Auth account for the same email.
 
 ### Next steps
 
-1. **Commit the support-ticket rules fix:** `git add firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(firebase): add support ticket rules before discovery deploy"`.
-2. **Deploy only after explicit approval:** `firebase deploy --only functions:searchMedicines,functions:nearbyStores,functions:getMedicineDetail,functions:getMedicineStores,functions:getStoreDetail,functions:getCategoryMedicines,firestore:rules --project nearnest-platform`.
-3. **After deploy, smoke-test web admin:** `/admin` dashboard ticket KPI, `/admin/support` list/reply/close/reassign/internal note, `/admin/stores`, `/admin/verification`, `/store-admin/:storeId/inventory`, `/store-admin/:storeId/dashboard`, and owner store registration/status flows.
-4. **After deploy, run authenticated Android dev-client walkthrough:** Home -> Search `Dolo` -> Results -> Medicine detail -> Nearby stores -> Store detail -> Call/Navigate.
-5. **Confirm mock fallback after deploy:** sign out or force a backend failure and verify discovery screens fall back cleanly to mock data with existing fallback copy.
-6. **Do not run `firebase deploy --only functions` blindly.** Remote functions not present in local source still exist (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`).
-7. **Do not reseed blindly.** Existing seed data appears live; rerun `node functions/scripts/seedDiscoveryData.js` only when intentionally refreshing demo data.
-8. **Review seeded store doc shape before real stores.** Seed docs contain `licenseNumber`, `licenseAuthority`, `seededBy`, and timestamps in public store docs; callables now hide license fields from customers, but real store docs should still avoid private fields.
-9. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP; do not add `@react-native-firebase/*` or SMS backend work here.
-10. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
+1. Rerun final verification before commit: `git diff --check` and `git status --short`.
+2. Commit this task with: `git add src/App.jsx src/pages/Auth/AuthContext.jsx src/pages/Auth/SignIn.jsx src/pages/StoreAdmin/StoreAdminLayout.jsx src/pages/User/RequireProfile.jsx src/pages/User/UserHome.jsx src/pages/User/UserProfiles.jsx apps/mobile/services/userProfile.ts firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md docs/DECISIONS.md graphify-out && git commit -m "fix(web): repair portal routing and account store ownership UX"`.
+3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
+4. Do not deploy Firebase from this task. The `mobileUsers` rule will need deployment later with an explicit Firebase deploy approval.
+5. Manually verify the web portal with the affected account: sign in, land on `/home`, confirm expected stores or the clearer empty state, open a real `/store-admin/:storeId` dashboard, settings, support, inventory, and advertisement route.
+6. If `/home` is still empty for that email, fix production data by linking the actual Auth UID into the intended store doc (`ownerId`, `membersArr`, `members`, or `visibleTo`) through an admin-controlled path or reviewed migration, not by creating another Auth account.
+7. Keep Phone OTP deferred by D-015 and do not add cart/payment/delivery/discovery UI to web.
 
 ---
 

@@ -1,22 +1,17 @@
 // src/App.jsx
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Navigate, Routes, Route } from 'react-router-dom';
 
 import NearnestHome from "./pages/NearnestHome";
 
-import { AuthProvider } from "./pages/Auth/AuthContext";
-import RequireProfile from "./pages/user/RequireProfile";
+import RequireProfile from "./pages/User/RequireProfile";
 import ProtectedRoute from './pages/routes/ProtectedRoute';
 
 // Store Admin
-// (useParams is imported but not used; keeping as-is per your request)
-import { useParams } from "react-router-dom";
-
 import StoreAdminLayout from "./pages/StoreAdmin/StoreAdminLayout";
 import StoreAdminDashboard from "./pages/StoreAdmin/StoreAdminDashboard/StoreAdminDashboard";
 import StoreInventory from "./pages/StoreAdmin/Inventory/Inventory";
-// import StoreAnalytics from "../pages/StoreAdmin/StoreAnalytics";
-import StoreAdvertisement from "./pages/StoreAdmin/StoreAdvertisement";
+import StoreAdvertisement from "./pages/StoreAdmin/storeadvertisement";
 import StoreSettings from "./pages/StoreAdmin/storeSettings/storeSettings";
 import StoreSupport from "./pages/StoreAdmin/help";
 
@@ -26,8 +21,8 @@ import SignUp from './pages/Auth/SignUp';
 import VerifyEmail from './pages/Auth/VerifyEmail';
 
 // User
-import UserHome from './pages/user/UserHome';
-import UserProfile from './pages/user/UserProfiles';
+import UserHome from './pages/User/UserHome';
+import UserProfile from './pages/User/UserProfiles';
 
 // Store Onboarding
 import CreateStore from "./pages/register-store/CreateStore";
@@ -57,7 +52,7 @@ function App() {
         <Route
           path="/home"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+            <ProtectedRoute>
               <RequireProfile>
                 <UserHome />
               </RequireProfile>
@@ -68,7 +63,7 @@ function App() {
         <Route
           path="/setup-profile"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin', 'admin']}>
+            <ProtectedRoute>
               <UserProfile />
             </ProtectedRoute>
           }
@@ -78,7 +73,7 @@ function App() {
         <Route
           path="/register-store"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+            <ProtectedRoute>
               <CreateStore />
             </ProtectedRoute>
           }
@@ -87,7 +82,7 @@ function App() {
         <Route
           path="/upload-docs/:id"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+            <ProtectedRoute>
               <UploadDocuments />
             </ProtectedRoute>
           }
@@ -96,7 +91,7 @@ function App() {
         <Route
           path="/verification-status/:id"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+            <ProtectedRoute>
               <VerificationStatus />
             </ProtectedRoute>
           }
@@ -105,7 +100,7 @@ function App() {
         <Route
           path="/review-submit/:id"
           element={
-            <ProtectedRoute allowed={['user', 'storeAdmin']}>
+            <ProtectedRoute>
               <ReviewSubmit />
             </ProtectedRoute>
           }
@@ -127,18 +122,28 @@ function App() {
         </Route>
 
         {/* 👤 STORE ADMIN ROUTES */}
-        <Route path="/store-admin/:storeId" element={<StoreAdminLayout />}>
+        <Route
+          path="/store-admin/home"
+          element={
+            <ProtectedRoute>
+              <Navigate to="/home" replace />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/store-admin/:storeId"
+          element={
+            <ProtectedRoute>
+              <StoreAdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StoreAdminDashboard />} />
           <Route path="inventory" element={<StoreInventory />} />
           <Route path="settings" element={<StoreSettings />} />
-          {/* ✅ child path is relative, so final URL = /store-admin/:storeId/advertisement */}
           <Route path="advertisement" element={<StoreAdvertisement />} />
           <Route path="support" element={<StoreSupport />} />
-
-          {/*
-          <Route path="analytics" element={<StoreAnalytics />} />
-          
-          */}
         </Route>
       </Routes>
   );

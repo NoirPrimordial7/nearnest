@@ -2,7 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
-import { useProfileComplete } from "../user/userProfile";
+import { signOut } from "../Auth/firebase";
+import { useProfileComplete } from "./userProfile";
 import {
   listenUserStores,
   deleteStore,
@@ -225,11 +226,14 @@ export default function UserHome() {
         ) : noStores ? (
           <main className={s.firstTime}>
             <div className={s.firstBox}>
-              <div className={s.ftBadge}>✦ Onboarding · Step 1</div>
-              <h1 className={s.ftHello}>Hello, {displayName} 👋</h1>
-              <h2 className={s.ftTitle}>Get your pharmacy on NearNest.</h2>
+              <div className={s.ftBadge}>Web portal</div>
+              <h1 className={s.ftHello}>No stores registered for this account</h1>
+              <h2 className={s.ftTitle}>This web portal is for pharmacy owners and staff.</h2>
               <p className={s.ftSub}>
-                Register your first store to start managing inventory, orders and reach customers nearby.
+                If you expected an existing store, ask an admin to add this login UID as owner/member.
+              </p>
+              <p className={s.ftSub}>
+                Looking for medicines as a customer? Use the Medifind mobile app.
               </p>
               <button className={s.heroCTA} onClick={() => setConfirmOpen(true)}>
                 Register a Store <span className={s.ctaArrow}>→</span>

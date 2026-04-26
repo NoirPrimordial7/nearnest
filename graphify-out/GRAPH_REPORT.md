@@ -1,11 +1,11 @@
 # Graph Report - C:\projects\nearnest\web-portal  (2026-04-27)
 
 ## Corpus Check
-- 127 files · ~184,990 words
+- 127 files · ~187,737 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 447 nodes · 555 edges · 79 communities detected
+- 450 nodes · 564 edges · 79 communities detected
 - Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
@@ -92,9 +92,9 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `useAuth()` - 14 edges
-2. `getAuthErrorMessage()` - 10 edges
-3. `normalizeStore()` - 9 edges
-4. `upsertUserProfileFromAuthUser()` - 8 edges
+2. `upsertUserProfileFromAuthUser()` - 11 edges
+3. `getAuthErrorMessage()` - 10 edges
+4. `normalizeStore()` - 9 edges
 5. `getPostAuthRouteForUser()` - 8 edges
 6. `useFontScale()` - 7 edges
 7. `openExternalUrl()` - 7 edges
@@ -103,8 +103,6 @@
 10. `getMedicineDetailApi()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `useAuth()` --calls--> `VerificationStatus()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\VerificationStatus.jsx
 - `Badge()` --calls--> `useFontScale()`  [INFERRED]
   C:\projects\nearnest\web-portal\apps\mobile\components\Badge.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 - `Chip()` --calls--> `useFontScale()`  [INFERRED]
@@ -113,6 +111,8 @@
   C:\projects\nearnest\web-portal\apps\mobile\components\OfflineBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 - `SearchBar()` --calls--> `useFontScale()`  [INFERRED]
   C:\projects\nearnest\web-portal\apps\mobile\components\SearchBar.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
+- `StaleDataBanner()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\StaleDataBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 
 ## Communities
 
@@ -121,8 +121,8 @@ Cohesion: 0.06
 Nodes (36): buildMockAvailabilityMap(), buildResultGroups(), ensureCategory(), ensureInventoryItem(), ensureMedicine(), ensureStore(), ensureStoreInventoryGroup(), filterToBackend() (+28 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.08
-Nodes (38): getAuthErrorMessage(), reloadCurrentUser(), sendVerificationEmailToCurrentUser(), signInWithEmail(), signInWithGoogleIdToken(), signOut(), signUpWithEmail(), subscribeToAuthState() (+30 more)
+Cohesion: 0.07
+Nodes (41): getAuthErrorMessage(), reloadCurrentUser(), sendVerificationEmailToCurrentUser(), signInWithEmail(), signInWithGoogleIdToken(), signOut(), signUpWithEmail(), subscribeToAuthState() (+33 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.1
@@ -174,7 +174,7 @@ Nodes (5): DocumentVerification(), Icon(), Pill(), prettyLabel(), toDate()
 
 ### Community 14 - "Community 14"
 Cohesion: 0.4
-Nodes (3): StatusBadge(), statusClass(), VerificationStatus()
+Nodes (3): normalizeTicket(), SupportTickets(), tsToStr()
 
 ### Community 15 - "Community 15"
 Cohesion: 0.6
@@ -528,15 +528,15 @@ Nodes (0):
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `handleSignOut()` connect `Community 1` to `Community 4`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
 - **Why does `getMapsUrl()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
+  _High betweenness centrality (0.043) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 9 inferred relationships involving `getAuthErrorMessage()` (e.g. with `completeGoogleSignIn()` and `handleEmailSignIn()`) actually correct?**
-  _`getAuthErrorMessage()` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `upsertUserProfileFromAuthUser()` (e.g. with `signInWithEmail()` and `signUpWithEmail()`) actually correct?**
   _`upsertUserProfileFromAuthUser()` has 3 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 9 inferred relationships involving `getAuthErrorMessage()` (e.g. with `completeGoogleSignIn()` and `handleEmailSignIn()`) actually correct?**
+  _`getAuthErrorMessage()` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `getPostAuthRouteForUser()` (e.g. with `completeGoogleSignIn()` and `handleEmailSignIn()`) actually correct?**
   _`getPostAuthRouteForUser()` has 4 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Community 0` be split into smaller, more focused modules?**

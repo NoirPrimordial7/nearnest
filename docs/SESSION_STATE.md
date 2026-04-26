@@ -1,6 +1,23 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Claude verified deployed hardened discovery backend; docs-only)
+Last updated: 2026-04-27 (Codex fixed web routing/account UX and mobile profile separation)
+
+## Web portal routing and account ownership UX 2026-04-27
+- **No Firebase deploy was run.**
+- `git status --short` was checked before work. Existing protected local files remained untouched: `.claude/settings.local.json` and `.codex/*.png`.
+- The earlier docs-only verification pass was preserved first in commit `ee289f7 test(discovery): verify deployed hardened backend` and pushed to `origin/main`.
+- `src/main.jsx` still wraps `App` with `BrowserRouter` and `AuthProvider`; `AuthProvider` was removed from `src/App.jsx` because it was unused there.
+- `src/App.jsx` now imports user files with tracked casing (`src/pages/User/**`), fixes the store advertisement import to `storeadvertisement.jsx`, protects `/store-admin/:storeId`, adds `/store-admin/home -> /home`, and redirects `/store-admin/:storeId` to its `dashboard` child.
+- `src/pages/Auth/AuthContext.jsx` and `src/pages/Auth/SignIn.jsx` now route signed-in users to `/home` instead of fake or missing store-admin/staff home routes.
+- `src/pages/StoreAdmin/StoreAdminLayout.jsx` now uses real template strings for settings/support navigation and hides the Analytics / Reports sidebar item because the route is not active.
+- `src/pages/User/UserHome.jsx` now imports `signOut`, uses same-folder profile imports, and shows an explicit empty-store message: no stores are registered for this account, the portal is for pharmacy owners/staff, and admins should add the login UID as owner/member when an existing store is expected.
+- **UID/store root cause:** `/home` is UID-linked. Non-admin users see stores via `stores.ownerId == auth.uid` or `stores.membersArr array-contains auth.uid`; admin email-based views do not prove the current Auth UID is linked. For `adityagholap19.06@gmqaicl.com`, check `users/{uid}.email`, `stores.ownerId`, `stores.ownerEmail`, `stores.membersArr`, `stores.members`, and `stores.visibleTo`.
+- **Mobile profile separation:** `apps/mobile/services/userProfile.ts` now reads/writes `mobileUsers/{uid}` for customer profile data. It performs a one-time safe migration from legacy `users/{uid}` only for customer-safe profile fields and does not copy or write roles/permissions.
+- `firestore.rules` now has `mobileUsers/{uid}` rules: signed-in users can read/write their own mobile profile, admin can read, and role/permission/admin keys are rejected in mobile profile writes.
+- `docs/DECISIONS.md` now includes D-016: one Firebase Auth identity, split web roles (`users/{uid}`) from mobile customer profile (`mobileUsers/{uid}`).
+- Verification passed: root `npm run build` (after sandbox escalation; Vite large chunk warning only), `apps/mobile npm run typecheck`, `functions npm run lint`, `git diff --check`, and graphify update via absolute graphify path.
+- Final pre-commit status check still needed after this docs update: `git status --short`.
+- Suggested commit: `fix(web): repair portal routing and account store ownership UX`.
 
 ## Discovery deploy verified 2026-04-27 (Claude follow-on, no code edit, no deploy)
 - `firebase functions:list --project nearnest-platform` confirms all 6 expected callables are deployed in `asia-south1` (nodejs22): `searchMedicines`, `nearbyStores`, `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, `getCategoryMedicines`. Plus pre-existing `setUserRoles`, `requestEmailCode`, `verifyEmailCode`, `onAuthCreate`, `helloWorld` in `us-central1`.

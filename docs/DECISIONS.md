@@ -4,6 +4,15 @@ Append-only. Each decision gets a stable ID (`D-NNN`). Never silently edit prior
 
 ---
 
+## D-016 - Keep one Auth identity and split mobile customer profiles from web roles
+**Date:** 2026-04-27
+**Status:** Accepted
+**Context:** The same Firebase Auth account can be used in the Nearnest web portal and the Medifind mobile app. Web portal authorization depends on `users/{uid}` for admin/store roles and on `stores/{storeId}` ownership/member fields. Mobile customer onboarding had been writing profile-completion fields into `users/{uid}`, which risks mixing customer profile state with web/admin role data.
+
+**Decision:** Keep one Firebase Auth identity per person. Store web/admin/store role and permission data in `users/{uid}`. Store Medifind customer-only profile data in `mobileUsers/{uid}`. Store ownership and access continue to be expressed on `stores/{storeId}` through `ownerId`, `members`, `membersArr`, and related access fields. Do not create separate web and mobile Auth accounts for the same email.
+
+**Consequences:** Mobile profile writes must not write roles or permissions. Firestore rules allow signed-in users to read/write only their own `mobileUsers/{uid}` profile, and admin can read it for support. The web `/home` store list remains UID-driven; if an email appears to own stores in an admin view but `/home` is empty, check whether the actual Auth UID is present in store owner/member fields.
+
 ## D-015 - Phone OTP: defer until after medicine discovery MVP
 **Date:** 2026-04-26
 **Status:** Accepted

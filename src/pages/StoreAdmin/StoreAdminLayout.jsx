@@ -1,10 +1,8 @@
 import { useEffect, useState, useRef } from "react";
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../Auth/AuthContext";
 import { auth, signOut as firebaseSignOut } from "../Auth/firebase";
 import styles from "./StoreAdminLayout.module.css";
-
-import { useParams } from "react-router-dom";
 
 
 /** click-outside helper */
@@ -55,11 +53,6 @@ const STORE_ADMIN_MENU = [
     label: "Inventory",
     path: (id) => `/store-admin/${id}/inventory`,
     icon: "M3 9l9-6 9 6-9 6-9-6Zm3 6.5 6 4 6-4M6 15.5V21m12-5.5V21",
-  },
-  {
-    label: "Analytics / Reports",
-    path: (id) => `/store-admin/${id}/analytics`,
-    icon: "M4 20v-8M10 20V4M16 20v-5M22 20v-9",
   },
   {
     label: "Advertisement",
@@ -121,7 +114,7 @@ export default function StoreAdminLayout() {
 
     const onEditProfile = () => {
         setProfileOpen(false);
-        navigate("/store-admin/${storeId}/settings");
+        navigate(`/store-admin/${storeId}/settings`);
     };
 
     const onSignOut = async () => {
@@ -271,7 +264,7 @@ export default function StoreAdminLayout() {
                                 <div className={styles.menuFooter}>
                                     <button
                                         className={styles.linkBtn}
-                                        onClick={() => navigate("/store-admin/${storeId}/support")}
+                                        onClick={() => navigate(`/store-admin/${storeId}/support`)}
                                     >
                                         Go to Support
                                     </button>
@@ -328,7 +321,7 @@ export default function StoreAdminLayout() {
                                         className={styles.menuItem}
                                         onClick={() => {
                                             setProfileOpen(false);
-                                            navigate("/store-admin/${storeId}/support");
+                                            navigate(`/store-admin/${storeId}/support`);
                                         }}
                                     >
                                         <Icon
