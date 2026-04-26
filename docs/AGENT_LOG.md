@@ -4,6 +4,50 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Keep store results when secondary ownership queries fail
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix `/home` so a failing secondary ownership query cannot clear stores that were returned by primary UID-linked queries. No Firebase deploy and no data mutation.
+
+### Files inspected
+- `AGENTS.md`, `graphify-out/GRAPH_REPORT.md`
+- `src/pages/register-store/stores.js`
+- `src/pages/User/UserHome.jsx`
+- `src/App.jsx`
+
+### Files edited
+- `src/pages/register-store/stores.js`
+  - Reworked non-admin store listeners to track each query independently.
+  - `ownerId` and `membersArr` remain primary query sources.
+  - `visibleTo` and `membersMap` remain secondary query sources.
+  - Per-query errors are logged in development but do not call the page-level fatal handler unless all active queries fail and no stores are available.
+  - Successful query results stay merged and visible even if another listener fails later.
+  - Dev diagnostics now log browser Firebase `projectId`, auth UID/email, per-query counts, per-query status, and error code/message.
+  - Added a dev-only empty-merge hint telling developers to compare browser Firebase `projectId` with the Admin SDK/service account project when diagnostics show linked stores.
+
+### App.jsx audit result
+- `/home` is protected and routes correctly.
+- `/store-admin/home` redirects to `/home`.
+- `/store-admin/:storeId` is protected.
+- `/store-admin/:storeId` index redirects to `dashboard`.
+- No `/store-staff/home` redirect remains.
+- No `App.jsx` edit was required this session.
+
+### Verification
+- `npm run build` passed; Vite reported only the existing large chunk warning.
+- `cd functions && npm run lint` passed.
+- `cd apps/mobile && npm run typecheck` passed.
+- `graphify update .` was not on PATH; rerun with `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .` passed.
+- `git diff --check` passed after final docs update.
+
+### Protected files
+- Did not deploy Firebase.
+- Did not mutate Firestore data.
+- Did not touch `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, `.codex/*.png`, `dataconnect/**`, or mobile app code.
+
+**Suggested commit message:** `fix(web): keep store results when secondary ownership queries fail`
+
+---
+
 ## 2026-04-27 - Include all store ownership links on home
 **Agent:** Codex (GPT-5)
 **Session goal:** Fix `/home` store ownership lookup so it matches Firestore rule-supported store access fields, and add a safe diagnostic script for UID/email linkage.

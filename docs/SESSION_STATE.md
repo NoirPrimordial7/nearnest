@@ -1,6 +1,29 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex fixed /home store ownership lookup)
+Last updated: 2026-04-27 (Codex fixed secondary query error handling on /home)
+
+## Store listener secondary-query error handling fix 2026-04-27
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- Latest real diagnostic for `adityagholap19.06@gmail.com` proved data is linked:
+  - Auth UID `ESrKx72DuOOXnxZqREcu4o3FU5r1`
+  - 6 stores already linked by UID
+  - sources include `membersArr`, `membersMap`, and `ownerId`
+  - no email-only stores
+  - no missing UID linkage
+- Runtime bug found: `listenUserStores(uid)` started multiple `onSnapshot` listeners but passed the same page-level `onError` to all of them. If `visibleTo` or `membersMap` failed, `UserHome` handled that as fatal and called `setStores([])`, hiding valid results from `ownerId`/`membersArr`.
+- `src/pages/register-store/stores.js` now tracks query state independently:
+  - primary: `ownerId`
+  - primary: `membersArr`
+  - secondary: `visibleTo`
+  - secondary: `membersMap`
+- Secondary query failures are dev-logged and do not wipe successful results.
+- Page-level `onError` only fires when every active query fails and there are no merged stores available.
+- Dev console diagnostics now include browser Firebase `projectId`, auth UID/email, per-query counts, per-query status, and error code/message.
+- If all queries finish with merged count `0`, dev console logs a hint to compare the browser Firebase `projectId` with the Admin SDK/service account project.
+- `src/App.jsx` was audited again and not modified: `/home` is valid, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, index redirects to dashboard, and no `/store-staff/home` redirect remains.
+- Verification passed: `npm run build`, `functions npm run lint`, `apps/mobile npm run typecheck`, `git diff --check`, and graphify update via absolute path.
+- Suggested commit: `fix(web): keep store results when secondary ownership queries fail`.
 
 ## Store ownership lookup fix 2026-04-27
 - **No Firebase deploy was run.**

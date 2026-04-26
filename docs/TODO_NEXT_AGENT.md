@@ -4,43 +4,39 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after store ownership lookup fix)
+## Next up (as of 2026-04-27, after secondary-query error handling fix)
 
-**Current local state:** `/home` ownership lookup now matches rule-backed store access fields. No Firebase deploy was run and no production data was modified.
+**Current local state:** `/home` now keeps successful store query results even if a secondary ownership listener fails. No Firebase deploy was run and no production data was modified.
 
 **What changed locally:**
-- `listenUserStores(uid)` now merges:
-  - `stores.ownerId == uid`
-  - `stores.membersArr array-contains uid`
-  - `stores.visibleTo array-contains uid`
-  - `stores.members[uid] == true` through a Firestore `FieldPath`
-- `/home` now passes the current auth email into the listener only for dev console diagnostics.
-- Dev-only logging prints auth UID/email and per-query counts for owned/memberArr/visibleTo/memberMap/merged results.
-- `scripts/diagnoseStoreOwnership.cjs` was added as a read-only-by-default diagnostic.
+- `listenUserStores(uid)` tracks each non-admin query independently:
+  - primary: `ownerId == uid`
+  - primary: `membersArr array-contains uid`
+  - secondary: `visibleTo array-contains uid`
+  - secondary: `members[uid] == true` through `FieldPath`
+- A secondary query failure no longer calls the page-level fatal `onError`.
+- The page-level fatal handler is called only if all active queries fail and no stores are available.
+- Dev console diagnostics now include browser Firebase `projectId`, auth UID/email, query counts, query status, and error code/message.
+- If all queries complete with merged count `0`, dev console logs a hint to compare the browser Firebase `projectId` with the Admin SDK/service account project.
 
-**Root cause:** Firestore rules allowed `members[uid]` and `visibleTo`, but `/home` only queried `ownerId` and `membersArr`. Stores linked through the missing fields could be allowed by rules but invisible on `/home`.
+**Runtime bug found:** every listener previously used the same `onError` callback from `UserHome`. If `visibleTo` or `membersMap` failed, `UserHome` ran `setStores([])` and showed the empty state even though `ownerId`/`membersArr` had valid linked stores.
 
-**Diagnostic script usage:**
-```
-node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com
-```
-Optional apply mode:
-```
-node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com --apply
-```
-`--apply` only updates email-matched stores missing UID linkage by adding the UID to `membersArr` and `members[uid] = true`; it sets `ownerId` only when missing and never overwrites an existing `ownerId`.
+**Console logs to check in browser dev mode:**
+- `[UserHome] store access query counts`
+- `[UserHome] store access query failed`
+- `[UserHome] no stores merged from browser queries`
 
-**App.jsx audit:** route fix still holds. `/home` works, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, the index redirects to `dashboard`, and no fake `/store-staff/home` redirect remains.
+**App.jsx audit:** route fix still holds. `/home` works, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, the index redirects to `dashboard`, and no `/store-staff/home` redirect remains.
 
 ### Next steps
 
 1. Rerun final verification before commit: `git diff --check` and `git status --short`.
-2. Commit this task with: `git add src/pages/register-store/stores.js src/pages/User/UserHome.jsx scripts/diagnoseStoreOwnership.cjs docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): include all store ownership links on home"`.
+2. Commit this task with: `git add src/pages/register-store/stores.js docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): keep store results when secondary ownership queries fail"`.
 3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. If `/home` is still empty, run the diagnostic script without `--apply` first and inspect the report.
-5. Only use `--apply` after confirming the email-matched stores are the intended stores for that Firebase Auth UID.
-6. Do not deploy Firebase from this task.
-7. Keep Phone OTP deferred by D-015 and do not add cart/payment/delivery/discovery UI to web.
+4. Refresh `/home` in the browser and inspect the dev console. The expected useful signal is whether `ownerId`/`membersArr` return the six stores or whether the browser `projectId` differs from the Admin SDK diagnostic project.
+5. If `/home` is still empty and browser `projectId` matches, copy the dev console query count/error logs before changing code again.
+6. Do not run `--apply` again unless a fresh diagnostic proves a new data-linkage issue; the latest diagnostic already showed six UID-linked stores.
+7. Do not deploy Firebase from this task.
 
 ---
 

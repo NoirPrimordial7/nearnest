@@ -1,5 +1,6 @@
 // src/pages/register-store/stores.js
 import {
+  app,
   db,
   addDoc,
   collection,
@@ -67,10 +68,39 @@ function isDevMode() {
 function logStoreAccessDebug(uid, email, counts) {
   if (!isDevMode()) return;
   console.info("[UserHome] store access query counts", {
+    projectId: getFirebaseProjectId(),
     uid,
     email: email || null,
     ...counts,
   });
+}
+
+function logStoreQueryError(uid, email, queryName, error) {
+  if (!isDevMode()) return;
+  console.warn("[UserHome] store access query failed", {
+    projectId: getFirebaseProjectId(),
+    uid,
+    email: email || null,
+    query: queryName,
+    code: error?.code || null,
+    message: error?.message || String(error),
+  });
+}
+
+function logEmptyStoreHint(uid, email, queryStates) {
+  if (!isDevMode()) return;
+  console.info("[UserHome] no stores merged from browser queries", {
+    projectId: getFirebaseProjectId(),
+    uid,
+    email: email || null,
+    queryStates,
+    hint:
+      "If Admin SDK diagnostics show linked stores for this UID, compare this browser Firebase projectId with the Admin SDK/service account project.",
+  });
+}
+
+function getFirebaseProjectId() {
+  return app?.options?.projectId || db?.app?.options?.projectId || null;
 }
 
 function getMembersMapFieldPath(uid) {
@@ -229,59 +259,118 @@ export async function listenUserStores(uid, onData, onError, options = {}) {
     visibleTo: new Map(),
     memberMap: new Map(),
   };
+  const queryStates = {
+    owned: { name: "ownerId", primary: true, status: "pending", count: 0, error: null },
+    memberArr: { name: "membersArr", primary: true, status: "pending", count: 0, error: null },
+    visibleTo: { name: "visibleTo", primary: false, status: "pending", count: 0, error: null },
+    memberMap: {
+      name: "membersMap",
+      primary: false,
+      status: qMemberMap ? "pending" : "skipped",
+      count: 0,
+      error: null,
+    },
+  };
 
-  function emit() {
-    const merged = new Map([
+  function activeQueryStates() {
+    return Object.values(queryStates).filter((entry) => entry.status !== "skipped");
+  }
+
+  function mergedStores() {
+    return new Map([
       ...state.owned,
       ...state.memberArr,
       ...state.visibleTo,
       ...state.memberMap,
     ]);
+  }
+
+  function debugQueryStates() {
+    return Object.fromEntries(
+      Object.entries(queryStates).map(([key, entry]) => [
+        key,
+        {
+          name: entry.name,
+          primary: entry.primary,
+          status: entry.status,
+          count: entry.count,
+          errorCode: entry.error?.code || null,
+          errorMessage: entry.error?.message || null,
+        },
+      ])
+    );
+  }
+
+  function emit() {
+    const merged = mergedStores();
     logStoreAccessDebug(uid, options.email, {
       owned: state.owned.size,
       memberArr: state.memberArr.size,
       visibleTo: state.visibleTo.size,
       memberMap: state.memberMap.size,
       merged: merged.size,
+      queryStates: debugQueryStates(),
     });
+    if (
+      merged.size === 0 &&
+      activeQueryStates().every((entry) => entry.status !== "pending")
+    ) {
+      logEmptyStoreHint(uid, options.email, debugQueryStates());
+    }
     onData(Array.from(merged.values()));
+  }
+
+  function handleQuerySuccess(key, qs) {
+    state[key] = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+    queryStates[key].status = "ok";
+    queryStates[key].count = state[key].size;
+    queryStates[key].error = null;
+    emit();
+  }
+
+  function handleQueryError(key, error) {
+    queryStates[key].status = "error";
+    queryStates[key].error = error;
+    logStoreQueryError(uid, options.email, queryStates[key].name, error);
+
+    const merged = mergedStores();
+    const active = activeQueryStates();
+    const allFinished = active.every((entry) => entry.status !== "pending");
+    const allFailed = active.every((entry) => entry.status === "error");
+
+    if (allFinished && allFailed && merged.size === 0) {
+      onError?.(error);
+      return;
+    }
+
+    if (merged.size > 0 || allFinished) {
+      emit();
+    }
   }
 
   const unsubOwned = onSnapshot(
     qOwned,
-    (qs) => {
-      state.owned = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
-      emit();
-    },
-    onError
+    (qs) => handleQuerySuccess("owned", qs),
+    (error) => handleQueryError("owned", error)
   );
 
   const unsubMemberArr = onSnapshot(
     qMemberArr,
-    (qs) => {
-      state.memberArr = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
-      emit();
-    },
-    onError
+    (qs) => handleQuerySuccess("memberArr", qs),
+    (error) => handleQueryError("memberArr", error)
   );
 
   const unsubVisibleTo = onSnapshot(
     qVisibleTo,
-    (qs) => {
-      state.visibleTo = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
-      emit();
-    },
-    onError
+    (qs) => handleQuerySuccess("visibleTo", qs),
+    (error) => handleQueryError("visibleTo", error)
   );
 
   const unsubMemberMap = qMemberMap
     ? onSnapshot(
         qMemberMap,
-        (qs) => {
-          state.memberMap = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
-          emit();
-        },
-        onError
+        (qs) => handleQuerySuccess("memberMap", qs),
+        (error) => handleQueryError("memberMap", error)
       )
     : null;
 
