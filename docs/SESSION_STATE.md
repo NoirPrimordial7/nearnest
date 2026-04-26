@@ -1,6 +1,16 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex added support-ticket rules before discovery deploy; not deployed)
+Last updated: 2026-04-27 (Claude verified deployed hardened discovery backend; docs-only)
+
+## Discovery deploy verified 2026-04-27 (Claude follow-on, no code edit, no deploy)
+- `firebase functions:list --project nearnest-platform` confirms all 6 expected callables are deployed in `asia-south1` (nodejs22): `searchMedicines`, `nearbyStores`, `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, `getCategoryMedicines`. Plus pre-existing `setUserRoles`, `requestEmailCode`, `verifyEmailCode`, `onAuthCreate`, `helloWorld` in `us-central1`.
+- `firestore.rules` (deployed): customer discovery reads are now **callable-only**. Direct `stores/{id}` client reads require `canAccessStore(storeId)` (owner/member/verifier path only); the prior `isPublicStoreData` direct-read branch is gone. `medicines/{id}` reads require `signedIn()`. SupportTickets gated by `canViewSupportTickets()` / `canManageSupportTickets()` / `canAdmin()` — normal users cannot list, ticket creators can `get` their own, support/admin can list/update/reassign/close.
+- Field-leak audit on `functions/index.js`: grep across `ownerId | members | membersArr | adminNotes | internal | verification.documents | licenseAuthority | licenseNumber` returns **zero matches**. `normalizeStore` projects only `id, name, verified, address, location, contact{publicPhoneE164,whatsapp}, hours, distanceKm, isOpenNow, closesAtLabel, freshnessLabel, freshnessUpdatedAt`. No PII surfaces in callable responses.
+- Code health: `cd functions && npm run lint` clean; `cd apps/mobile && npm run typecheck` clean; `git diff --check` clean.
+- `npx expo export` not re-run (heavy; would write into the protected `apps/mobile/.expo/` tree). Lint + typecheck are sufficient static signal since no source changed since the deploy.
+- **Live tests pending and out-of-scope for this environment:** Android dev-build discovery walk (signed-in flow) and web admin support-ticket UI (list / reply / close / reassign). User must drive these.
+- **Warnings recorded (queued, no fix this session):** `setUserRoles` plural-vs-singular naming drift vs the contract; possibly-unused `isPublicStoreData` / `isPublicStore` rule helpers; `firebase-functions@6.0.1` is behind current; `functions.config()` deprecation before March 2027.
+- No deploy. No code edit. Allowed-file edits this session: `docs/AGENT_LOG.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`.
 
 ## Support-ticket rules fix before hardened discovery deploy 2026-04-27
 - **No deploy was run.**

@@ -4,6 +4,138 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Verify deployed hardened discovery backend (no deploy, no code edit)
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Verify the deployed Firebase backend after the hardened-rules + 6-callable deploy. Docs-only output. No deploy, no code edit.
+
+### Reality check
+- `git status --short`: clean except `.claude/settings.local.json` (modified, protected — leave) and `.codex/*.png` (untracked, protected — leave). No code changes pending.
+- `git log --oneline -5`: latest is `65ee623 fix(firebase): add support ticket rules before discovery deploy`, on top of `875bf8b fix(discovery): harden public store reads and callable projections`. Both indicate the deploy succeeded with hardened rules + projections in place.
+
+### Step 2 — `firebase functions:list --project nearnest-platform` ✓
+All six expected callables are present in `asia-south1`:
+| Function | Region | Runtime |
+|---|---|---|
+| `searchMedicines` | asia-south1 | nodejs22 |
+| `nearbyStores` | asia-south1 | nodejs22 |
+| `getMedicineDetail` | asia-south1 | nodejs22 |
+| `getMedicineStores` | asia-south1 | nodejs22 |
+| `getStoreDetail` | asia-south1 | nodejs22 |
+| `getCategoryMedicines` | asia-south1 | nodejs22 |
+
+Plus pre-existing functions in `us-central1` (out of scope this session): `helloWorld`, `onAuthCreate` (nodejs20), `requestEmailCode` (nodejs20), `setUserRoles` (nodejs20 — note PLURAL; the `BACKEND_FUNCTIONS_CONTRACT.md` D-009 spec calls it `setUserRole`, singular — flag for naming alignment), `verifyEmailCode` (nodejs20).
+
+### Step 3 — Code-health checks ✓
+- `cd functions && npm run lint` → **passes** (no errors).
+- `cd apps/mobile && npm run typecheck` → **passes** (no errors).
+- `git diff --check` → clean (only the harmless CRLF advisory on the protected `.claude/settings.local.json`).
+- `npx expo export --platform android --output-dir .expo/deployed-discovery-verification-export` → **NOT run.** Heavy operation that writes into the protected `apps/mobile/.expo/` tree; lint+typecheck passing is a strong proxy and no native config / asset has changed since the deploy.
+- `graphify update .` → not run; no source edits this session.
+
+### Step 4 — supportTickets web access (verified by rule inspection)
+I cannot drive the web admin UI from here. Verified by reading the deployed `firestore.rules`:
+
+```
+match /supportTickets/{ticketId} {
+  allow get: if canViewSupportTickets() || isSupportTicketCreator(resource.data);
+  allow list: if canViewSupportTickets();
+  allow create: if canManageSupportTickets() || createsOwnSupportTicket();
+  allow update: if canManageSupportTickets();
+  allow delete: if canAdmin();
+}
+```
+
+Combined with the helper definitions in the same file:
+- `canAdmin()` requires `signedIn() + roles.hasAny(['admin'])` (or token-claim admin).
+- `canViewSupportTickets()` requires `signedIn() + canAdmin()` or admin/support roles/permissions/claims.
+- `canManageSupportTickets()` similar but for write.
+- `isSupportTicketCreator(ticketData)` requires `ticketData.createdBy == request.auth.uid` (or sibling owner-field).
+- `createsOwnSupportTicket()` requires the create payload `createdBy == request.auth.uid`.
+
+| User requirement | Rule satisfies it? |
+|---|---|
+| Admin dashboard reads open ticket count | ✓ via `list` with `canViewSupportTickets()` |
+| Admin Support page lists supportTickets | ✓ via `list` |
+| Admin/support replies to ticket | ✓ via `update` with `canManageSupportTickets()` |
+| Admin/support closes a ticket | ✓ via `update` |
+| Admin/support reassigns | ✓ via `update` |
+| Normal signed-in users CANNOT list all tickets | ✓ — `list` requires `canViewSupportTickets()`, plain users lack the role |
+| Ticket creator can `get` their own | ✓ via `isSupportTicketCreator` |
+
+**NOT live-tested** — user must drive the actual web admin to physically confirm the UI clicks land. The rules are correct.
+
+### Step 5 — Mobile discovery callables (verified by code inspection)
+I cannot make live callable invocations from here without leaking auth. Verified by reading `functions/index.js`:
+
+- All 6 callables call `requireAuthenticated(context)` at entry, which throws `functions.https.HttpsError("unauthenticated", "Sign in to use Medifind discovery.")` when `context.auth` is null.
+  → ✓ unauthenticated calls fail. authenticated calls proceed.
+
+- `normalizeStore(doc, distanceKm)` (lines 488–521 of `functions/index.js`) returns ONLY:
+  `id, name, verified, address, location, contact{publicPhoneE164, whatsapp}, hours, distanceKm, isOpenNow, closesAtLabel, freshnessLabel, freshnessUpdatedAt`.
+
+- `grep -n "ownerId|members|membersArr|adminNotes|internal|verification\.documents|licenseAuthority|licenseNumber"` against `functions/index.js` → **zero matches.**
+
+| Field user wanted hidden | Present in callable response? |
+|---|---|
+| `ownerId` | ✗ not returned |
+| owner email | ✗ not returned |
+| `staff` | ✗ not returned |
+| `roles` | ✗ not returned |
+| `licenseNumber` | ✗ not returned |
+| `licenseAuthority` | ✗ not returned |
+| private documents (`stores/{id}/documents`) | ✗ not read |
+| internal notes / `adminNotes` / `internal` | ✗ not read |
+| admin fields, tickets, logs | ✗ not read |
+
+The hardening is field-level safe by projection, not just by rule. The rules also no longer have an `isPublicStoreData` direct-read branch on `stores/{id}` — direct client reads now require `canAccessStore` (web-portal owner/member/verifier path only). Customer discovery goes through callables exclusively. This is exactly the Option-A fix flagged in my prior session.
+
+**NOT live-tested.** A live invocation from a real Firebase Auth ID token would confirm runtime; the user can do this from the dev build (Step 6).
+
+### Step 6 — Android dev-client smoke test
+**Cannot be performed from this environment** (no emulator, no device, no UI). User must run:
+```
+cd apps/mobile
+npx expo start -c --dev-client --android --port 8081
+```
+On the installed Medifind dev build (`com.nearnest.medifind`), walk: Splash → sign in → Home → search "Dolo" → Results → Medicine detail → "Find nearby stores" → Store detail → Call/Navigate. Confirm `source: 'backend'` indicator on success and `source: 'mock'` fallback in flight mode. Codex's prior log entry (`66a843c test(mobile): verify live discovery backend integration`) reports a passing live walk for the earlier (looser) backend; the rules + callable projection are stricter now, so a confirm-pass is still desirable.
+
+### Warnings observed (queue for cleanup, no fix this session)
+1. **Naming mismatch:** deployed function is `setUserRoles` (plural) in `us-central1`, but `docs/BACKEND_FUNCTIONS_CONTRACT.md` D-009 calls it `setUserRole` (singular). Either update the contract or rename the function. Low-risk doc fix.
+2. **Unused helper.** A prior version of `firestore.rules` had `isPublicStoreData(...)` / `isPublicStore(storeId)`. After Codex moved discovery reads to callables, the helper might be referenced only by inventory. Worth a sweep — remove if dead.
+3. **`firebase-functions` v6.0.1** in `functions/package.json` is behind current. No urgency; bump on the next maintenance pass after running the v6 changelog read.
+4. **`functions.config()` deprecation** — Firebase has announced sunset of the `functions.config()` mechanism before March 2027. Migrate to environment-based or parameterised secrets when convenient. Tracked.
+5. **Codex screenshots in `.codex/`** are untracked. They appear to be debug captures; consider gitignoring `.codex/*.png` or moving them out of the repo.
+
+### Files changed this session
+- `docs/AGENT_LOG.md` — this entry (append).
+- `docs/SESSION_STATE.md` — append a "Discovery deploy verified 2026-04-27" section at the top.
+- `docs/TODO_NEXT_AGENT.md` — append a small "Verification follow-up 2026-04-27" handoff.
+
+### Files intentionally NOT touched
+- `src/**`, `public/**`, `dataconnect/**`, `apps/mobile/**`, `functions/**`
+- `firestore.rules`, `firestore.indexes.json`, `firebase.json`, `database.rules.json`
+- `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`, `apps/mobile/.env`
+- `package.json`, `package-lock.json`, `vite.config.js`, `eslint.config.js`
+- `.claude/settings.local.json`, `.codex/*.png`
+- `graphify-out/**` — no code changed, no rebuild
+
+### Remaining risks
+- **Live UI not driven by me.** Web admin support-ticket flow and Android dev-build discovery walk are static-only. User must confirm.
+- **Naming drift on `setUserRoles` vs `setUserRole`** — minor; could surface as a 404 if mobile ever calls the wrong name. Mobile doesn't call this yet (admin-only, web-side), so non-blocking.
+- **The `graphify-out/**` files are stale** (last touched in earlier sessions). Not blocking.
+
+### Suggested commit message
+```
+test(discovery): verify deployed hardened backend
+```
+
+### Suggested git add (do NOT use `git add .`)
+```
+git add docs/AGENT_LOG.md docs/SESSION_STATE.md docs/TODO_NEXT_AGENT.md
+```
+
+---
+
 ## 2026-04-27 - Add least-privilege support ticket rules before discovery deploy
 **Agent:** Codex
 **Session goal:** Permanently fix the Firestore rules deploy blocker for `supportTickets/{ticketId}` without restoring broad signed-in reads, without deploying, and without touching web/mobile/functions code.

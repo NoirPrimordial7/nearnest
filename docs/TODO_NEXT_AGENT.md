@@ -167,3 +167,37 @@ npx expo export --platform android --output-dir .expo/discovery-redesign-export;
 git diff --check.
 Suggested commit: feat(mobile): implement discovery redesign with dual-mode home and mock data.
 ```
+
+---
+
+## Verification follow-up 2026-04-27 (Claude)
+
+The deployed discovery backend was verified statically this session — all 6 callables live in `asia-south1`, lint + typecheck clean, supportTickets rules give the right least-privilege answers, callable responses confirmed PII-free by grep + `normalizeStore` projection. See `docs/AGENT_LOG.md` 2026-04-27 entry for the full report.
+
+**Live tests still pending** (user must drive):
+1. **Android dev-build discovery walk:**
+   ```
+   cd apps/mobile
+   npx expo start -c --dev-client --android --port 8081
+   ```
+   Walk: Splash → sign in → Home → search "Dolo" → Results → Medicine detail → Find nearby stores → Store detail → Call/Navigate. Confirm `source: 'backend'` and the `source: 'mock'` fallback in flight mode.
+2. **Web admin supportTickets UI:** confirm dashboard count loads, list page renders, reply / close / reassign all succeed under an admin/support sign-in. Confirm a non-support user CANNOT list `supportTickets`.
+
+**Cleanup queue (low-priority, non-blocking):**
+- Resolve **`setUserRoles` (plural, deployed) vs `setUserRole` (singular, in `BACKEND_FUNCTIONS_CONTRACT.md` D-009)**. Pick one and update the other.
+- Audit `firestore.rules` for now-unused helpers (`isPublicStoreData`, `isPublicStore` may be dead after the callable-only switch). Remove if confirmed unused.
+- Bump `firebase-functions` from `^6.0.1` to current; review v6 changelog before bump.
+- Plan migration off `functions.config()` before its March 2027 deprecation cutoff (move to environment-based / parameterised secrets).
+- Decide whether to gitignore `.codex/*.png` debug screenshots or move them out of the repo.
+
+**Suggested git add for this session's docs:**
+```
+git add docs/AGENT_LOG.md docs/SESSION_STATE.md docs/TODO_NEXT_AGENT.md
+```
+
+**Suggested commit message:**
+```
+test(discovery): verify deployed hardened backend
+```
+
+**Do NOT deploy again** unless a real production bug is found.
