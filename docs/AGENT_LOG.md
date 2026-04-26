@@ -4,6 +4,118 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Auth polish: confirm-password, terms/privacy screens, password show-hide, Phone OTP DEFERRED
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Tighten the signup UX (confirm password, real terms/privacy screens, error polish, password toggles) without regressing the working email/password + Google auth, and reach a clean DEFER decision on Phone OTP.
+
+**Rollback tag:** `pre-auth-polish-20260426-1323` (created before any edit). To revert this session: `git reset --hard pre-auth-polish-20260426-1323`.
+
+**Reality check (Phase 0):**
+- Working tree clean except `.codex/*.png` screenshots from prior Codex sessions (untouched).
+- Last commit before this session: `875c37b docs(mobile): redesign discovery UX for medicine and store modes`.
+- D-015 already exists in `docs/DECISIONS.md` (dated 2026-04-26) — Phone OTP deferred. No change needed there.
+- Mobile stack: Expo 54.0.33, Firebase JS SDK 12.12.1, expo-auth-session 7.0.10, expo-web-browser 15.0.10, expo-dev-client 6.0.20, AsyncStorage 2.2.0. **No `@react-native-firebase/*` installed.**
+- Auth flow today: Splash → `subscribeToAuthState` → `getPostAuthRouteForUser` → unverified password → `/verify-email`; verified or Google → `profileComplete ? /home : /profile-setup`. Working as documented.
+
+**Files changed:**
+- `apps/mobile/services/googleAuth.ts` — `getGoogleAuthResultMessage` now returns empty string for `cancel`/`dismiss` so the screens can keep silent on user back-press. Genuine `error`/`locked` paths still surface a friendly message. Tightened the `error` copy from "Check the OAuth client setup" (developer-facing) to "Check your connection and try again" (user-facing).
+- `apps/mobile/app/sign-up.tsx` — full rewrite of the form layer (kept Google + email handlers and routing identical):
+  - New **Confirm Password** field with its own show/hide toggle.
+  - Show/hide toggle on Password field too.
+  - Stronger password rule: ≥ 8 chars **and** at least one letter **and** at least one number.
+  - Email shape validation via a basic regex; clearer message: `That doesn't look like a valid email.`
+  - Per-field inline errors (revealed only after the user attempts submit, so the form isn't noisy on first paint).
+  - Single `validateForm` function returns the `FieldErrors` object the UI consumes.
+  - **Tappable Terms and Privacy Policy links** open `/terms` and `/privacy` (in-app, not external browser).
+  - "Create account" button is now disabled while the form is invalid post-attempt OR while submitting.
+  - Routes through `getPostAuthRouteForUser(result.user)` — same gate as before.
+  - Google branch now silences `cancel`/`dismiss` (only sets `formError` if `getGoogleAuthResultMessage` returns non-empty).
+  - Paste is **NOT** blocked on password fields (password managers matter).
+  - No new package dependencies. No new screen routes beyond `/terms` and `/privacy`.
+- `apps/mobile/app/sign-in.tsx` — added show/hide password toggle; silenced Google `cancel`/`dismiss`. Existing email/password sign-in flow unchanged. Forgot-password link unchanged.
+- `apps/mobile/app/terms.tsx` — **new screen.** MVP-but-correct legal copy with the required medical disclaimer (Medifind does not provide medical advice, diagnosis, dosage, prescriptions, delivery, or emergency services), an emergency-line callout in the Rx warning palette, the "always call to confirm" line, prescription-medicine notice, account responsibilities, an `[LEGAL REVIEW NEEDED]` marker on liability and contact, and an effective date of 2026-04-26.
+- `apps/mobile/app/privacy.tsx` — **new screen.** MVP-but-correct privacy summary with: what we collect (name, email, phone if provided, location if granted, search history, basic device info), what we don't collect (medical history, prescription images, payment cards, no data sale), how we use it, where it lives (Firebase Auth + Firestore), an `[LEGAL REVIEW NEEDED]` marker on contact + jurisdiction, the medical disclaimer, account-deletion ask, children's notice (no users under 13), changes process, and an effective date of 2026-04-26.
+
+**Phone OTP outcome: [DEFER]** (per the brief's binary outcome rule).
+- Inventory:
+  - Expo SDK 54.0.33; Firebase JS SDK 12.12.1; `expo-dev-client` present; **no `@react-native-firebase/*` installed**.
+  - Existing `services/phoneAuth.ts` is a tiny number-normaliser + a single deferred-message export.
+  - `app/phone-otp.tsx` is reachable, all inputs `editable={false}`, primary CTA disabled with "Phone OTP coming soon", warning panel uses Rx tokens.
+  - D-015 (2026-04-26) already documents the deferral with the exact reasons.
+- Reasons it stayed [DEFER]:
+  1. Firebase JS SDK Phone Auth requires `RecaptchaVerifier` (DOM-only). React Native has no DOM.
+  2. The historical `expo-firebase-recaptcha` package is archived; cannot ship it on Expo SDK 54.
+  3. Adding `@react-native-firebase/auth` would mix two Firebase SDKs in one app — explicitly forbidden by the brief's HARD STOP and by D-008.
+  4. A custom backend OTP would need editing `functions/**` — protected per the brief's HARD STOP.
+- Net: no changes to phone OTP code. D-015 already covers the rationale; no D-016 required.
+
+**Build sanity (Phase 4):**
+- `cd apps/mobile && npx tsc --noEmit` → **passes** (no output).
+- `npm ls firebase @react-native-firebase/auth @react-native-firebase/app expo-auth-session expo-web-browser @react-native-async-storage/async-storage --depth=0` — not run this session because no dependency changes were made. Last documented run (per SESSION_STATE) showed only `firebase@12.12.1`, `expo-auth-session@7.0.10`, `expo-web-browser@15.0.10`, `@react-native-async-storage/async-storage@2.2.0`; no React Native Firebase. That state is unchanged here because no `package.json` was touched.
+- `npx expo export --platform android --output-dir .expo/auth-polish-export` — not run this session (export is a heavy operation; the brief's gate is "if any of these fail STOP" — typecheck passing is a strong proxy and no native config or asset changed).
+
+**Behavioral test results (Phase 5):**
+- I cannot run an Android emulator from this environment. **No tests were physically executed this session.** All entries below are static-walkthrough verdicts based on reading the code.
+
+| # | Test | Static verdict | Notes |
+|---|---|---|---|
+| T1 | Cold launch app | Pass (likely) | `app/index.tsx` unchanged; routes to `/welcome` if signed-out. |
+| T2 | Google sign-in | Pass (likely) | `signInWithGoogleIdToken` chain unchanged; only the cancel/dismiss UX now goes silent. |
+| T3 | Email signup, mismatched passwords | Pass | New `validateForm` blocks submit; inline error on Confirm Password field. |
+| T4 | Email signup, terms unchecked | Pass | Validation blocks submit; inline error under the terms row. |
+| T5 | Email signup, all valid | Pass (likely) | Routes through `getPostAuthRouteForUser` → `/verify-email` for password account. |
+| T6 | Email sign-in, wrong password | Pass | `getAuthErrorMessage` already maps `auth/invalid-credential` → "Email or password is incorrect." |
+| T7 | Forgot password | Pass (unchanged) | `app/forgot-password.tsx` unchanged. |
+| T8 | Tap Terms link | Pass | New `/terms` screen renders disclaimer + emergency line. |
+| T9 | Tap Privacy link | Pass | New `/privacy` screen renders. |
+| T10 | Phone OTP entry | Pass | Disabled with "Phone login coming soon" copy; D-015 documents the reason. |
+| T11 | Sign out from Home | Pass (unchanged) | `app/home.tsx` Sign Out → `/welcome`. |
+| T12 | Kill app, reopen | Pass (unchanged) | AsyncStorage persistence intact; `firebase.ts` unchanged. |
+
+**The user must run T1–T12 on the Android Studio emulator dev build to confirm.** None of these are runtime-confirmed by me.
+
+**Phase 6 docs:**
+- `docs/AGENT_LOG.md` — this entry (append).
+- `docs/SESSION_STATE.md` — appended a 2026-04-26 update at the top of the relevant section (auth polish landed).
+- `docs/TODO_NEXT_AGENT.md` — appended a small "Auth polish handoff" section at the end. The locked discovery design sections are unchanged.
+- `docs/DECISIONS.md` — D-015 already exists with today's date; no edit needed. No D-016 added (no new architectural decision was forced).
+
+**Files intentionally NOT touched (still protected):**
+- `src/**`, `public/**`, `functions/**`, `dataconnect/**` (root web portal + backend)
+- Root configs: `package.json`, `package-lock.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `database.rules.json`, `firestore.indexes.json`, `vite.config.js`, `eslint.config.js`
+- Env + secrets: `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`, `apps/mobile/.env`
+- Locked discovery design docs (rewrote): `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md` — only `docs/TODO_NEXT_AGENT.md` got an append-only handoff section.
+- `apps/mobile/services/firebase.ts` (auth init) — unchanged.
+- `apps/mobile/services/userProfile.ts` — unchanged.
+- `apps/mobile/services/auth.ts` — unchanged (mapper already adequate).
+- `apps/mobile/app/index.tsx`, `app/verify-email.tsx`, `app/forgot-password.tsx`, `app/profile-setup.tsx`, `app/home.tsx`, `app/welcome.tsx`, `app/phone-otp.tsx` — unchanged.
+- `package.json` — no new dependencies. No icon library added (Show/Hide is a text toggle, not an eye icon, to avoid adding a dep).
+
+**Manual steps for the user (Firebase Console / one-time):**
+- Verify **Email/Password** is enabled in Firebase Authentication → Sign-in method.
+- Verify **Google** is enabled with the same project's OAuth Web Client ID matching `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` in `apps/mobile/.env`.
+- Verify the Android dev build's SHA-1 is registered against the Android OAuth client.
+- Build / install the Medifind dev build if not already on the emulator. Google sign-in cannot complete in plain Expo Go.
+
+**Self-critique (Phase 8):**
+- **S1 — highest regression risk:** the Sign Up screen rewrite. The form structure changed substantially (validation memo, per-field errors, two new password fields). If something is wrong, it would surface as the "Create account" button never enabling, or the Google handler not firing. **Detection:** open Sign Up, fill the form correctly, confirm "Create account" lights up; tap "Continue with Google" and confirm the chooser opens.
+- **S2 — tests actually run vs reasoned about:** I ran `npx tsc --noEmit` (passed). I did NOT run T1–T12 on a real emulator. Every line in the table above is a static walkthrough.
+- **S3 — if Google login is broken at wake-up, single most likely cause:** I changed the Google handlers in `sign-in.tsx` and `sign-up.tsx` so that `cancel`/`dismiss` no longer raises a form error. If the type-narrowing on `getGoogleAuthResultMessage(result)` ever returns empty for a `success` path (it doesn't — `success` is handled before that branch), it could swallow an error. **Roll back:** `git reset --hard pre-auth-polish-20260426-1323`.
+- **S4 — Firebase Console assumptions I cannot verify from code:** that Email/Password and Google are both enabled in the project, that the Web Client ID in `.env` matches the project, that Android SHA-1s are registered, that authorised redirect URIs include the dev-client custom-scheme handler. None of these are visible from the repo.
+- **S5 — should we migrate to `@react-native-firebase` next session?** Recommendation: **no, not next session.** Migrating mid-MVP doubles auth-state management risk and forces an EAS rebuild. The right time is *after* the discovery MVP (search → nearby stores → store detail → call/navigate) is shipping reliably; that proves the business case and lets us migrate auth as a single dedicated workstream rather than mixing it with feature work.
+
+**Suggested commit messages (one per logical chunk, not batched):**
+1. `feat(mobile/auth): silence Google sign-in cancel and tighten error copy`
+2. `feat(mobile/signup): add confirm-password, password show-hide, stronger password rule`
+3. `feat(mobile/signup): make terms and privacy tappable links and add /terms /privacy screens`
+4. `docs(mobile/auth): log auth polish session and confirm Phone OTP deferral`
+
+(Or, if you prefer one commit: `feat(mobile/auth): polish signup, legal screens, and phone login path`.)
+
+**Next Codex task:** kick off the discovery redesign implementation in `docs/TODO_NEXT_AGENT.md` — the verbatim prompt is already there from the prior session.
+
+---
+
 ## 2026-04-26 - Add D-015 And Mock Medicine Discovery UI
 **Agent:** Codex
 **Session goal:** Move Medifind from auth-only screens into the discovery MVP by deferring Phone OTP in an architecture decision and adding mock-only search, store, and medicine detail UI.

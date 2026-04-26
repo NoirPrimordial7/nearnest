@@ -78,9 +78,10 @@ export function getGoogleAuthResultMessage(result: AuthSessionResult) {
   switch (result.type) {
     case 'cancel':
     case 'dismiss':
-      return 'Google sign-in was cancelled.';
+      // Silent: user pressed back / closed the sheet. Do not surface as an error.
+      return '';
     case 'error':
-      return 'Google sign-in could not start. Check the OAuth client setup and try again.';
+      return 'Google sign-in could not start. Check your connection and try again.';
     case 'locked':
       return 'Another sign-in window is already open.';
     default:

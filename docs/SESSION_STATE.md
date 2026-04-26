@@ -1,6 +1,16 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (discovery redesign locked in docs; ready for Codex implementation)
+Last updated: 2026-04-26 (auth polish landed: confirm-password, terms/privacy screens, password show-hide, Phone OTP DEFERRED)
+
+## Auth polish 2026-04-26 (this session)
+- Sign Up now has a Confirm Password field, password show/hide, stronger password rule (≥ 8 chars, ≥ 1 letter, ≥ 1 number), per-field inline errors, and tappable Terms / Privacy Policy links.
+- New screens: `apps/mobile/app/terms.tsx` and `apps/mobile/app/privacy.tsx` with substantive MVP-but-correct legal copy. Both carry the medical disclaimer (Medifind does not provide medical advice, diagnosis, dosage, prescriptions, delivery, or emergency services), an emergency-line callout, and explicit `[LEGAL REVIEW NEEDED]` markers where local legal counsel is required.
+- Sign In gained a password show/hide toggle.
+- Google sign-in `cancel` / `dismiss` is now silent (no error toast on user back-press).
+- **Phone OTP outcome:** [DEFER] — D-015 already documents the rationale (no `@react-native-firebase` migration; no Cloud-Functions OTP path; `expo-firebase-recaptcha` archived). No new dependencies. No `package.json` change. No EAS rebuild required.
+- `npx tsc --noEmit` from `apps/mobile/`: passes.
+- Rollback tag for this session: `pre-auth-polish-20260426-1323`.
+- Manual confirmation needed: T1–T12 in `docs/AGENT_LOG.md` 2026-04-26 entry must be run on the Android Studio dev build by the user.
 
 ## Discovery redesign 2026-04-25 (docs-only this session)
 A full Phase 0 product strategy + screen specs + design tokens + data model are now in:

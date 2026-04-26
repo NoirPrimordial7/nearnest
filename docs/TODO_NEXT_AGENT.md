@@ -153,3 +153,54 @@ Suggested commit message:
 
 ### Housekeeping
 - Confirm jezweb / expo external skills register with Claude Code's plugin system after `/reload-plugins`. If not, decide whether to author proper `plugin.json` wrappers or read them directly from `.claude/external/*/` on demand.
+
+---
+
+## Auth polish handoff (appended 2026-04-26)
+
+This is a small append-only handoff to track the live-test items the user must run after the 2026-04-26 auth-polish session. The locked discovery design sections above are unchanged. Do not move or rewrite them.
+
+**Session rollback tag:** `pre-auth-polish-20260426-1323`. To revert: `git reset --hard pre-auth-polish-20260426-1323`.
+
+**Files added / changed in the session:**
+- `apps/mobile/app/sign-up.tsx` (rewritten form layer: confirm password, show/hide toggles, stronger validation, tappable T&C links, per-field errors, silent Google cancel)
+- `apps/mobile/app/sign-in.tsx` (password show/hide; silent Google cancel)
+- `apps/mobile/services/googleAuth.ts` (`getGoogleAuthResultMessage` returns empty string on cancel/dismiss; tightened error copy)
+- `apps/mobile/app/terms.tsx` **(new)** with medical disclaimer + emergency line + `[LEGAL REVIEW NEEDED]` markers
+- `apps/mobile/app/privacy.tsx` **(new)** with what-we-collect / what-we-don't, Firebase mention, children's notice
+- `docs/AGENT_LOG.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md` (this section)
+
+**Phone OTP outcome:** [DEFER]. D-015 already documents this with today's date. No `@react-native-firebase` was added, no Cloud Function path was opened. The `/phone-otp` route remains a disabled "coming soon" surface.
+
+**Live tests to run on the Android Studio dev build (T1–T12, full table in AGENT_LOG):**
+1. Cold launch → Welcome.
+2. Google sign-in still works.
+3. Email signup with mismatched passwords → Create button stays disabled, inline error visible.
+4. Email signup with terms unchecked → Create button stays disabled.
+5. Email signup all valid → routes to /verify-email.
+6. Email sign-in with wrong password → friendly error: "Email or password is incorrect."
+7. Forgot password sends reset email.
+8. Tap Terms → /terms opens with medical disclaimer + emergency line.
+9. Tap Privacy → /privacy opens.
+10. Phone OTP entry → button is disabled with "Phone login coming soon".
+11. Sign out from Home → Welcome.
+12. Kill app, reopen → if profile complete, lands on Home without re-login.
+
+**Manual Firebase Console / one-time items (none new vs prior session):**
+- Email/Password and Google providers enabled.
+- OAuth Web Client ID matches `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`.
+- Android dev SHA-1 registered against the Android OAuth client.
+
+**Suggested next Codex task** (paste verbatim to Codex when ready):
+
+```
+Implement the Medifind discovery redesign per the locked specs in
+docs/MOBILE_APP_PLAN.md, docs/MOBILE_UI_SCREEN_SPECS.md, and
+docs/DESIGN_SYSTEM.md (all "Discovery Redesign 2026-04-25" sections).
+Auth polish from 2026-04-26 has already landed; do not regress it.
+Mock data only. No backend, no Maps SDK, no Phone OTP, no commerce.
+After build run: cd apps/mobile && npm run typecheck;
+npx expo export --platform android --output-dir .expo/discovery-redesign-export;
+git diff --check.
+Suggested commit: feat(mobile): implement discovery redesign with dual-mode home and mock data.
+```

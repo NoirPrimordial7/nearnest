@@ -19,6 +19,7 @@ type LoadingAction = 'email' | 'google' | null;
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
   const [googleRequest, googleResponse, promptGoogleSignIn] = Google.useIdTokenAuthRequest(
@@ -43,7 +44,11 @@ export default function SignInScreen() {
       }
 
       if (googleResponse.type !== 'success') {
-        setFormError(getGoogleAuthResultMessage(googleResponse));
+        const message = getGoogleAuthResultMessage(googleResponse);
+        // Empty message = silent (user pressed back / closed the sheet).
+        if (message) {
+          setFormError(message);
+        }
         setLoadingAction(null);
         return;
       }
@@ -172,15 +177,28 @@ export default function SignInScreen() {
         </View>
         <View style={styles.fieldGroup}>
           <Text style={styles.label}>Password</Text>
-          <TextInput
-            editable={!isBusy}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            placeholderTextColor={colors.textSoft}
-            secureTextEntry
-            style={styles.input}
-            value={password}
-          />
+          <View style={styles.inputRow}>
+            <TextInput
+              autoCapitalize="none"
+              autoComplete="current-password"
+              editable={!isBusy}
+              onChangeText={setPassword}
+              placeholder="Enter your password"
+              placeholderTextColor={colors.textSoft}
+              secureTextEntry={!showPassword}
+              style={styles.inputInner}
+              value={password}
+            />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+              disabled={isBusy}
+              onPress={() => setShowPassword((current) => !current)}
+              style={styles.toggleButton}
+            >
+              <Text style={styles.toggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+            </Pressable>
+          </View>
         </View>
         <Pressable
           accessibilityRole="link"
@@ -228,6 +246,35 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: typography.body,
     paddingHorizontal: spacing.lg,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.lg,
+  },
+  inputInner: {
+    flex: 1,
+    minHeight: 48,
+    color: colors.text,
+    fontSize: typography.body,
+    paddingVertical: 0,
+  },
+  toggleButton: {
+    paddingVertical: spacing.sm,
+    paddingLeft: spacing.md,
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleText: {
+    color: colors.primary700,
+    fontSize: typography.bodySm,
+    fontWeight: '600',
   },
   forgotLinkPressable: {
     alignSelf: 'flex-end',
