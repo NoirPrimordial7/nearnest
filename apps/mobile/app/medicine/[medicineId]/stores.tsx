@@ -9,17 +9,15 @@ import { ErrorState } from '../../../components/ErrorState';
 import { MapPlaceholder } from '../../../components/MapPlaceholder';
 import { StoreCard } from '../../../components/StoreCard';
 import { useFontScale } from '../../../hooks/useFontScale';
+import { getMedicineDetailApi, getNearbyStoresApi } from '../../../services/discoveryApi';
 import { openExternalUrl } from '../../../services/externalLinks';
 import {
-  getAvailabilityForMedicine,
   getMapsUrl,
-  getMedicineById,
   getPhoneUrl,
-  getStoresByDistance,
 } from '../../../services/mockDiscovery';
 import { medifindTelemetry } from '../../../services/telemetry';
 import { colors, spacing, type as typography } from '../../../theme/tokens';
-import type { MedicineAvailability, Store } from '../../../types/discovery';
+import type { Medicine, MedicineAvailability, Store } from '../../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -28,12 +26,46 @@ function getParamValue(value: string | string[] | undefined) {
 export default function NearbyStoresForMedicineScreen() {
   const params = useLocalSearchParams();
   const medicineId = getParamValue(params.medicineId);
-  const medicine = getMedicineById(medicineId);
-  const availability = medicine ? getAvailabilityForMedicine(medicine.id) : [];
-  const mapStores = availability.length > 0 ? availability.map((row) => row.store) : getStoresByDistance();
+  const [medicine, setMedicine] = useState<Medicine | null>(null);
+  const [availability, setAvailability] = useState<MedicineAvailability[]>([]);
+  const [mapStores, setMapStores] = useState<Store[]>([]);
   const [sheetMode, setSheetMode] = useState<'list' | 'map'>('list');
   const [actionError, setActionError] = useState('');
+  const [backendError, setBackendError] = useState('');
+  const [loading, setLoading] = useState(true);
   const { scale, scaleLineHeight } = useFontScale();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setBackendError('');
+    void Promise.all([getMedicineDetailApi(medicineId), getNearbyStoresApi(medicineId)])
+      .then(([detail, nearby]) => {
+        if (cancelled) {
+          return;
+        }
+        setMedicine(detail.medicine);
+        setAvailability(detail.availability);
+        setMapStores(
+          detail.availability.length > 0
+            ? detail.availability.map((row) => row.store)
+            : nearby.stores,
+        );
+        if ((detail.source === 'mock' && detail.error) || (nearby.source === 'mock' && nearby.error)) {
+          setBackendError(detail.error ?? nearby.error ?? 'Discovery backend unavailable.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [medicineId]);
 
   useEffect(() => {
     medifindTelemetry.emit('medifind.stores.list_view_open', {
@@ -41,10 +73,10 @@ export default function NearbyStoresForMedicineScreen() {
     });
   }, [medicine?.id]);
 
-  if (!medicine) {
+  if (!loading && !medicine) {
     return (
       <ErrorState
-        body="This medicine is not available in the local mock catalog."
+        body="This medicine is not available in Medifind yet."
         errorCode="medicine_not_found"
         screenId="medicine_stores"
         title="Medicine not found"
@@ -94,7 +126,7 @@ export default function NearbyStoresForMedicineScreen() {
 
   return (
     <View style={styles.container}>
-      <MapPlaceholder stores={mapStores} title={medicine.name} />
+      <MapPlaceholder stores={mapStores} title={medicine?.name ?? 'Nearby pharmacies'} />
       <BottomSheet>
         <View style={styles.sheetHeader}>
           <Pressable accessibilityRole="button" onPress={() => router.back()}>
@@ -105,9 +137,9 @@ export default function NearbyStoresForMedicineScreen() {
               numberOfLines={1}
               style={[styles.title, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}
             >
-              {medicine.name}
+              {loading ? 'Loading nearby stores' : medicine?.name}
             </Text>
-            {medicine.requiresPrescription ? <Badge kind="rx" label="Prescription required" /> : null}
+            {medicine?.requiresPrescription ? <Badge kind="rx" label="Prescription required" /> : null}
           </View>
         </View>
 
@@ -124,8 +156,17 @@ export default function NearbyStoresForMedicineScreen() {
             title="Action could not open"
           />
         ) : null}
+        {backendError ? (
+          <Text style={[styles.disclaimer, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Using local demo availability while live pharmacy data is unavailable.
+          </Text>
+        ) : null}
 
-        {availability.length === 0 ? (
+        {loading ? (
+          <Text style={[styles.disclaimer, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Checking current pharmacy inventory...
+          </Text>
+        ) : availability.length === 0 ? (
           <EmptyState
             actionLabel="Browse pharmacies"
             body="Try a wider radius or browse pharmacies and ask in person."

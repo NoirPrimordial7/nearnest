@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../../components/ActionButton';
@@ -9,16 +9,14 @@ import { ProductCard } from '../../components/ProductCard';
 import { Screen } from '../../components/Screen';
 import { StaleDataBanner } from '../../components/StaleDataBanner';
 import { useFontScale } from '../../hooks/useFontScale';
+import { getMedicineDetailApi } from '../../services/discoveryApi';
 import {
   formatComposition,
   formatDistance,
-  getAvailabilityForMedicine,
-  getMedicineById,
-  getSimilarMedicines,
-  hasStaleDataForMedicine,
 } from '../../services/mockDiscovery';
 import { medifindTelemetry } from '../../services/telemetry';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
+import type { Medicine, MedicineAvailability } from '../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -27,11 +25,41 @@ function getParamValue(value: string | string[] | undefined) {
 export default function MedicineDetailScreen() {
   const params = useLocalSearchParams();
   const medicineId = getParamValue(params.medicineId);
-  const medicine = getMedicineById(medicineId);
-  const stores = medicine ? getAvailabilityForMedicine(medicine.id) : [];
-  const similar = medicine ? getSimilarMedicines(medicine.id) : [];
-  const hasStale = medicine ? hasStaleDataForMedicine(medicine.id) : false;
+  const [medicine, setMedicine] = useState<Medicine | null>(null);
+  const [stores, setStores] = useState<MedicineAvailability[]>([]);
+  const [similar, setSimilar] = useState<Medicine[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [backendError, setBackendError] = useState('');
+  const hasStale = stores.some(({ freshnessStatus }) => freshnessStatus !== 'fresh');
   const { scale, scaleLineHeight } = useFontScale();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setBackendError('');
+    void getMedicineDetailApi(medicineId)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setMedicine(result.medicine);
+        setStores(result.availability);
+        setSimilar(result.similar);
+        if (result.source === 'mock' && result.error) {
+          setBackendError(result.error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [medicineId]);
 
   useEffect(() => {
     if (medicine) {
@@ -42,12 +70,22 @@ export default function MedicineDetailScreen() {
     }
   }, [medicine]);
 
+  if (loading) {
+    return (
+      <Screen
+        eyebrow="Medicine"
+        title="Loading medicine"
+        description="Checking current pharmacy availability."
+      />
+    );
+  }
+
   if (!medicine) {
     return (
       <Screen
         eyebrow="Medicine"
         title="Medicine not found"
-        description="This medicine is not in the local mock catalog."
+        description="This medicine is not available in Medifind yet."
         footer={<ActionButton label="Back to search" onPress={() => router.replace('/search')} />}
       />
     );
@@ -117,6 +155,11 @@ export default function MedicineDetailScreen() {
         ) : null}
 
         {hasStale ? <StaleDataBanner /> : null}
+        {backendError ? (
+          <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Using local demo availability while live pharmacy data is unavailable.
+          </Text>
+        ) : null}
 
         <View style={styles.availabilityCard}>
           <Text style={[styles.sectionTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>

@@ -9,6 +9,7 @@ import {
 } from 'firebase/app';
 import { getAuth, getReactNativePersistence, initializeAuth, type Auth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 type FirebaseEnv = {
   EXPO_PUBLIC_FIREBASE_API_KEY?: string;
@@ -63,3 +64,4 @@ function initializeMobileAuth(app: FirebaseApp): Auth {
 
 export const auth = initializeMobileAuth(firebaseApp);
 export const db = getFirestore(firebaseApp);
+export const firebaseFunctions = getFunctions(firebaseApp, 'asia-south1');

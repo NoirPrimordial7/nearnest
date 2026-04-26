@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../../components/ActionButton';
@@ -11,6 +11,7 @@ import { Screen } from '../../components/Screen';
 import { SearchBar } from '../../components/SearchBar';
 import { StaleDataBanner } from '../../components/StaleDataBanner';
 import { useFontScale } from '../../hooks/useFontScale';
+import { getStoreDetailApi } from '../../services/discoveryApi';
 import { openExternalUrl } from '../../services/externalLinks';
 import {
   formatComposition,
@@ -18,16 +19,13 @@ import {
   formatFreshness,
   formatPrice,
   formatStoreAddress,
-  getFreshnessStatus,
-  getInventoryForStore,
   getMapsUrl,
   getPhoneUrl,
   getStockLabel,
-  getStoreById,
 } from '../../services/mockDiscovery';
 import { medifindTelemetry } from '../../services/telemetry';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
-import type { ResultFilter } from '../../types/discovery';
+import type { ResultFilter, Store, StoreInventoryGroup } from '../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -36,27 +34,63 @@ function getParamValue(value: string | string[] | undefined) {
 export default function StoreDetailScreen() {
   const params = useLocalSearchParams();
   const storeId = getParamValue(params.storeId);
-  const store = getStoreById(storeId);
+  const [store, setStore] = useState<Store | null>(null);
+  const [groups, setGroups] = useState<StoreInventoryGroup[]>([]);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ResultFilter>('all');
   const [hoursOpen, setHoursOpen] = useState(false);
   const [licenseOpen, setLicenseOpen] = useState(false);
   const [actionError, setActionError] = useState('');
-  const groups = useMemo(
-    () => (store ? getInventoryForStore(store.id, query, filter) : []),
-    [filter, query, store],
-  );
+  const [backendError, setBackendError] = useState('');
+  const [loading, setLoading] = useState(true);
   const hasStale = groups.some((group) =>
     group.items.some(({ freshnessStatus }) => freshnessStatus !== 'fresh'),
   );
   const { scale, scaleLineHeight } = useFontScale();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setBackendError('');
+    void getStoreDetailApi(storeId, query, filter)
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setStore(result.store);
+        setGroups(result.groups);
+        if (result.source === 'mock' && result.error) {
+          setBackendError(result.error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filter, query, storeId]);
+
+  if (loading && !store) {
+    return (
+      <Screen
+        eyebrow="Store"
+        title="Loading store"
+        description="Checking public store details and current inventory."
+      />
+    );
+  }
 
   if (!store) {
     return (
       <Screen
         eyebrow="Store"
         title="Store not found"
-        description="This store is not available in the local mock data."
+        description="This store is not available in Medifind yet."
         footer={<ActionButton label="Back to home" onPress={() => router.replace('/home')} />}
       />
     );
@@ -138,6 +172,11 @@ export default function StoreDetailScreen() {
             title="Action could not open"
           />
         ) : null}
+        {backendError ? (
+          <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Using local demo inventory while live store data is unavailable.
+          </Text>
+        ) : null}
 
         <View style={styles.actionRow}>
           <ActionButton label="Call" onPress={() => void callStore()} variant="secondary" />
@@ -180,7 +219,11 @@ export default function StoreDetailScreen() {
 
         {hasStale ? <StaleDataBanner /> : null}
 
-        {groups.length === 0 ? (
+        {loading ? (
+          <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Loading current inventory...
+          </Text>
+        ) : groups.length === 0 ? (
           <EmptyState
             actionLabel={query ? 'Clear search' : 'Call store'}
             body={

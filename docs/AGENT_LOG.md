@@ -4,6 +4,209 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Discovery rules: tighten public reads to require signed-in (incremental hardening on top of Codex deploy)
+**Agent:** Claude Opus 4.7 (Claude Code)
+**Session goal:** Take over after Codex hit usage limit. Verify the discovery backend that Codex already DEPLOYED, do a security pass before any further deploy, and apply the smallest safe hardening that does not regress the working flow. Do not deploy.
+
+### Reality check
+- `git status --short`: Codex's working tree is dirty across `firestore.rules`, `firestore.indexes.json`, `functions/index.js`, mobile screens, mobile services, graphify-out. Untracked: `apps/mobile/services/discoveryApi.ts`, `functions/eslint.config.js`, `functions/scripts/`. None of this was committed locally even though the **deploy already happened to `nearnest-platform`** per the prior log entry.
+- Last 5 commits: `3d9a3db feat(mobile): implement discovery redesign…`, `5d17587 feat(mobile/auth): polish signup…`, `875c37b docs(mobile): redesign discovery UX…`, `19578f9 feat(mobile): add mock medicine discovery flow`, `eb98454 feat(mobile): polish medicine discovery mock flow`. The backend integration + deploy is uncommitted in git but live in Firebase.
+- `nearnest-platform` Firebase project. Functions in `asia-south1`, Node 22.
+
+### What Codex already shipped (verified by inspection only — I did not edit any of this)
+1. **`functions/index.js`** — `searchMedicines` + `nearbyStores` callables in asia-south1. Both whitelist fields via `normalizeMedicine` / `normalizeStore` / `normalizeInventoryItem`. Both reject non-public stores via `isPublicStoreData(data)`. Verified: deployed and live per the Codex log above.
+2. **`firestore.indexes.json`** — five indexes for medicines / stores / inventory. Deployed.
+3. **`apps/mobile/services/discoveryApi.ts`** — calls callables with try/catch + mock fallback (`source: 'backend' | 'mock'`). Also makes direct Firestore reads on `medicines/{id}`, `stores/{id}`, `stores/{id}/inventory` for the medicine-detail / store-detail / category-browse paths. **This is the field-leak vector flagged below.**
+4. **`functions/scripts/seedDiscoveryData.js`** — seeds 8 medicines (mix Rx/OTC), 4 verified public Pune stores, 17 inventory rows with mixed freshness. `assertStoreDocsSafe` refuses to overwrite a store doc that already carries `ownerId`, `members`, `membersArr`, `visibleTo`, `adminNotes`, `internal`, or `private` fields.
+5. **`functions/scripts/verifyDiscoveryData.js`** — sanity-reads back medicines + stores + inventory.
+6. `@react-native-firebase/*` is **not** installed. Phone OTP remains deferred per D-015.
+
+### Security finding (the deeper one — Codex already noted in their log)
+The pre-existing rules state Codex deployed already **gated public reads by `publicDiscovery: true`** but did **not** require `signedIn()` on the public branches:
+- `match /medicines/{id} { allow read: if true; }` — anonymous global read of catalog.
+- `match /stores/{id} { allow read: ... if isPublicStoreData(resource.data) || canAccessStore(...) }` — `isPublicStoreData` doesn't check signed-in, so any verified `publicDiscovery: true` store doc was readable by **unauthenticated** clients.
+- Same on `stores/{id}/inventory/{sku}` public branch.
+
+Firestore rules cannot return only a subset of fields on a doc read; the whole doc is exposed. The seed script's `assertStoreDocsSafe` keeps seeded stores clean, but real stores onboarded later via the web portal could acquire private fields and leak them.
+
+### Minimum-safe fix applied this session
+Edited `firestore.rules`:
+- `medicines/{id}`: `allow read: if true` → `allow read: if signedIn()`. (Kills anonymous catalog scraping.)
+- `stores/{id}`: public branch now requires `signedIn() && isPublicStoreData(resource.data)`. The web-portal `canAccessStore(storeId)` path is unchanged.
+- `stores/{id}/inventory/{sku}`: public branch now requires `signedIn() && isPublicStore(storeId)`. Same web-portal path unchanged.
+- Added an inline comment block on `stores/{id}` citing this AGENT_LOG entry and listing the deeper architectural fixes (Option A callable-only public reads, Option B `publicStores/{id}` mirror).
+
+This is incremental: mobile users always sign in before any discovery action (existing splash → auth gate), so no functional regression for the live flow. Anonymous probing is now blocked. **The deeper fix (route ALL public reads through callables, or maintain a sanitized `publicStores/{id}` mirror) is documented as the next task in `docs/TODO_NEXT_AGENT.md`.**
+
+### Files changed this session
+- `firestore.rules` — three rule paths now require `signedIn()`. Inline comment added.
+
+### Files NOT touched
+- `src/**`, `public/**`, `dataconnect/**` (web portal — protected).
+- Root configs: `package.json`, `package-lock.json`, `firebase.json`, `database.rules.json`, `vite.config.js`, `eslint.config.js`.
+- Env + secrets: `.env`, `.env.local`, `.env.example`, `.firebaserc`, `serviceAccountKey.json`, `apps/mobile/.env`.
+- `.claude/settings.local.json`, `.codex/*.png`.
+- All of Codex's dirty work: `apps/mobile/**` source, `functions/index.js`, `functions/scripts/**`, `firestore.indexes.json`, `graphify-out/**`. Verified, not edited.
+
+### Verification
+- `cd apps/mobile && npx tsc --noEmit` → **passes** (no output).
+- `cd functions && node --check index.js && node --check scripts/seedDiscoveryData.js && node --check scripts/verifyDiscoveryData.js` → all parse OK.
+- `git diff --check` → clean (CRLF warnings only; harmless on Windows).
+- `npx expo export` → not run (no native or asset change).
+- `graphify update .` → not run (`graphify-out/**` already dirty from Codex; my single-file rule edit doesn't change the JS/TS graph).
+
+### Deploy status
+**NOT DEPLOYED.** The user has not said "YES DEPLOY FIREBASE" for this incremental change. Production currently runs on the looser pre-fix rules Codex deployed earlier. When the user wants to ship the tightening:
+```
+firebase deploy --only firestore:rules
+```
+Or the full bundle:
+```
+firebase deploy --only functions,firestore:rules,firestore:indexes
+```
+
+### Mobile testing (user-runnable; not run by me)
+Codex's log notes a manual Android dev-build walkthrough is still pending. To run:
+```
+cd apps/mobile
+npx expo start -c --dev-client --android --port 8081
+# open the installed Medifind dev build (com.nearnest.medifind) on the emulator
+# if LAN reload hangs, use 10.0.2.2:8081
+```
+Walk: Splash → sign in → Home → search "dolo" → Results → Medicine detail → Find nearby stores → Store detail → Call/Navigate. Confirm `source: 'backend'` banner shows live and `source: 'mock'` fallback works in flight mode.
+
+**After this session's rule change is deployed,** the same walkthrough should still pass because mobile users are signed-in. If anyone reports a "missing or insufficient permissions" error on discovery, the cause is most likely an unsigned client — verify the splash routed them through sign-in.
+
+### Suggested git add (do NOT use `git add .`)
+For ONLY this session's change:
+```
+git add firestore.rules docs/AGENT_LOG.md docs/SESSION_STATE.md docs/TODO_NEXT_AGENT.md
+```
+Codex's pre-existing backend integration + seed scripts + mobile screens are still uncommitted; the user can choose how to scope that commit.
+
+### Suggested commit message
+```
+fix(firebase): harden public discovery reads to require signed-in
+```
+
+### Self-critique
+- **Highest regression risk:** mobile would break if any discovery code path ever ran while unsigned. There is no such path today (`apps/mobile/app/index.tsx` splash routes unsigned users to `/welcome`). Mitigation if reports come in: revert with `git checkout firestore.rules` and re-deploy.
+- **What I did NOT do:** I did NOT replace the direct `getDoc`/`getDocs` calls in `discoveryApi.ts` with callables. That's the proper field-level fix. Documented as the next task. The `signedIn()` tightening here closes the *anonymous-scraping* hole; the *signed-in field-leak* hole remains until the next session.
+- **Coverage of Codex's claims:** I trusted Codex's "deploy passed" log line without re-running `firebase deploy --dry-run`. The user can verify in Firebase Console (Authentication → Sign-in method, Firestore → Rules tab, Functions list).
+
+---
+
+## 2026-04-26 - Deploy, Seed, And Verify Live Firebase Discovery Backend
+**Agent:** Codex
+**Session goal:** Make the Firebase-backed Medifind discovery flow live enough for testing by deploying Firestore rules/indexes and callables, seeding public discovery data, and verifying live API responses.
+
+**Files inspected (read-only):**
+- `AGENTS.md`, `graphify-out/GRAPH_REPORT.md`, `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`.
+- Backend and deployment files: `.firebaserc`, `firestore.rules`, `firestore.indexes.json`, `functions/index.js`, and `functions/package.json`.
+- Mobile discovery service: `apps/mobile/services/discoveryApi.ts`.
+
+**Files created / edited:**
+- `functions/index.js` - switched Functions import to `firebase-functions/v1`, tightened public-store filtering to require `publicDiscovery: true`, and changed medicine availability lookup to per-public-store inventory reads to avoid production collection-group precondition failures.
+- `firestore.rules` - tightened public store reads so public discovery requires `publicDiscovery: true`, active status, and verified/approved status.
+- `firestore.indexes.json` - kept discovery query indexes and added a collection-group single-field override for `inventory.medicineId`; removed the invalid one-field composite index.
+- `functions/eslint.config.js` - kept Functions lint isolated from the root frontend ESLint config and allowed Node console usage for scripts.
+- `functions/scripts/seedDiscoveryData.js` - added a guarded production seed script for 8 medicines, 4 public-safe stores, and 17 inventory rows.
+- `functions/scripts/verifyDiscoveryData.js` - added a production verification script for medicine search, geohash store lookup, and Dolo availability.
+- `apps/mobile/services/discoveryApi.ts` - changed medicine availability detail reads to use the `nearbyStores` callable path instead of client-side collection-group inventory reads.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md` - updated this handoff state.
+
+**Deploy / seed results:**
+- `firebase deploy --only firestore:rules,firestore:indexes --project nearnest-platform` - passed; rules compiled and indexes deployed.
+- First all-functions deploy was stopped by Firebase CLI because existing remote functions (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`) are not in local source. Those functions were not deleted.
+- `firebase deploy --only functions:searchMedicines,functions:nearbyStores --project nearnest-platform` - passed after using explicit function targets.
+- `firebase functions:artifacts:setpolicy --location asia-south1 --days 7 --force --project nearnest-platform` - passed to clean up the Functions artifact warning.
+- `node functions/scripts/seedDiscoveryData.js` - passed and seeded `{ medicines: 8, stores: 4, inventory: 17 }`.
+- `node functions/scripts/verifyDiscoveryData.js` - passed: medicine search count `1`, nearby store geohash count `4`, Dolo availability count `3`.
+
+**Live API verification:**
+- Direct `searchMedicines` callable POST for `Dolo` near Pune returned one item, `Dolo 650`, with 3 availability rows. First store: `Greenleaf Pharmacy`; first stock state: `in_stock`.
+- Direct `nearbyStores` callable POST for the same location returned 4 stores. First store: `Greenleaf Pharmacy`; distance `0.8 km`; available item count `5`; public phone present.
+- Seeded public test stores use `publicDiscovery: true`, verified/approved status, public contacts, coordinates, geohashes, and inventory subcollections.
+
+**Verification status:**
+- `cd functions && node --check index.js` - passed.
+- `cd functions && node --check scripts\seedDiscoveryData.js` - passed.
+- `cd functions && node --check scripts\verifyDiscoveryData.js` - passed.
+- `cd functions && npm run lint` - passed.
+- `cd apps/mobile && npm run typecheck` - passed.
+- `cd apps/mobile && npx expo export --platform android --output-dir .expo/backend-live-verification-export` - passed.
+- `graphify update .` - passed and rebuilt the graph at 448 nodes, 560 edges, and 80 communities.
+- `git diff --check` - passed after trimming Graphify-generated trailing whitespace.
+- Firestore emulator validation was not run successfully because the local Firebase CLI requires Java 21+ on this machine; production rules compile/deploy succeeded instead.
+
+**Files intentionally NOT touched:**
+- Root `src/**`, `public/**`, `dataconnect/**`, root package files, root env files, `storage.rules`, `database.rules.json`, `firebase.json`, and `serviceAccountKey.json`.
+- Existing unrelated `.claude/settings.local.json` and `.codex/*.png` working-tree files were not changed or staged.
+- Existing remote functions outside this local source were not deleted.
+- No Phone OTP, map SDK, cart, payment, delivery, checkout, order tracking, or medical advice/dosage behavior was added.
+
+**Warnings for next agent:**
+- Manual dev-build UI smoke testing against live backend data is still needed.
+- Firebase CLI reported one remote Firestore index not present in `firestore.indexes.json`; do not deploy indexes with deletion/force unless that remote index has been reviewed.
+- Functions deploy warns that `firebase-functions` is outdated and Runtime Config is deprecated before March 2027.
+- Current backend availability lookup is intentionally conservative and per-public-store; optimize with denormalized public availability summaries before scaling large catalogs.
+
+**Suggested commit message:**
+`feat(discovery): deploy and seed Firebase-backed medicine search`
+
+---
+
+## 2026-04-26 - Add Backend Discovery Callables And Wire Mobile Discovery API
+**Agent:** Codex
+**Session goal:** Replace the mock-only discovery boundary with Firebase-backed callable/direct Firestore integration for Medifind medicine search, nearby stores, and inventory freshness while preserving mock fallback.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements before code work.
+- `docs/DECISIONS.md`, `docs/ARCHITECTURE.md`, `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md`.
+- Backend surfaces: `functions/index.js`, `functions/package.json`, `functions/.eslintrc.js`, `firebase.json`, `firestore.rules`, and `firestore.indexes.json`.
+- Mobile discovery surfaces under `apps/mobile/app/`, `apps/mobile/components/`, `apps/mobile/services/`, and `apps/mobile/types/`.
+
+**Files created / edited:**
+- `functions/index.js` - added `searchMedicines` and `nearbyStores` HTTPS callables in `asia-south1`, with query validation, token/category/brand/salt matching, verified-store filtering, geohash-prefix store lookup, distance sorting, inventory freshness normalization, and public contact/availability response shaping.
+- `functions/eslint.config.js` - added a Functions-local flat ESLint config so `npm --prefix functions run lint` does not inherit the root browser/Vite flat config.
+- `firestore.rules` - added public read rules for `medicines/{medicineId}`, verified public stores, and `stores/{storeId}/inventory/{sku}` while keeping store-owner/member/verifier write controls.
+- `firestore.indexes.json` - added medicine search/category, store geohash, and inventory collection-group indexes.
+- `apps/mobile/services/firebase.ts` - exported regional `firebaseFunctions`.
+- `apps/mobile/services/discoveryApi.ts` - new service layer that calls `searchMedicines` / `nearbyStores`, reads medicine/store/inventory details from Firestore where appropriate, maps backend documents into the existing discovery types, and falls back to mock data if the backend is unavailable.
+- `apps/mobile/app/home.tsx`, `app/results.tsx`, `app/medicine/[medicineId].tsx`, `app/medicine/[medicineId]/stores.tsx`, `app/stores/index.tsx`, `app/store/[storeId].tsx`, and `app/category/[categoryId].tsx` - wired discovery screens to the backend service layer with loading/error copy and mock fallback.
+- `apps/mobile/components/ProductCard.tsx` - added an optional backend availability count override.
+- `graphify-out/**` - updated with `graphify update .`.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, and `docs/SESSION_STATE.md` - this handoff update.
+
+**Verification status:**
+- `cd apps/mobile && npm run typecheck` - passed.
+- `cd functions && node --check index.js` - passed.
+- `cd functions && npm run lint` - passed after syncing Functions dependencies and adding the Functions-local flat ESLint config.
+- `cd apps/mobile && npx expo export --platform android --output-dir .expo/backend-discovery-export` - passed after sandbox escalation for Windows user-profile access.
+- `graphify update .` - passed via the installed Python Scripts path and rebuilt the graph at 435 nodes, 547 edges, and 78 communities.
+- `git diff --check` - passed after trimming Graphify-generated trailing whitespace.
+- `firebase emulators:exec --only firestore "cmd /c exit 0"` - failed before rule execution because local `firebase-tools` requires Java 21+.
+
+**Backend/live-data status:**
+- Backend logic is implemented and statically verified locally.
+- Live callable deployment and seeded Firestore data were **not** verified in this session. Deploy `functions`, `firestore.rules`, and `firestore.indexes.json`, then seed/confirm `medicines`, verified `stores`, and `stores/{storeId}/inventory/{medicineId}` docs before declaring real-data discovery fully live.
+- Mobile keeps mock fallback, so discovery screens remain usable before deployment or when a callable/rule/data issue occurs.
+
+**Files intentionally NOT touched:**
+- Root `src/**`, `public/**`, `dataconnect/**`, root package files, root env files, `storage.rules`, `database.rules.json`, `firebase.json`, and `serviceAccountKey.json`.
+- Existing unrelated `.claude/settings.local.json` and `.codex/*.png` working-tree files were not changed by this task.
+- No Phone OTP, map SDK, cart, payment, delivery, checkout, order tracking, or medical advice/dosage behavior was added.
+
+**Warnings for next agent:**
+- Public store reads expose whatever fields are present on public `stores/{storeId}` documents. Before deployment, ensure public store docs do not contain private owner/member/internal fields, or split public profiles into a separate safe document.
+- `functions/package.json` declares Node 22, but local verification ran on Node 20.20.0; Firebase deploy/build should use Node 22 per the existing Functions engine.
+- `npm install` in `functions/` reported existing audit issues; no `npm audit fix` was run.
+
+**Suggested commit message:**
+`feat(mobile): connect discovery UI to Firebase backend`
+
+---
+
 ## 2026-04-26 - Implement Discovery Redesign With Dual-Mode Home And Mock Data
 **Agent:** Codex
 **Session goal:** Build the locked Medifind discovery redesign in the Expo app with mock data only, keeping auth intact and avoiding backend/Maps/OTP/commerce work.

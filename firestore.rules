@@ -31,6 +31,21 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/stores/$(storeId));
     }
 
+    function isPublicStoreData(storeData) {
+      return storeData != null
+        && storeData.isActive != false
+        && storeData.publicDiscovery == true
+        && (
+          storeData.isVerified == true ||
+          storeData.verified == true ||
+          (storeData.verification != null && storeData.verification.status == 'approved')
+        );
+    }
+
+    function isPublicStore(storeId) {
+      return isPublicStoreData(storeDoc(storeId).data);
+    }
+
     // ---------- Verifier/Admin Access ----------
     function canVerifyDocs() {
       return signedIn()
@@ -66,14 +81,36 @@ service cloud.firestore {
       allow create: if signedIn();
     }
 
+    // ---------- MEDICINES ----------
+    // Public catalog: signed-in clients only. Anonymous scraping is blocked even
+    // though medicines do not carry PII; this also makes App Check enforcement easier later.
+    match /medicines/{medicineId} {
+      allow read, get, list: if signedIn();
+      allow create, update, delete: if signedIn()
+        && (userDoc(request.auth.uid).data.roles is list)
+        && userDoc(request.auth.uid).data.roles.hasAny(['admin']);
+    }
+
     // ---------- ROLES ----------
     match /roles/{roleId} {
       allow read: if signedIn();
     }
 
     // ---------- STORES ----------
+    // Public discovery reads require the caller to be signed in AND the store to opt in
+    // (`publicDiscovery == true` + verified + active). canAccessStore covers the web portal
+    // owner/member/verifier paths.
+    //
+    // SECURITY NOTE: Firestore rules cannot return only a subset of fields on a doc read.
+    // Any store with `publicDiscovery == true` therefore exposes its FULL document to any
+    // signed-in client. The seed script (`functions/scripts/seedDiscoveryData.js`) refuses
+    // to overwrite a store that already has owner/member/internal fields, but stores can
+    // still acquire PII later through other paths. The proper fix is to route public store
+    // reads through callable functions only (which already whitelist fields via
+    // `normalizeStore` in functions/index.js), or introduce a `publicStores/{id}` mirror
+    // collection. See AGENT_LOG 2026-04-26 for the follow-up plan.
     match /stores/{storeId} {
-      allow read, get, list: if canAccessStore(storeId);
+      allow read, get, list: if (signedIn() && isPublicStoreData(resource.data)) || canAccessStore(storeId);
       allow create: if signedIn();
 
       // Admin/Verifier or Owner can update verification status
@@ -86,6 +123,18 @@ service cloud.firestore {
         isOwner(resource.data.ownerId) ||
         userDoc(request.auth.uid).data.roles.hasAny(['admin'])
       );
+
+      // ---------- Subcollection: inventory ----------
+      // Public inventory reads require signed-in + parent store opted in for public discovery.
+      match /inventory/{sku} {
+        allow read, get, list: if (signedIn() && isPublicStore(storeId)) || canAccessStore(storeId);
+
+        allow create, update, delete: if signedIn() && (
+          isOwner(storeDoc(storeId).data.ownerId) ||
+          isMemberPlus(storeDoc(storeId).data.members, storeDoc(storeId).data.membersArr) ||
+          canVerifyDocs()
+        );
+      }
 
       // ---------- Subcollection: documents ----------
       match /documents/{docId} {

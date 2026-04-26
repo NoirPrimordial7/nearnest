@@ -9,21 +9,26 @@ import { MapPlaceholder } from '../../components/MapPlaceholder';
 import { SearchBar } from '../../components/SearchBar';
 import { StoreCard } from '../../components/StoreCard';
 import { useFontScale } from '../../hooks/useFontScale';
+import { getNearbyStoresApi } from '../../services/discoveryApi';
 import { openExternalUrl } from '../../services/externalLinks';
 import {
   getMapsUrl,
   getPhoneUrl,
-  getStoresByDistance,
   normalize,
 } from '../../services/mockDiscovery';
 import { medifindTelemetry } from '../../services/telemetry';
 import { colors, spacing, type as typography } from '../../theme/tokens';
-import type { Store } from '../../types/discovery';
+import type { Store, StoreInventoryItem } from '../../types/discovery';
 
 export default function StoresLandingScreen() {
   const [query, setQuery] = useState('');
   const [actionError, setActionError] = useState('');
-  const stores = useMemo(() => getStoresByDistance(), []);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [availableItemsByStore, setAvailableItemsByStore] = useState<
+    Record<string, StoreInventoryItem | undefined>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [backendError, setBackendError] = useState('');
   const visibleStores = useMemo(() => {
     const q = normalize(query);
     if (!q) {
@@ -41,6 +46,33 @@ export default function StoresLandingScreen() {
 
   useEffect(() => {
     medifindTelemetry.emit('medifind.stores.list_view_open', { medicine_id: null });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setBackendError('');
+    void getNearbyStoresApi()
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setStores(result.stores);
+        setAvailableItemsByStore(result.availableItemsByStore);
+        if (result.source === 'mock' && result.error) {
+          setBackendError(result.error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function openPhone(store: Store) {
@@ -101,8 +133,17 @@ export default function StoresLandingScreen() {
             title="Action could not open"
           />
         ) : null}
+        {backendError ? (
+          <Text style={[styles.statusText, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Using local demo pharmacy data while live nearby stores are unavailable.
+          </Text>
+        ) : null}
 
-        {visibleStores.length === 0 ? (
+        {loading ? (
+          <Text style={[styles.statusText, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            Loading nearby pharmacies...
+          </Text>
+        ) : visibleStores.length === 0 ? (
           <EmptyState
             actionLabel="Clear search"
             body="Try a wider radius or check back later."
@@ -113,6 +154,7 @@ export default function StoresLandingScreen() {
           <View style={styles.storeStack}>
             {visibleStores.map((store) => (
               <StoreCard
+                inventoryItem={availableItemsByStore[store.id]}
                 key={store.id}
                 onCall={() => {
                   void openPhone(store);
@@ -152,5 +194,8 @@ const styles = StyleSheet.create({
   },
   storeStack: {
     gap: spacing.md,
+  },
+  statusText: {
+    color: colors.textMuted,
   },
 });

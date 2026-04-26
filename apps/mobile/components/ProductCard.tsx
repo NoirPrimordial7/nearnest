@@ -15,6 +15,7 @@ type ProductCardProps = {
   variant?: 'large' | 'compact' | 'grid';
   onPress: () => void;
   onFindStores?: () => void;
+  availabilityCount?: number;
 };
 
 export function ProductCard({
@@ -22,9 +23,10 @@ export function ProductCard({
   variant = 'compact',
   onPress,
   onFindStores,
+  availabilityCount: providedAvailabilityCount,
 }: ProductCardProps) {
   const { scale, scaleLineHeight } = useFontScale();
-  const availabilityCount = getAvailabilityCount(medicine.id);
+  const availabilityCount = providedAvailabilityCount ?? getAvailabilityCount(medicine.id);
   const isGrid = variant === 'grid';
 
   return (

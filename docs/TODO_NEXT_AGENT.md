@@ -4,35 +4,33 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-26, after discovery redesign implementation)
+## Next up (as of 2026-04-26, after live Firebase discovery deploy and seed)
 
-**Discovery redesign is now implemented with mock data.** The Expo app has the locked dual-mode Medifind discovery surfaces:
-- `app/home.tsx` dual-mode Medicine / Medical Stores entry.
-- `app/search.tsx` live suggestions.
-- `app/results.tsx` grouped medicine results.
-- `app/medicine/[medicineId].tsx` medicine detail.
-- `app/medicine/[medicineId]/stores.tsx` nearby stores with map placeholder and bottom-sheet list.
-- `app/stores/index.tsx` stores-mode landing.
-- `app/store/[storeId].tsx` store detail with grouped inventory and in-store search.
-- `app/category/[categoryId].tsx` category browse.
-- `app/profile.tsx` larger-text toggle.
+**Backend discovery is deployed and seeded for live testing.** Current state:
+- Firestore rules and indexes were deployed to `nearnest-platform`.
+- `searchMedicines` and `nearbyStores` callables are deployed in `asia-south1`.
+- Production seed data exists for 8 medicines, 4 public discovery stores, and 17 inventory rows.
+- Live callable verification passed for Dolo search and nearby stores.
+- Mobile discovery screens use `apps/mobile/services/discoveryApi.ts` with Firebase backend calls and mock fallback.
 
-**Current verified auth state remains unchanged:** Firebase JS SDK only. Email/password and Google sign-in save or refresh `users/{uid}` in Firestore, then route through email verification, profile completion, and `/home`. Phone OTP stays deferred by D-015.
+**Current verified auth state remains unchanged:** Firebase JS SDK only. Email/password and Google sign-in work with Firestore profile persistence. Phone OTP stays deferred by D-015.
 
-**What is still mock:** all medicine, store, inventory, freshness, search suggestion, category, map, and availability data. No backend calls, real Maps SDK, cart, delivery, payment, checkout, order tracking, or Phone OTP were added.
+**Still needed:** manual Android dev-build UI smoke testing against the live backend. Static/mobile export checks passed, but no final on-device discovery walkthrough was completed after the production seed.
 
 ### Next steps
 
-1. **Commit this implementation.** Suggested message: `feat(mobile): implement discovery redesign with dual-mode home and mock data`.
-2. **Manual dev-build smoke test.** From `apps/mobile`, run `npx expo start -c --dev-client --android --port 8081`; if emulator LAN hangs, open the dev-client URL with `10.0.2.2:8081`. Test: Home mode toggle -> Search -> Results -> Medicine detail -> Nearby stores -> Store detail -> Call/Navigate fallback -> Category browse -> Profile larger-text toggle.
-3. **Backend readiness before replacing mocks.** Required: `searchMedicines`, `nearbyStores`, store coordinates/geohash, verified/open state, public store contact fields, inventory availability/freshness timestamps, rules, and indexes.
-4. **Location/search-area gate next.** The auth gate still routes complete profiles directly to Home. Add location permission and manual search-area selection before real ranking.
-5. **Telemetry sink decision.** `medifindTelemetry.emit` is console-only because this task explicitly prohibited backend calls. Add the Firestore ring buffer or Cloud Functions sink only after client-write policy is approved.
-6. **Profile larger-text persistence decision.** The toggle is local AsyncStorage only for the same no-backend-call reason. Sync to `users/{uid}.preferences.largeType` only when backend/profile-write policy is approved.
-7. **Map rendering decision later.** Current UI uses `MapPlaceholder` and opens Google Maps URLs. Add `react-native-maps` or `expo-maps` deliberately after data contracts and key restrictions are ready.
-8. **Keep Rx discovery informational.** Continue showing Rx badges and the canonical warning; do not add reserve, upload, order, delivery, buy, request, cart, or checkout behavior.
-9. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes when `graphify-out/**` is in scope.
-10. **Do not edit protected areas.** No edits to root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, or `serviceAccountKey.json` without explicit authorization.
+1. **Commit the backend/mobile live discovery work intentionally.** Suggested message: `feat(discovery): deploy and seed Firebase-backed medicine search`.
+2. **Run dev-build discovery QA against live data:** Home -> Search `Dolo` -> Results -> Medicine detail -> Find nearby stores -> Store detail -> Call/Navigate. Confirm mock fallback copy does not appear while Firebase is healthy.
+3. **Test edge states:** no results, Rx medicine warning, low stock, call-to-confirm copy, stale inventory warning, closed store, missing phone, and unavailable Maps handler.
+4. **Review public store document shape before adding real stores.** Public reads require `publicDiscovery: true` plus verified/approved status, but public store docs should still avoid owner/member/internal fields.
+5. **Replace the fallback Pune coordinate.** Add location permission/manual search-area state before trusting distance ranking in production.
+6. **Scale the backend query model.** Current availability lookup reads inventory per public store to avoid production collection-group precondition issues. Add denormalized public availability summaries or maintained search documents before large catalogs.
+7. **Keep Map SDK deferred.** Current UI still uses `MapPlaceholder` and external Google Maps URLs. Add `react-native-maps` or `expo-maps` only after API-key restrictions and location UX are ready.
+8. **Add App Check / abuse controls before wider launch.** Callables currently prioritize MVP validation over throttling/rate limiting.
+9. **Do not delete existing remote Functions or indexes casually.** Firebase CLI reported remote functions not present in local source and one remote index not present in `firestore.indexes.json`; review before any destructive deploy flags.
+10. **Keep Rx discovery informational.** No reserve, upload, order, delivery, buy, request, cart, checkout, medical advice, dosage, or substitution guidance.
+11. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP until after discovery MVP; do not add `@react-native-firebase/*` or SMS backend work here.
+12. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
 
 ---
 
@@ -73,6 +71,41 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ### Housekeeping
 - Confirm jezweb / expo external skills register with Claude Code's plugin system after `/reload-plugins`. If not, decide whether to author proper `plugin.json` wrappers or read them directly from `.claude/external/*/` on demand.
+
+---
+
+## Discovery security follow-up (appended 2026-04-26)
+
+This session hardened `firestore.rules` to require `signedIn()` on the three public discovery read paths (medicines, public stores, public inventory). The deeper field-level fix is **not** done. Next agent's options:
+
+**Option A (recommended) — callable-only public reads.**
+- Add three new callables in `functions/index.js`: `medicineDetail(medicineId)`, `storeDetail(storeId, q?, filter?)`, `categoryMedicines(categoryId, filter?)`. Each returns whitelisted fields only (mirror the existing `normalizeMedicine` / `normalizeStore` / `normalizeInventoryItem` from `searchMedicines` and `nearbyStores`).
+- Refactor `apps/mobile/services/discoveryApi.ts` to remove direct `getDoc`/`getDocs` calls on `stores/{id}`, `stores/{id}/inventory`, and `medicines/{id}`/`medicines`. Use the new callables only. Keep the mock fallback path (`source: 'backend' | 'mock'`) intact.
+- Tighten `firestore.rules` so `stores/{id}` direct client reads require `canAccessStore` (no `isPublicStoreData` branch). Same for `inventory/{sku}`. Medicines can stay `signedIn()` since they carry no PII.
+
+**Option B — sanitized mirror collection.**
+- Introduce `publicStores/{id}` collection. A Cloud Function trigger on `stores/{id}` writes a whitelisted subset to `publicStores/{id}` whenever the store is public+verified+active. Mobile reads `publicStores/{id}` only. Tighten `stores/{id}` rules to deny public reads entirely.
+
+**Other queued items:**
+- **Global rules fallback** `match /{document=**} { allow read: if signedIn(); }` is too permissive for Phase 2 collections (orders, payments, prescriptions). Add explicit strict rules for each before any Phase 2 collection writes go live. Currently no Phase 2 collections exist, so non-blocking today.
+- **Seed script credentials**: `functions/scripts/seedDiscoveryData.js` requires `serviceAccountKey.json` at repo root. Cleaner: switch to `GOOGLE_APPLICATION_CREDENTIALS` env-var. Untracked file currently — adjust before first commit if you want.
+- **Live emulator test** of the discovery backend integration. The dev build is already installed on the user's emulator. Walk: Splash → sign in → Home → search "dolo" → Results → Medicine detail → Find nearby stores → Store detail → Call/Navigate. Confirm `source: 'backend'` banner shows when reachable, `source: 'mock'` fallback works in flight mode.
+- **Deploy** when (and only when) the user explicitly says **YES DEPLOY FIREBASE**:
+  ```
+  firebase deploy --only functions,firestore:rules,firestore:indexes
+  ```
+
+**Suggested git add (do NOT `git add .`) for this session's hardening only:**
+```
+git add firestore.rules docs/AGENT_LOG.md docs/SESSION_STATE.md docs/TODO_NEXT_AGENT.md
+```
+
+**Suggested commit message:**
+```
+fix(firebase): harden public discovery reads to require signed-in
+```
+
+For Codex's already-staged backend integration (functions/index.js, firestore.indexes.json, mobile/services/discoveryApi.ts, mobile screens, seed script), the user should review and commit those in a separate commit or with the user's chosen scope.
 
 ---
 

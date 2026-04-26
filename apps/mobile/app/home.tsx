@@ -13,22 +13,21 @@ import { Screen } from '../components/Screen';
 import { SearchBar } from '../components/SearchBar';
 import { StoreCard } from '../components/StoreCard';
 import { useFontScale } from '../hooks/useFontScale';
+import { getNearbyStoresApi } from '../services/discoveryApi';
 import { openExternalUrl } from '../services/externalLinks';
 import {
-  getAvailabilityForMedicine,
   getCategories,
   getMapsUrl,
   getMedicineById,
   getPhoneUrl,
   getPopularSuggestions,
   getRecentSearches,
-  getStoresByDistance,
 } from '../services/mockDiscovery';
 import { medifindTelemetry } from '../services/telemetry';
 import { signOut, subscribeToAuthState } from '../services/auth';
 import { loadUserProfile, type UserProfile } from '../services/userProfile';
 import { colors, spacing, type as typography } from '../theme/tokens';
-import type { DiscoveryMode, Store } from '../types/discovery';
+import type { DiscoveryMode, Store, StoreInventoryItem } from '../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -41,9 +40,14 @@ export default function HomeScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [signingOut, setSigningOut] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [stores, setStores] = useState<Store[]>([]);
+  const [availableItemsByStore, setAvailableItemsByStore] = useState<
+    Record<string, StoreInventoryItem | undefined>
+  >({});
+  const [storesLoading, setStoresLoading] = useState(true);
+  const [backendError, setBackendError] = useState('');
   const { scale, scaleLineHeight } = useFontScale();
   const categories = useMemo(getCategories, []);
-  const stores = useMemo(() => getStoresByDistance().slice(0, 4), []);
   const recentSearches = useMemo(() => getRecentSearches().slice(0, 6), []);
   const popularMedicines = useMemo(
     () =>
@@ -66,6 +70,33 @@ export default function HomeScreen() {
       cold: true,
     });
   }, [profile]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setStoresLoading(true);
+    setBackendError('');
+    void getNearbyStoresApi()
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setStores(result.stores.slice(0, 4));
+        setAvailableItemsByStore(result.availableItemsByStore);
+        if (result.source === 'mock' && result.error) {
+          setBackendError(result.error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStoresLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -246,37 +277,51 @@ export default function HomeScreen() {
                 >
                   Browse pharmacies, view public contact details, or switch back to medicine search.
                 </Text>
+                {backendError ? (
+                  <Text
+                    style={[
+                      styles.storeModeBody,
+                      { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) },
+                    ]}
+                  >
+                    Using local demo pharmacy data while live nearby stores are unavailable.
+                  </Text>
+                ) : null}
+                {storesLoading ? (
+                  <Text
+                    style={[
+                      styles.storeModeBody,
+                      { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) },
+                    ]}
+                  >
+                    Loading nearby pharmacies...
+                  </Text>
+                ) : null}
               </View>
               <Pressable accessibilityRole="button" onPress={() => updateMode('medicine')}>
                 <Text style={styles.modeLink}>Search a medicine</Text>
               </Pressable>
             </View>
             <View style={styles.productStack}>
-              {stores.map((store) => {
-                const firstAvailable = getAvailabilityForMedicine('med_dolo_650').find(
-                  (availability) => availability.store.id === store.id,
-                );
-
-                return (
-                  <StoreCard
-                    inventoryItem={firstAvailable?.item}
-                    key={store.id}
-                    onCall={() => {
-                      void openPhone(store, 'home_stores_mode');
-                    }}
-                    onNavigate={() => {
-                      void openMaps(store, 'home_stores_mode');
-                    }}
-                    onPress={() => {
-                      medifindTelemetry.emit('medifind.stores.store_card_tapped', {
-                        store_id: store.id,
-                      });
-                      router.push({ pathname: '/store/[storeId]', params: { storeId: store.id } });
-                    }}
-                    store={store}
-                  />
-                );
-              })}
+              {stores.map((store) => (
+                <StoreCard
+                  inventoryItem={availableItemsByStore[store.id]}
+                  key={store.id}
+                  onCall={() => {
+                    void openPhone(store, 'home_stores_mode');
+                  }}
+                  onNavigate={() => {
+                    void openMaps(store, 'home_stores_mode');
+                  }}
+                  onPress={() => {
+                    medifindTelemetry.emit('medifind.stores.store_card_tapped', {
+                      store_id: store.id,
+                    });
+                    router.push({ pathname: '/store/[storeId]', params: { storeId: store.id } });
+                  }}
+                  store={store}
+                />
+              ))}
             </View>
           </>
         )}

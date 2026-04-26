@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Chip } from '../components/Chip';
@@ -8,14 +8,10 @@ import { ProductCard } from '../components/ProductCard';
 import { Screen } from '../components/Screen';
 import { StaleDataBanner } from '../components/StaleDataBanner';
 import { useFontScale } from '../hooks/useFontScale';
-import {
-  getAvailabilityCount,
-  getResultGroups,
-  hasStaleDataForMedicine,
-} from '../services/mockDiscovery';
+import { searchMedicinesApi } from '../services/discoveryApi';
 import { medifindTelemetry } from '../services/telemetry';
 import { colors, spacing, type as typography } from '../theme/tokens';
-import type { Medicine, ResultFilter } from '../types/discovery';
+import type { Medicine, MedicineAvailability, ResultFilter, ResultGroups } from '../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -25,14 +21,56 @@ export default function ResultsScreen() {
   const params = useLocalSearchParams();
   const query = getParamValue(params.q);
   const [filter, setFilter] = useState<ResultFilter>('all');
-  const groups = useMemo(() => getResultGroups(query, filter), [filter, query]);
+  const [groups, setGroups] = useState<ResultGroups>({
+    query,
+    bestMatch: null,
+    brandVariants: [],
+    sameComposition: [],
+    similarByCategory: [],
+  });
+  const [availabilityByMedicine, setAvailabilityByMedicine] = useState<
+    Record<string, MedicineAvailability[]>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [backendError, setBackendError] = useState('');
   const visibleMedicines = [
     groups.bestMatch,
     ...groups.brandVariants,
     ...groups.sameComposition,
     ...groups.similarByCategory,
   ].filter(Boolean) as Medicine[];
-  const hasStale = visibleMedicines.some((medicine) => hasStaleDataForMedicine(medicine.id));
+  const hasStale = visibleMedicines.some((medicine) =>
+    (availabilityByMedicine[medicine.id] ?? []).some(
+      ({ freshnessStatus }) => freshnessStatus !== 'fresh',
+    ),
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setBackendError('');
+    void searchMedicinesApi({ q: query, filter })
+      .then((result) => {
+        if (cancelled) {
+          return;
+        }
+        setGroups(result.groups);
+        setAvailabilityByMedicine(result.availabilityByMedicine);
+        if (result.source === 'mock' && result.error) {
+          setBackendError(result.error);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filter, query]);
 
   function openMedicine(medicine: Medicine, resultGroup: string) {
     medifindTelemetry.emit('medifind.results.medicine_viewed', {
@@ -45,7 +83,7 @@ export default function ResultsScreen() {
   function openStores(medicine: Medicine) {
     medifindTelemetry.emit('medifind.results.find_stores_tapped', {
       medicine_id: medicine.id,
-      available_count: getAvailabilityCount(medicine.id),
+      available_count: availabilityByMedicine[medicine.id]?.length ?? 0,
     });
     router.push({
       pathname: '/medicine/[medicineId]/stores',
@@ -81,10 +119,14 @@ export default function ResultsScreen() {
           ))}
         </View>
 
+        {backendError ? (
+          <NeutralFraming text="Using local demo data while live pharmacy availability is unavailable." />
+        ) : null}
+        {loading ? <NeutralFraming text="Loading current pharmacy availability..." /> : null}
         {groups.framingCopy ? <NeutralFraming text={groups.framingCopy} /> : null}
         {hasStale ? <StaleDataBanner /> : null}
 
-        {visibleMedicines.length === 0 ? (
+        {!loading && visibleMedicines.length === 0 ? (
           <EmptyState
             actionLabel="Try another search"
             body="No exact match was found. Try a brand name or composition like Paracetamol."
@@ -95,6 +137,7 @@ export default function ResultsScreen() {
           <>
             {groups.bestMatch ? (
               <ProductCard
+                availabilityCount={availabilityByMedicine[groups.bestMatch.id]?.length ?? 0}
                 medicine={groups.bestMatch}
                 onFindStores={() => openStores(groups.bestMatch as Medicine)}
                 onPress={() => openMedicine(groups.bestMatch as Medicine, 'best_match')}
@@ -103,18 +146,21 @@ export default function ResultsScreen() {
             ) : null}
 
             <ResultGroup
+              availabilityByMedicine={availabilityByMedicine}
               medicines={groups.brandVariants}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'brand_variant')}
               title={groups.bestMatch ? `Other ${groups.bestMatch.manufacturer.name} options` : 'Brand options'}
             />
             <ResultGroup
+              availabilityByMedicine={availabilityByMedicine}
               medicines={groups.sameComposition}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'same_composition')}
               title="Same composition"
             />
             <ResultGroup
+              availabilityByMedicine={availabilityByMedicine}
               medicines={groups.similarByCategory}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'similar_category')}
@@ -139,11 +185,13 @@ function NeutralFraming({ text }: { text: string }) {
 function ResultGroup({
   title,
   medicines,
+  availabilityByMedicine,
   onOpenMedicine,
   onFindStores,
 }: {
   title: string;
   medicines: Medicine[];
+  availabilityByMedicine: Record<string, MedicineAvailability[]>;
   onOpenMedicine: (medicine: Medicine) => void;
   onFindStores: (medicine: Medicine) => void;
 }) {
@@ -161,6 +209,7 @@ function ResultGroup({
       <View style={styles.groupStack}>
         {medicines.map((medicine) => (
           <ProductCard
+            availabilityCount={availabilityByMedicine[medicine.id]?.length ?? 0}
             key={medicine.id}
             medicine={medicine}
             onFindStores={() => onFindStores(medicine)}
