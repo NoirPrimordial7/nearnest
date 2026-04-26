@@ -2430,7 +2430,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_dashboard_dashboard_jsx",
-      "community": 9,
+      "community": 10,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -2439,7 +2439,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L60",
       "id": "dashboard_icon",
-      "community": 9,
+      "community": 10,
       "norm_label": "icon()"
     },
     {
@@ -2448,7 +2448,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_kpicard",
-      "community": 9,
+      "community": 10,
       "norm_label": "kpicard()"
     },
     {
@@ -2457,7 +2457,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L93",
       "id": "dashboard_card",
-      "community": 9,
+      "community": 10,
       "norm_label": "card()"
     },
     {
@@ -2466,7 +2466,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L108",
       "id": "dashboard_rangetabs",
-      "community": 9,
+      "community": 10,
       "norm_label": "rangetabs()"
     },
     {
@@ -2475,7 +2475,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_makemonthbuckets",
-      "community": 9,
+      "community": 10,
       "norm_label": "makemonthbuckets()"
     },
     {
@@ -2484,7 +2484,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L126",
       "id": "dashboard_dashboard",
-      "community": 9,
+      "community": 10,
       "norm_label": "dashboard()"
     },
     {
@@ -2493,7 +2493,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_stores_storeservice_js",
-      "community": 10,
+      "community": 9,
       "norm_label": "storeservice.js"
     },
     {
@@ -2502,7 +2502,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L20",
       "id": "storeservice_prettylabel",
-      "community": 10,
+      "community": 9,
       "norm_label": "prettylabel()"
     },
     {
@@ -2511,7 +2511,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L46",
       "id": "storeservice_normalizestore",
-      "community": 10,
+      "community": 9,
       "norm_label": "normalizestore()"
     },
     {
@@ -2520,7 +2520,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L41",
       "id": "storeservice_liststores",
-      "community": 10,
+      "community": 9,
       "norm_label": "liststores()"
     },
     {
@@ -2529,7 +2529,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L82",
       "id": "storeservice_setstorestatus",
-      "community": 10,
+      "community": 9,
       "norm_label": "setstorestatus()"
     },
     {
@@ -2538,7 +2538,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L99",
       "id": "storeservice_deletestore",
-      "community": 10,
+      "community": 9,
       "norm_label": "deletestore()"
     },
     {
@@ -2547,7 +2547,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L216",
       "id": "storeservice_getstoredocuments",
-      "community": 10,
+      "community": 9,
       "norm_label": "getstoredocuments()"
     },
     {
@@ -2556,7 +2556,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L238",
       "id": "storeservice_getstoreverificationlogs",
-      "community": 10,
+      "community": 9,
       "norm_label": "getstoreverificationlogs()"
     },
     {
@@ -2781,7 +2781,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_jsx",
-      "community": 9,
+      "community": 10,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -2880,7 +2880,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_dashboard_jsx",
-      "community": 9,
+      "community": 10,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -2889,7 +2889,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L20",
       "id": "dashboard_makemonthly",
-      "community": 9,
+      "community": 10,
       "norm_label": "makemonthly()"
     },
     {
@@ -2898,7 +2898,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_stores_storeservice_js",
-      "community": 10,
+      "community": 9,
       "norm_label": "storeservice.js"
     },
     {
@@ -2907,7 +2907,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L37",
       "id": "storeservice_mockdelay",
-      "community": 10,
+      "community": 9,
       "norm_label": "mockdelay()"
     },
     {
@@ -3157,7 +3157,7 @@
       "label": "toArrayMaybe()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L19",
+      "source_location": "L20",
       "id": "stores_toarraymaybe",
       "community": 7,
       "norm_label": "toarraymaybe()"
@@ -3166,7 +3166,7 @@
       "label": "ensureAddressShape()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L25",
+      "source_location": "L26",
       "id": "stores_ensureaddressshape",
       "community": 7,
       "norm_label": "ensureaddressshape()"
@@ -3175,7 +3175,7 @@
       "label": "docToStore()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L38",
+      "source_location": "L39",
       "id": "stores_doctostore",
       "community": 7,
       "norm_label": "doctostore()"
@@ -3184,16 +3184,43 @@
       "label": "storeBucket()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L57",
+      "source_location": "L58",
       "id": "stores_storebucket",
       "community": 7,
       "norm_label": "storebucket()"
     },
     {
+      "label": "isDevMode()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L63",
+      "id": "stores_isdevmode",
+      "community": 7,
+      "norm_label": "isdevmode()"
+    },
+    {
+      "label": "logStoreAccessDebug()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L67",
+      "id": "stores_logstoreaccessdebug",
+      "community": 7,
+      "norm_label": "logstoreaccessdebug()"
+    },
+    {
+      "label": "getMembersMapFieldPath()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L76",
+      "id": "stores_getmembersmapfieldpath",
+      "community": 7,
+      "norm_label": "getmembersmapfieldpath()"
+    },
+    {
       "label": "isAdmin()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L62",
+      "source_location": "L90",
       "id": "stores_isadmin",
       "community": 7,
       "norm_label": "isadmin()"
@@ -3202,7 +3229,7 @@
       "label": "createStore()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L82",
+      "source_location": "L110",
       "id": "stores_createstore",
       "community": 7,
       "norm_label": "createstore()"
@@ -3211,7 +3238,7 @@
       "label": "deleteStore()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L139",
+      "source_location": "L167",
       "id": "stores_deletestore",
       "community": 7,
       "norm_label": "deletestore()"
@@ -3220,7 +3247,7 @@
       "label": "getStore()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L143",
+      "source_location": "L171",
       "id": "stores_getstore",
       "community": 7,
       "norm_label": "getstore()"
@@ -3229,7 +3256,7 @@
       "label": "submitStoreForVerification()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L154",
+      "source_location": "L182",
       "id": "stores_submitstoreforverification",
       "community": 7,
       "norm_label": "submitstoreforverification()"
@@ -3238,7 +3265,7 @@
       "label": "listenUserStores()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L170",
+      "source_location": "L198",
       "id": "stores_listenuserstores",
       "community": 7,
       "norm_label": "listenuserstores()"
@@ -3931,7 +3958,7 @@
       "label": "SkeletonGrid()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L398",
+      "source_location": "L399",
       "id": "userhome_skeletongrid",
       "community": 6,
       "norm_label": "skeletongrid()"
@@ -3940,7 +3967,7 @@
       "label": "Empty()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L408",
+      "source_location": "L409",
       "id": "userhome_empty",
       "community": 6,
       "norm_label": "empty()"
@@ -3949,7 +3976,7 @@
       "label": "StoreCard()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L412",
+      "source_location": "L413",
       "id": "userhome_storecard",
       "community": 6,
       "norm_label": "storecard()"
@@ -9699,7 +9726,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_toarraymaybe",
@@ -9711,7 +9738,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_ensureaddressshape",
@@ -9723,7 +9750,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L38",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_doctostore",
@@ -9735,7 +9762,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L57",
+      "source_location": "L58",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_storebucket",
@@ -9747,7 +9774,43 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L62",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "_tgt": "stores_isdevmode",
+      "source": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "target": "stores_isdevmode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "_tgt": "stores_logstoreaccessdebug",
+      "source": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "target": "stores_logstoreaccessdebug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "_tgt": "stores_getmembersmapfieldpath",
+      "source": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
+      "target": "stores_getmembersmapfieldpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L90",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_isadmin",
@@ -9759,7 +9822,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L82",
+      "source_location": "L110",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_createstore",
@@ -9771,7 +9834,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L139",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_deletestore",
@@ -9783,7 +9846,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L143",
+      "source_location": "L171",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_getstore",
@@ -9795,7 +9858,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L154",
+      "source_location": "L182",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_submitstoreforverification",
@@ -9807,7 +9870,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L170",
+      "source_location": "L198",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
       "_tgt": "stores_listenuserstores",
@@ -9819,7 +9882,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L44",
+      "source_location": "L45",
       "weight": 1.0,
       "_src": "stores_doctostore",
       "_tgt": "stores_toarraymaybe",
@@ -9831,7 +9894,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L49",
+      "source_location": "L50",
       "weight": 1.0,
       "_src": "stores_doctostore",
       "_tgt": "stores_ensureaddressshape",
@@ -9843,7 +9906,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L107",
+      "source_location": "L135",
       "weight": 1.0,
       "_src": "stores_createstore",
       "_tgt": "stores_ensureaddressshape",
@@ -9855,7 +9918,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L145",
+      "source_location": "L173",
       "weight": 1.0,
       "_src": "stores_getstore",
       "_tgt": "stores_doctostore",
@@ -9867,7 +9930,43 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
-      "source_location": "L171",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "stores_logstoreaccessdebug",
+      "_tgt": "stores_isdevmode",
+      "source": "stores_isdevmode",
+      "target": "stores_logstoreaccessdebug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L80",
+      "weight": 1.0,
+      "_src": "stores_getmembersmapfieldpath",
+      "_tgt": "stores_isdevmode",
+      "source": "stores_isdevmode",
+      "target": "stores_getmembersmapfieldpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L221",
+      "weight": 1.0,
+      "_src": "stores_listenuserstores",
+      "_tgt": "stores_getmembersmapfieldpath",
+      "source": "stores_getmembersmapfieldpath",
+      "target": "stores_listenuserstores",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
+      "source_location": "L199",
       "weight": 1.0,
       "_src": "stores_listenuserstores",
       "_tgt": "stores_isadmin",
@@ -10647,7 +10746,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L398",
+      "source_location": "L399",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_user_userhome_jsx",
       "_tgt": "userhome_skeletongrid",
@@ -10659,7 +10758,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L408",
+      "source_location": "L409",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_user_userhome_jsx",
       "_tgt": "userhome_empty",
@@ -10671,7 +10770,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L412",
+      "source_location": "L413",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_user_userhome_jsx",
       "_tgt": "userhome_storecard",
@@ -10695,7 +10794,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L165",
+      "source_location": "L166",
       "weight": 1.0,
       "_src": "userhome_userhome",
       "_tgt": "userhome_initials",
@@ -10707,7 +10806,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
-      "source_location": "L424",
+      "source_location": "L425",
       "weight": 1.0,
       "_src": "userhome_storecard",
       "_tgt": "userhome_prettyaddress",

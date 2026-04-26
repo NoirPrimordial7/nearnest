@@ -1,6 +1,27 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex fixed web routing/account UX and mobile profile separation)
+Last updated: 2026-04-27 (Codex fixed /home store ownership lookup)
+
+## Store ownership lookup fix 2026-04-27
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- Current status before edits showed only protected/unrelated local files: `.claude/settings.local.json` and `.codex/*.png`.
+- Root cause found: `/home` used `listenUserStores(uid)`, but that listener only queried `stores.ownerId == uid` and `stores.membersArr array-contains uid`. Deployed `firestore.rules` allow store access through `ownerId`, `membersArr`, `members[uid] == true`, and `visibleTo`, so a rule-authorized store could be invisible on `/home`.
+- `src/pages/register-store/stores.js` now mirrors the rule-backed UID access fields for non-admin users:
+  - `ownerId == uid`
+  - `membersArr array-contains uid`
+  - `visibleTo array-contains uid`
+  - `members[uid] == true` using a Firestore `FieldPath`
+- `src/pages/User/UserHome.jsx` now passes `user.email` to `listenUserStores` only for development console diagnostics.
+- Development-only logging prints auth UID/email and per-query counts for owned/memberArr/visibleTo/memberMap/merged results. Nothing is exposed in production UI.
+- Added `scripts/diagnoseStoreOwnership.cjs`.
+  - Read-only usage: `node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com`
+  - Optional safe apply: `node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com --apply`
+  - `--apply` adds the UID to `membersArr` and `members[uid] = true`, sets `ownerId` only when missing, and never overwrites an existing `ownerId`.
+- App route audit remains clean: `/home` works, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, its index redirects to dashboard, and no `/store-staff/home` redirect remains.
+- Verification passed: `node --check scripts/diagnoseStoreOwnership.cjs`, `npm run build` (Vite large chunk warning only), `functions npm run lint`, `apps/mobile npm run typecheck`, `git diff --check`, and graphify update via absolute path.
+- Final status still shows protected local files `.claude/settings.local.json` and `.codex/*.png`; do not stage them.
+- Suggested commit: `fix(web): include all store ownership links on home`.
 
 ## Web portal routing and account ownership UX 2026-04-27
 - **No Firebase deploy was run.**

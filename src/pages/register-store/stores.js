@@ -14,6 +14,7 @@ import {
   orderBy,
   limit,
 } from "../Auth/firebase";
+import { FieldPath as FirestoreFieldPath } from "firebase/firestore";
 
 /* -------------------- helpers -------------------- */
 function toArrayMaybe(v) {
@@ -57,6 +58,33 @@ function docToStore(snap) {
 export function storeBucket(status) {
   const s = (status || "").toLowerCase();
   return s === "approved" || s === "verified" ? "verified" : "under";
+}
+
+function isDevMode() {
+  return Boolean(import.meta.env?.DEV);
+}
+
+function logStoreAccessDebug(uid, email, counts) {
+  if (!isDevMode()) return;
+  console.info("[UserHome] store access query counts", {
+    uid,
+    email: email || null,
+    ...counts,
+  });
+}
+
+function getMembersMapFieldPath(uid) {
+  try {
+    return new FirestoreFieldPath("members", uid);
+  } catch (error) {
+    if (isDevMode()) {
+      console.warn("[UserHome] skipping members map query for unsafe uid field path", {
+        uid,
+        error,
+      });
+    }
+    return null;
+  }
 }
 
 async function isAdmin(uid) {
@@ -167,7 +195,7 @@ export async function submitStoreForVerification(storeId, submittedBy) {
  * Live list of stores visible to a user.
  * Returns an unsubscribe function.
  */
-export async function listenUserStores(uid, onData, onError) {
+export async function listenUserStores(uid, onData, onError, options = {}) {
   const admin = await isAdmin(uid);
 
   // Admin: stream most recent stores
@@ -180,20 +208,42 @@ export async function listenUserStores(uid, onData, onError) {
     return onSnapshot(qAll, (qs) => onData(qs.docs.map(docToStore)), onError);
   }
 
-  // Non-admin: two simple filters merged in-memory (no composite index needed)
+  // Non-admin: mirror the store-access fields allowed by firestore.rules.
   const qOwned = query(collection(db, "stores"), where("ownerId", "==", uid));
-  const qMember = query(
+  const qMemberArr = query(
     collection(db, "stores"),
     where("membersArr", "array-contains", uid)
   );
+  const qVisibleTo = query(
+    collection(db, "stores"),
+    where("visibleTo", "array-contains", uid)
+  );
+  const membersMapFieldPath = getMembersMapFieldPath(uid);
+  const qMemberMap = membersMapFieldPath
+    ? query(collection(db, "stores"), where(membersMapFieldPath, "==", true))
+    : null;
 
   const state = {
     owned: new Map(),
-    member: new Map(),
+    memberArr: new Map(),
+    visibleTo: new Map(),
+    memberMap: new Map(),
   };
 
   function emit() {
-    const merged = new Map([...state.owned, ...state.member]);
+    const merged = new Map([
+      ...state.owned,
+      ...state.memberArr,
+      ...state.visibleTo,
+      ...state.memberMap,
+    ]);
+    logStoreAccessDebug(uid, options.email, {
+      owned: state.owned.size,
+      memberArr: state.memberArr.size,
+      visibleTo: state.visibleTo.size,
+      memberMap: state.memberMap.size,
+      merged: merged.size,
+    });
     onData(Array.from(merged.values()));
   }
 
@@ -206,18 +256,40 @@ export async function listenUserStores(uid, onData, onError) {
     onError
   );
 
-  const unsubMember = onSnapshot(
-    qMember,
+  const unsubMemberArr = onSnapshot(
+    qMemberArr,
     (qs) => {
-      state.member = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+      state.memberArr = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
       emit();
     },
     onError
   );
 
+  const unsubVisibleTo = onSnapshot(
+    qVisibleTo,
+    (qs) => {
+      state.visibleTo = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+      emit();
+    },
+    onError
+  );
+
+  const unsubMemberMap = qMemberMap
+    ? onSnapshot(
+        qMemberMap,
+        (qs) => {
+          state.memberMap = new Map(qs.docs.map((d) => [d.id, docToStore(d)]));
+          emit();
+        },
+        onError
+      )
+    : null;
+
   return () => {
     try { unsubOwned && unsubOwned(); } catch {}
-    try { unsubMember && unsubMember(); } catch {}
+    try { unsubMemberArr && unsubMemberArr(); } catch {}
+    try { unsubVisibleTo && unsubVisibleTo(); } catch {}
+    try { unsubMemberMap && unsubMemberMap(); } catch {}
   };
   
 }

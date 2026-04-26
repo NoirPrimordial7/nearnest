@@ -4,6 +4,63 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Include all store ownership links on home
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix `/home` store ownership lookup so it matches Firestore rule-supported store access fields, and add a safe diagnostic script for UID/email linkage.
+
+### Files inspected
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - required repo and graph context.
+- `src/App.jsx` - route audit after the previous routing fix.
+- `src/pages/User/UserHome.jsx` - `/home` caller of `listenUserStores`.
+- `src/pages/register-store/stores.js` - store listener root cause and fix.
+- `src/pages/Admin/Stores/StoresPage.jsx` and `src/pages/Admin/Stores/storeService.js` - admin store visibility shape.
+- `firestore.rules` - confirmed `canAccessStore(storeId)` allows more UID linkage fields than `/home` queried.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md`, `docs/DECISIONS.md` - handoff and architecture history.
+
+### Files edited
+- `src/pages/register-store/stores.js`
+  - Non-admin `listenUserStores(uid)` now merges four UID-backed queries: `ownerId == uid`, `membersArr array-contains uid`, `visibleTo array-contains uid`, and `members[uid] == true` using a Firestore `FieldPath`.
+  - Added dev-only console logging of auth UID/email and per-query result counts.
+  - Keeps UID as the runtime source of truth; no email-based runtime access query was added.
+- `src/pages/User/UserHome.jsx`
+  - Passes the signed-in user's email to `listenUserStores` only for dev console diagnostics.
+- `scripts/diagnoseStoreOwnership.cjs`
+  - New read-only-by-default diagnostic: `node scripts/diagnoseStoreOwnership.cjs <email>`.
+  - Resolves Firebase Auth UID, checks UID-linked stores, checks email-linked stores, reports missing UID linkage.
+  - Optional `--apply` safely adds the UID to `membersArr` and `members[uid]`, and sets `ownerId` only when missing. It never overwrites an existing `ownerId`.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`
+  - Updated this handoff.
+- `graphify-out/**`
+  - Updated because source files changed.
+
+### Root cause
+`/home` only queried `stores.ownerId == uid` and `stores.membersArr array-contains uid`, while deployed rules allow access through `ownerId`, `membersArr`, `members[uid] == true`, `visibleTo`, and admin/verifier paths. A store linked only through `members.{uid}` or `visibleTo` could pass Firestore rules but still not appear on `/home`.
+
+### App.jsx audit result
+- `/home` is protected and routes correctly.
+- `/store-admin/home` redirects to `/home`.
+- `/store-admin/:storeId` is protected.
+- `/store-admin/:storeId` index redirects to dashboard.
+- No `/store-staff/home` redirect remains in `src/App.jsx`, `src/pages/Auth`, or `src/pages/StoreAdmin`.
+- Imports match the tracked casing currently in the repo.
+
+### Verification
+- `node --check scripts/diagnoseStoreOwnership.cjs` passed.
+- `npm run build` passed; Vite only reported the existing large chunk warning.
+- `cd functions && npm run lint` passed.
+- `cd apps/mobile && npm run typecheck` passed.
+- `graphify update .` was not on PATH; rerun with `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .` passed.
+- `git diff --check` passed after final docs update.
+
+### Not run
+- The diagnostic script was not run against live Firebase data in this session.
+- No Firebase deploy was run.
+- No production data was modified.
+
+**Suggested commit message:** `fix(web): include all store ownership links on home`
+
+---
+
 ## 2026-04-27 - Fix web portal routing and split mobile profile data
 **Agent:** Codex (GPT-5)
 **Session goal:** Fix Nearnest web portal route/path bugs that made `/home` and store-admin routing misleading, document the UID/store ownership diagnosis, and separate Medifind mobile customer profiles from web/admin `users/{uid}` role data. No Firebase deploy.

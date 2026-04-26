@@ -4,34 +4,42 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after web routing/account UX fix)
+## Next up (as of 2026-04-27, after store ownership lookup fix)
 
-**Current local state:** web portal routing fixes, mobile profile separation, Firestore `mobileUsers` rules, docs, and graphify updates are local and not committed yet. No Firebase deploy was run.
+**Current local state:** `/home` ownership lookup now matches rule-backed store access fields. No Firebase deploy was run and no production data was modified.
 
 **What changed locally:**
-- Web `/home` and onboarding routes are protected by authentication only, not narrow role allowlists.
-- `/store-admin/home` now safely redirects to `/home`.
-- `/store-admin/:storeId` is protected and its index redirects to `dashboard`.
-- Store admin layout settings/support navigation now uses real template strings.
-- The dead Analytics / Reports menu item is hidden until a real route is active.
-- User/profile imports now use tracked repo casing: `src/pages/User/**`.
-- Mobile customer profile data now writes to `mobileUsers/{uid}`, with a safe legacy migration from `users/{uid}`.
-- Firestore rules now include `mobileUsers/{uid}` self read/write rules and reject role/permission keys in mobile profile writes.
-- D-016 records the one-Auth-identity, split-domain-data decision.
+- `listenUserStores(uid)` now merges:
+  - `stores.ownerId == uid`
+  - `stores.membersArr array-contains uid`
+  - `stores.visibleTo array-contains uid`
+  - `stores.members[uid] == true` through a Firestore `FieldPath`
+- `/home` now passes the current auth email into the listener only for dev console diagnostics.
+- Dev-only logging prints auth UID/email and per-query counts for owned/memberArr/visibleTo/memberMap/merged results.
+- `scripts/diagnoseStoreOwnership.cjs` was added as a read-only-by-default diagnostic.
 
-**UID/store ownership diagnosis to carry forward:**
-- `/home` lists stores by UID, not email.
-- Non-admin web users see stores only when `stores/{storeId}.ownerId == auth.uid` or `stores/{storeId}.membersArr` contains `auth.uid`.
-- If global admin shows stores for `adityagholap19.06@gmqaicl.com` but `/home` is empty, compare the signed-in Firebase Auth UID to `ownerId`, `membersArr`, `members`, and `visibleTo` on the relevant store docs. Do not create a second Auth account for the same email.
+**Root cause:** Firestore rules allowed `members[uid]` and `visibleTo`, but `/home` only queried `ownerId` and `membersArr`. Stores linked through the missing fields could be allowed by rules but invisible on `/home`.
+
+**Diagnostic script usage:**
+```
+node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com
+```
+Optional apply mode:
+```
+node scripts/diagnoseStoreOwnership.cjs adityagholap19.06@gmqaicl.com --apply
+```
+`--apply` only updates email-matched stores missing UID linkage by adding the UID to `membersArr` and `members[uid] = true`; it sets `ownerId` only when missing and never overwrites an existing `ownerId`.
+
+**App.jsx audit:** route fix still holds. `/home` works, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, the index redirects to `dashboard`, and no fake `/store-staff/home` redirect remains.
 
 ### Next steps
 
 1. Rerun final verification before commit: `git diff --check` and `git status --short`.
-2. Commit this task with: `git add src/App.jsx src/pages/Auth/AuthContext.jsx src/pages/Auth/SignIn.jsx src/pages/StoreAdmin/StoreAdminLayout.jsx src/pages/User/RequireProfile.jsx src/pages/User/UserHome.jsx src/pages/User/UserProfiles.jsx apps/mobile/services/userProfile.ts firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md docs/DECISIONS.md graphify-out && git commit -m "fix(web): repair portal routing and account store ownership UX"`.
+2. Commit this task with: `git add src/pages/register-store/stores.js src/pages/User/UserHome.jsx scripts/diagnoseStoreOwnership.cjs docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): include all store ownership links on home"`.
 3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. Do not deploy Firebase from this task. The `mobileUsers` rule will need deployment later with an explicit Firebase deploy approval.
-5. Manually verify the web portal with the affected account: sign in, land on `/home`, confirm expected stores or the clearer empty state, open a real `/store-admin/:storeId` dashboard, settings, support, inventory, and advertisement route.
-6. If `/home` is still empty for that email, fix production data by linking the actual Auth UID into the intended store doc (`ownerId`, `membersArr`, `members`, or `visibleTo`) through an admin-controlled path or reviewed migration, not by creating another Auth account.
+4. If `/home` is still empty, run the diagnostic script without `--apply` first and inspect the report.
+5. Only use `--apply` after confirming the email-matched stores are the intended stores for that Firebase Auth UID.
+6. Do not deploy Firebase from this task.
 7. Keep Phone OTP deferred by D-015 and do not add cart/payment/delivery/discovery UI to web.
 
 ---

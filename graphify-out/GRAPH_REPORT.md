@@ -1,12 +1,12 @@
 # Graph Report - C:\projects\nearnest\web-portal  (2026-04-27)
 
 ## Corpus Check
-- 127 files · ~187,737 words
+- 127 files · ~188,948 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 450 nodes · 564 edges · 79 communities detected
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.8)
+- 453 nodes · 570 edges · 79 communities detected
+- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -145,8 +145,8 @@ Cohesion: 0.16
 Nodes (7): RequireProfile(), initials(), prettyAddress(), StoreCard(), useAvatarMenu(), UserHome(), useProfileComplete()
 
 ### Community 7 - "Community 7"
-Cohesion: 0.27
-Nodes (7): createStore(), docToStore(), ensureAddressShape(), getStore(), isAdmin(), listenUserStores(), toArrayMaybe()
+Cohesion: 0.23
+Nodes (10): createStore(), docToStore(), ensureAddressShape(), getMembersMapFieldPath(), getStore(), isAdmin(), isDevMode(), listenUserStores() (+2 more)
 
 ### Community 8 - "Community 8"
 Cohesion: 0.31
@@ -154,11 +154,11 @@ Nodes (8): assertStoreDocsSafe(), buildSearchTokens(), encodeGeohash(), freshnes
 
 ### Community 9 - "Community 9"
 Cohesion: 0.31
-Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
+Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
 
 ### Community 10 - "Community 10"
 Cohesion: 0.31
-Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
+Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
 
 ### Community 11 - "Community 11"
 Cohesion: 0.25
@@ -528,9 +528,9 @@ Nodes (0):
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `handleSignOut()` connect `Community 1` to `Community 4`?**
-  _High betweenness centrality (0.071) - this node is a cross-community bridge._
+  _High betweenness centrality (0.070) - this node is a cross-community bridge._
 - **Why does `getMapsUrl()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.043) - this node is a cross-community bridge._
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `upsertUserProfileFromAuthUser()` (e.g. with `signInWithEmail()` and `signUpWithEmail()`) actually correct?**

@@ -90,7 +90,8 @@ export default function UserHome() {
                 : "Could not load your stores."
             );
             setStores([]);
-          }
+          },
+          { email: user.email }
         );
         if (mounted && typeof unsub === "function") stop = unsub;
       } catch (e) {
