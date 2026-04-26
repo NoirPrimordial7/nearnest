@@ -47,6 +47,28 @@ service cloud.firestore {
     }
 
     // ---------- Verifier/Admin Access ----------
+    function canAdmin() {
+      return signedIn()
+        && (
+          (
+            userDoc(request.auth.uid).data.roles is list
+            && userDoc(request.auth.uid).data.roles.hasAny(['admin'])
+          )
+          ||
+          (
+            userDoc(request.auth.uid).data.permissions is list
+            && userDoc(request.auth.uid).data.permissions.hasAny(['ADMIN', 'ALL_ACCESS'])
+          )
+          ||
+          request.auth.token.role == 'admin'
+          ||
+          (
+            request.auth.token.roles is list
+            && request.auth.token.roles.hasAny(['admin'])
+          )
+        );
+    }
+
     function canVerifyDocs() {
       return signedIn()
         && userDoc(request.auth.uid).data != null
@@ -63,6 +85,108 @@ service cloud.firestore {
           // Verifier fallback role
           (userDoc(request.auth.uid).data.roles is list
             && userDoc(request.auth.uid).data.roles.hasAny(['verifier']))
+        );
+    }
+
+    function canViewSupportTickets() {
+      return signedIn()
+        && (
+          canAdmin()
+          ||
+          (
+            userDoc(request.auth.uid).data.roles is list
+            && userDoc(request.auth.uid).data.roles.hasAny(['support'])
+          )
+          ||
+          (
+            userDoc(request.auth.uid).data.permissions is list
+            && userDoc(request.auth.uid).data.permissions.hasAny([
+              'VIEW_SUPPORT_TICKETS',
+              'MANAGE_SUPPORT_TICKETS',
+              'SUPPORT_TICKETS_READ',
+              'SUPPORT_TICKETS_WRITE'
+            ])
+          )
+          ||
+          request.auth.token.role == 'support'
+          ||
+          (
+            request.auth.token.roles is list
+            && request.auth.token.roles.hasAny(['support'])
+          )
+        );
+    }
+
+    function canManageSupportTickets() {
+      return signedIn()
+        && (
+          canAdmin()
+          ||
+          (
+            userDoc(request.auth.uid).data.roles is list
+            && userDoc(request.auth.uid).data.roles.hasAny(['support'])
+          )
+          ||
+          (
+            userDoc(request.auth.uid).data.permissions is list
+            && userDoc(request.auth.uid).data.permissions.hasAny([
+              'MANAGE_SUPPORT_TICKETS',
+              'SUPPORT_TICKETS_WRITE'
+            ])
+          )
+          ||
+          request.auth.token.role == 'support'
+          ||
+          (
+            request.auth.token.roles is list
+            && request.auth.token.roles.hasAny(['support'])
+          )
+        );
+    }
+
+    function isSupportTicketCreator(ticketData) {
+      return signedIn()
+        && ticketData != null
+        && (
+          (ticketData.keys().hasAny(['createdBy']) && ticketData.createdBy == request.auth.uid)
+          ||
+          (ticketData.keys().hasAny(['userId']) && ticketData.userId == request.auth.uid)
+          ||
+          (ticketData.keys().hasAny(['uid']) && ticketData.uid == request.auth.uid)
+          ||
+          (ticketData.keys().hasAny(['customerId']) && ticketData.customerId == request.auth.uid)
+          ||
+          (ticketData.keys().hasAny(['submitterUid']) && ticketData.submitterUid == request.auth.uid)
+        );
+    }
+
+    function createsOwnSupportTicket() {
+      return signedIn()
+        && (
+          (
+            request.resource.data.keys().hasAny(['createdBy'])
+            && request.resource.data.createdBy == request.auth.uid
+          )
+          ||
+          (
+            request.resource.data.keys().hasAny(['userId'])
+            && request.resource.data.userId == request.auth.uid
+          )
+          ||
+          (
+            request.resource.data.keys().hasAny(['uid'])
+            && request.resource.data.uid == request.auth.uid
+          )
+          ||
+          (
+            request.resource.data.keys().hasAny(['customerId'])
+            && request.resource.data.customerId == request.auth.uid
+          )
+          ||
+          (
+            request.resource.data.keys().hasAny(['submitterUid'])
+            && request.resource.data.submitterUid == request.auth.uid
+          )
         );
     }
 
@@ -94,6 +218,15 @@ service cloud.firestore {
     // ---------- ROLES ----------
     match /roles/{roleId} {
       allow read: if signedIn();
+    }
+
+    // ---------- SUPPORT TICKETS ----------
+    match /supportTickets/{ticketId} {
+      allow get: if canViewSupportTickets() || isSupportTicketCreator(resource.data);
+      allow list: if canViewSupportTickets();
+      allow create: if canManageSupportTickets() || createsOwnSupportTicket();
+      allow update: if canManageSupportTickets();
+      allow delete: if canAdmin();
     }
 
     // ---------- STORES ----------

@@ -1,7 +1,7 @@
-# Graph Report - C:\projects\nearnest\web-portal  (2026-04-26)
+# Graph Report - C:\projects\nearnest\web-portal  (2026-04-27)
 
 ## Corpus Check
-- 127 files · ~183,558 words
+- 127 files · ~184,990 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary

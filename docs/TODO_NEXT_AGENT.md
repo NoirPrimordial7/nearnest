@@ -4,16 +4,26 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-26, after discovery security hardening)
+## Next up (as of 2026-04-27, after support-ticket rules fix)
 
-**Security hardening is implemented locally but not deployed.** Current local state:
-- `searchMedicines` and `nearbyStores` now require callable auth (`context.auth`).
-- New public-safe callables were added: `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, `getCategoryMedicines`.
-- `apps/mobile/services/discoveryApi.ts` no longer directly reads discovery Firestore docs. It calls Functions for search, nearby stores, medicine detail, medicine stores, store detail, and category medicines.
-- Firestore rules no longer allow ordinary signed-in customer reads of full `medicines`, `stores`, or `stores/{storeId}/inventory` docs. Store/inventory reads are limited to `canAccessStore`; medicine direct reads are verifier/admin-only.
-- The global fallback is deny-all: `allow read, write: if false`.
-- Public store callable projection no longer returns `ownerName`, `licenseNumber`, `licenseAuthority`, owner/member/internal/admin fields, or raw store docs.
-- Verification passed: Functions syntax, Functions lint, mobile typecheck, Android export, `git diff --check`, and `graphify update .`.
+**Firestore rules deploy blocker is fixed locally but not deployed.**
+- `supportTickets/{ticketId}` now has explicit least-privilege rules.
+- Admin/support can list, get, create, and update support tickets.
+- Only admin can delete support tickets.
+- Normal signed-in users cannot list all tickets and cannot update tickets.
+- Ticket creators can create/get only tickets carrying a safe owner uid field (`createdBy`, `userId`, `uid`, `customerId`, or `submitterUid`) equal to their auth uid.
+- Global fallback remains `allow read, write: if false`.
+- Medifind discovery hardening remains intact.
+
+**Known safe from the web-impact audit:**
+- Web does not currently make active Firestore reads of `medicines/{medicineId}`.
+- Web does not use collection-group inventory queries.
+- Store owner/member/admin/verifier store reads are still covered by `canAccessStore(storeId)`.
+- Store verification docs/logs are still covered through `canAccessStore(storeId)`.
+- Existing web inventory uses `stores/{storeId}/products`, not the mobile discovery `stores/{storeId}/inventory`; `products` reads remain covered by the store fallback.
+- `users/{uid}` self reads/writes and admin/verifier reads/updates remain explicitly covered.
+- `roles/{roleId}` reads remain allowed for signed-in users.
+- `supportTickets` rules compiled successfully in Firebase dry-run.
 
 **Current production state:** unchanged until deployment. Production still has the previously deployed Functions/rules.
 
@@ -21,18 +31,16 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ### Next steps
 
-1. **Review the local hardening diff before deploy.** Focus on `functions/index.js`, `apps/mobile/services/discoveryApi.ts`, and `firestore.rules`.
+1. **Commit the support-ticket rules fix:** `git add firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(firebase): add support ticket rules before discovery deploy"`.
 2. **Deploy only after explicit approval:** `firebase deploy --only functions:searchMedicines,functions:nearbyStores,functions:getMedicineDetail,functions:getMedicineStores,functions:getStoreDetail,functions:getCategoryMedicines,firestore:rules --project nearnest-platform`.
-3. **After deploy, run an authenticated Android dev-client walkthrough:** Home -> Search `Dolo` -> Results -> Medicine detail -> Nearby stores -> Store detail -> Call/Navigate.
-4. **Confirm mock fallback after deploy:** sign out or force a backend failure and verify discovery screens fall back cleanly to mock data with existing fallback copy.
-5. **Do not run `firebase deploy --only functions` blindly.** Remote functions not present in local source still exist (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`).
-6. **Do not reseed blindly.** Existing seed data appears live; rerun `node functions/scripts/seedDiscoveryData.js` only when intentionally refreshing demo data.
-7. **Review seeded store doc shape before real stores.** Seed docs contain `licenseNumber`, `licenseAuthority`, `seededBy`, and timestamps in public store docs; callables now hide license fields from customers, but real store docs should still avoid private fields.
-8. **Replace the fallback Pune coordinate** before trusting distance ranking in production.
-9. **Keep Map SDK deferred** until API-key restrictions and location UX are ready.
-10. **Keep Rx discovery informational.** No reserve, upload, order, delivery, buy, request, cart, checkout, medical advice, dosage, or substitution guidance.
-11. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP; do not add `@react-native-firebase/*` or SMS backend work here.
-12. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
+3. **After deploy, smoke-test web admin:** `/admin` dashboard ticket KPI, `/admin/support` list/reply/close/reassign/internal note, `/admin/stores`, `/admin/verification`, `/store-admin/:storeId/inventory`, `/store-admin/:storeId/dashboard`, and owner store registration/status flows.
+4. **After deploy, run authenticated Android dev-client walkthrough:** Home -> Search `Dolo` -> Results -> Medicine detail -> Nearby stores -> Store detail -> Call/Navigate.
+5. **Confirm mock fallback after deploy:** sign out or force a backend failure and verify discovery screens fall back cleanly to mock data with existing fallback copy.
+6. **Do not run `firebase deploy --only functions` blindly.** Remote functions not present in local source still exist (`onAuthCreate`, `requestEmailCode`, `setUserRoles`, `verifyEmailCode`).
+7. **Do not reseed blindly.** Existing seed data appears live; rerun `node functions/scripts/seedDiscoveryData.js` only when intentionally refreshing demo data.
+8. **Review seeded store doc shape before real stores.** Seed docs contain `licenseNumber`, `licenseAuthority`, `seededBy`, and timestamps in public store docs; callables now hide license fields from customers, but real store docs should still avoid private fields.
+9. **Keep Phone OTP deferred.** D-015 still blocks Phone OTP; do not add `@react-native-firebase/*` or SMS backend work here.
+10. **Use Graphify before architecture/codebase answers.** Read `graphify-out/GRAPH_REPORT.md`; run `graphify update .` after code changes.
 
 ---
 

@@ -4,6 +4,138 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Add least-privilege support ticket rules before discovery deploy
+**Agent:** Codex
+**Session goal:** Permanently fix the Firestore rules deploy blocker for `supportTickets/{ticketId}` without restoring broad signed-in reads, without deploying, and without touching web/mobile/functions code.
+
+**Files inspected (read-only):**
+- `firestore.rules` - confirmed global fallback remains deny-all and discovery hardening remains intact.
+- `src/pages/Admin/Dashboard/Dashboard.jsx` - confirmed admin dashboard queries `supportTickets` for open ticket count.
+- `src/pages/Admin/Support/SupportTickets.jsx` - confirmed admin support portal lists, gets, replies to, closes, reassigns, and adds internal notes to support tickets.
+- `src/**` support-ticket search - found no active normal-user support-ticket creation flow in the live web app; support-ticket writes are admin/support portal updates.
+- `docs/DECISIONS.md`, `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - loaded project memory and current deploy blocker.
+
+**Files edited:**
+- `firestore.rules` - added explicit support-ticket helpers and `match /supportTickets/{ticketId}` rules.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md` - updated handoff state.
+- `graphify-out/**` - updated with `graphify update .` after rules change.
+
+**Rules helpers added:**
+- `canAdmin()` - allows admin via `users.roles`, `users.permissions` (`ADMIN`, `ALL_ACCESS`), `request.auth.token.role`, or `request.auth.token.roles`.
+- `canViewSupportTickets()` - allows admin/support support-ticket readers via user doc roles/permissions or custom claims.
+- `canManageSupportTickets()` - allows admin/support support-ticket writers via user doc roles/permissions or custom claims.
+- `isSupportTicketCreator(ticketData)` - allows get-only creator access when an existing ticket has `createdBy`, `userId`, `uid`, `customerId`, or `submitterUid` equal to `request.auth.uid`.
+- `createsOwnSupportTicket()` - allows signed-in users to create only a ticket carrying one of those same safe owner fields equal to their uid.
+
+**Exact support ticket rule added:**
+```
+match /supportTickets/{ticketId} {
+  allow get: if canViewSupportTickets() || isSupportTicketCreator(resource.data);
+  allow list: if canViewSupportTickets();
+  allow create: if canManageSupportTickets() || createsOwnSupportTicket();
+  allow update: if canManageSupportTickets();
+  allow delete: if canAdmin();
+}
+```
+
+**Security outcome:**
+- Normal signed-in users still cannot list all support tickets.
+- Normal signed-in users still cannot update support tickets directly.
+- Ticket creators can create/get only tickets with an explicit owner uid field.
+- Support users can manage support tickets without automatically gaining store verification/admin permissions.
+- `canVerifyDocs()` was not weakened or reused for support-ticket access.
+- Global fallback remains `allow read, write: if false`.
+- Medifind discovery hardening remains intact.
+
+**Verification:**
+- `git status --short` - showed existing protected local files plus prior docs changes before this rules edit.
+- `cd functions && npm run lint` - passed.
+- `firebase emulators:exec --only firestore "cmd /c echo firestore-rules-compile-check" --project nearnest-platform` - unavailable because Firebase CLI requires Java 21+ on this machine.
+- `firebase deploy --only firestore:rules --dry-run --project nearnest-platform` - passed; rules compiled successfully. Warning only: unused `isPublicStore` helper.
+- `graphify update .` via `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .` - passed.
+- `git diff --check` - run after edits; see final status in session output.
+
+**Deploy status:**
+- Not deployed.
+- Rules blocker is fixed locally. Deployment is now ready for an explicit approval pass, subject to the usual final status check and runtime QA after deploy.
+- Suggested deploy command after approval: `firebase deploy --only functions:searchMedicines,functions:nearbyStores,functions:getMedicineDetail,functions:getMedicineStores,functions:getStoreDetail,functions:getCategoryMedicines,firestore:rules --project nearnest-platform`.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**`, `apps/mobile/**`, `functions/**`.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, `.codex/*.png`.
+
+**Suggested commit message:**
+`fix(firebase): add support ticket rules before discovery deploy`
+
+---
+
+## 2026-04-26 - Audit web impact before discovery rules deploy
+**Agent:** Codex
+**Session goal:** Check whether deploying the committed discovery Functions and hardened Firestore rules could break existing web portal routes. Do not deploy. Do not edit web UI/source.
+
+**Files inspected (read-only):**
+- `graphify-out/GRAPH_REPORT.md` - confirmed current graph hubs before codebase audit.
+- `firestore.rules` - checked `canAccessStore`, `canVerifyDocs`, explicit `users`, `roles`, `medicines`, `stores`, `inventory`, `documents`, `verificationLogs`, store fallback, and deny-all global fallback.
+- `functions/index.js` - confirmed discovery callables require auth and return server-side projections.
+- `apps/mobile/services/discoveryApi.ts` - confirmed mobile discovery calls Functions and no longer imports Firestore.
+- `src/**` - searched and inspected web Firestore usage in auth, admin stores, admin verification, admin dashboard, support tickets, register-store, user profile, store admin inventory/dashboard/settings, and shared Firestore helpers.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - loaded current handoff state.
+
+**Firestore paths found in web:**
+- `users/{uid}` - auth/profile reads and self writes; admin/verifier updates owner verification status.
+- `roles/{roleId}` - role permission reads in `AuthContext`.
+- `stores/{storeId}` and `/stores` list queries - register-store owner/member listings, admin stores dashboard/listing, document verification, store admin settings/dashboard.
+- `stores/{storeId}/documents/{docId}` - owner upload/status and admin/verifier review.
+- `stores/{storeId}/verificationLogs/{logId}` - admin/verifier review history and store dashboard recent activity.
+- `stores/{storeId}/products/{productId}` - existing web inventory implementation, covered by the store subcollection fallback, not the mobile `inventory` subcollection.
+- `stores/{storeId}/orders/{orderId}` - store dashboard read path, covered by the store subcollection fallback.
+- `supportTickets/{ticketId}` - admin support dashboard/list/update path.
+- No active web Firestore reads of `medicines/{medicineId}` were found; only UI text mentions medicines.
+- No `collectionGroup` queries were found in `src/**`.
+
+**Deploy impact finding:**
+- **Deployment is blocked until `supportTickets` rules are added.** The hardened global fallback is `allow read, write: if false`, and there is no explicit `match /supportTickets/{ticketId}` rule. This would break:
+  - `src/pages/Admin/Dashboard/Dashboard.jsx` open-ticket KPI query.
+  - `src/pages/Admin/Support/SupportTickets.jsx` ticket list, ticket read, replies, close, reassignment, and internal notes.
+- Store owner/member/verifier/admin store access appears covered by `canAccessStore(storeId)` for `stores`, `documents`, `verificationLogs`, `inventory`, and existing store subcollections.
+- Admin/verifier medicine reads are covered by `canVerifyDocs()`, and web does not currently query `medicines`.
+- A role-model caveat remains: web UI permissions come from `roles/{roleId}`, but rules only treat `users.roles` containing `admin`/`verifier` or `users.permissions` containing `VERIFY_DOCS` as verifier/admin. If any real verifier/support user is permission-only through a role doc, store verification Firestore reads/writes may still fail.
+
+**Suggested rules fix before deploy:**
+- Add an explicit `supportTickets/{ticketId}` rule before deploying hardened rules. Minimum candidate:
+  - admin/support/verifier can read and update tickets.
+  - signed-in users can create their own tickets and read/update only tickets scoped to their `uid`, `ownerId`, `createdBy`, `submitterUid`, `storeId` membership, or `visibleTo`.
+- If the current product expects admin-only support tickets, start stricter: `allow read, write: if canVerifyDocs() || userDoc(request.auth.uid).data.roles.hasAny(['support']);` plus create rules for signed-in ticket submission if/when needed.
+- Decide whether `support` belongs inside `canVerifyDocs()` or should get a separate `canSupport()` helper.
+
+**Verification:**
+- `git status --short` - only protected local files were dirty before this docs update: `.claude/settings.local.json` and untracked `.codex/medifind-*.png`.
+- `rg "collection\\(|doc\\(|getDoc|getDocs|onSnapshot|query\\(" src` - completed.
+- `rg "medicines|stores|inventory|documents|verificationLogs|roles|users" src` - completed.
+- `cd functions && npm run lint` - passed.
+- `git diff --check` - passed before docs update.
+- `graphify update .` - not required because no code files were modified.
+
+**Deploy status:**
+- Not deployed.
+- Current status: **blocked/risky** due missing `supportTickets` rules.
+- Do not deploy `firestore.rules` until the support ticket rule gap is fixed and reviewed.
+
+**Files edited:**
+- `docs/AGENT_LOG.md`
+- `docs/TODO_NEXT_AGENT.md`
+- `docs/SESSION_STATE.md`
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**`, web portal UI/routes/components, store admin UI, main admin UI.
+- `functions/**`, `firestore.rules`, `firestore.indexes.json`, `apps/mobile/**`.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, `.codex/*.png`.
+
+**Suggested commit message:**
+`docs(firebase): audit web impact before discovery rules deploy`
+
+---
+
 ## 2026-04-26 - Harden public discovery reads and callable projections
 **Agent:** Codex
 **Session goal:** Remove unsafe direct mobile discovery reads, require auth on discovery callables, return public-safe projections, and tighten Firestore rules without deploying.
