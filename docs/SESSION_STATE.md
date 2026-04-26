@@ -1,6 +1,16 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (auth polish landed: confirm-password, terms/privacy screens, password show-hide, Phone OTP DEFERRED)
+Last updated: 2026-04-26 (discovery redesign implemented with mock data)
+
+## Discovery redesign implementation 2026-04-26
+- Medifind discovery redesign is now implemented in `apps/mobile/**` with mock data only.
+- Routes added or redesigned: `/home` dual-mode Medicine / Medical Stores, `/search` live suggestions, `/results` grouped results, `/medicine/[medicineId]`, `/medicine/[medicineId]/stores`, `/stores`, `/store/[storeId]`, `/category/[categoryId]`, and `/profile`.
+- New shared discovery components: `ProductCard`, `StoreCard`, `CategoryCard`, `SearchBar`, `ModeToggle`, `BottomSheet`, `Chip`, `Badge`, `EmptyState`, `ErrorState`, `OfflineBanner`, `StaleDataBanner`, and `MapPlaceholder`.
+- `apps/mobile/services/mockDiscovery.ts` now seeds 20 medicines, 17 compositions, 6 manufacturers, 8 categories, 10 stores, 90 inventory items, 10 recent searches, and 12 popular suggestions.
+- `medifindTelemetry.emit` is console-only for now because this task explicitly prohibited backend calls. The Firestore ring buffer sink remains deferred until client-write policy is approved.
+- Profile `Larger text` uses local AsyncStorage and a `useFontScale()` hook. Firestore sync to `users/{uid}.preferences.largeType` remains deferred for the same no-backend-call reason.
+- No backend Functions, Firestore inventory reads, Firebase rules/config, real Maps SDK, Phone OTP, cart, checkout, payment, delivery, or order tracking were added.
+- Verification passed: `npm run typecheck`, `npx expo export --platform android --output-dir .expo\discovery-redesign-export`, `graphify update .`, and `git diff --check`.
 
 ## Auth polish 2026-04-26 (this session)
 - Sign Up now has a Confirm Password field, password show/hide, stronger password rule (≥ 8 chars, ≥ 1 letter, ≥ 1 number), per-field inline errors, and tappable Terms / Privacy Policy links.

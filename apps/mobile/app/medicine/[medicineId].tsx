@@ -1,18 +1,24 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../../components/ActionButton';
+import { Badge } from '../../components/Badge';
+import { EmptyState } from '../../components/EmptyState';
+import { ProductCard } from '../../components/ProductCard';
 import { Screen } from '../../components/Screen';
+import { StaleDataBanner } from '../../components/StaleDataBanner';
+import { useFontScale } from '../../hooks/useFontScale';
 import {
+  formatComposition,
   formatDistance,
-  getMapsUrl,
-  getMedicineStoreAvailability,
-  getMockMedicineById,
-  getPhoneUrl,
-  getStatusLabel,
+  getAvailabilityForMedicine,
+  getMedicineById,
+  getSimilarMedicines,
+  hasStaleDataForMedicine,
 } from '../../services/mockDiscovery';
+import { medifindTelemetry } from '../../services/telemetry';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
-import type { AvailabilityStatus, StoreAvailabilityResult } from '../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -21,278 +27,206 @@ function getParamValue(value: string | string[] | undefined) {
 export default function MedicineDetailScreen() {
   const params = useLocalSearchParams();
   const medicineId = getParamValue(params.medicineId);
-  const medicine = getMockMedicineById(medicineId);
-  const stores = medicine ? getMedicineStoreAvailability(medicine.id) : [];
+  const medicine = getMedicineById(medicineId);
+  const stores = medicine ? getAvailabilityForMedicine(medicine.id) : [];
+  const similar = medicine ? getSimilarMedicines(medicine.id) : [];
+  const hasStale = medicine ? hasStaleDataForMedicine(medicine.id) : false;
+  const { scale, scaleLineHeight } = useFontScale();
+
+  useEffect(() => {
+    if (medicine) {
+      medifindTelemetry.emit('medifind.results.medicine_viewed', {
+        medicine_id: medicine.id,
+        result_group: 'detail',
+      });
+    }
+  }, [medicine]);
 
   if (!medicine) {
     return (
       <Screen
         eyebrow="Medicine"
         title="Medicine not found"
-        description="This mock medicine is not available in the local discovery data."
+        description="This medicine is not in the local mock catalog."
         footer={<ActionButton label="Back to search" onPress={() => router.replace('/search')} />}
       />
     );
+  }
+
+  function openStores() {
+    medifindTelemetry.emit('medifind.results.find_stores_tapped', {
+      medicine_id: medicineId,
+      available_count: stores.length,
+    });
+    router.push({
+      pathname: '/medicine/[medicineId]/stores',
+      params: { medicineId },
+    });
   }
 
   return (
     <Screen
       eyebrow="Medicine detail"
       title={medicine.name}
-      description="Medifind only shows nearby store availability. It does not provide medical advice."
-      footer={
-        <ActionButton
-          label="Back to search"
-          onPress={() => router.push({ pathname: '/search', params: { q: medicine.name } })}
-          variant="secondary"
-        />
-      }
+      description="Review non-medical facts and then choose a nearby pharmacy."
+      footer={<ActionButton label={stores.length > 0 ? 'Find nearby stores' : 'Show pharmacies anyway'} onPress={openStores} />}
     >
-      <View style={styles.summaryCard}>
-        <View style={styles.titleRow}>
-          <Text style={styles.medicineName}>{medicine.name}</Text>
-          {medicine.requiresPrescription ? <Text style={styles.rxBadge}>Rx</Text> : null}
-        </View>
-        <Text style={styles.meta}>
-          {medicine.salt} • {medicine.strength} • {medicine.form}
-        </Text>
-        <Text style={styles.meta}>{medicine.packSize}</Text>
-        <Text style={styles.meta}>{medicine.manufacturer}</Text>
-      </View>
-
-      {medicine.requiresPrescription ? (
-        <View style={styles.rxPanel}>
-          <Text style={styles.rxTitle}>Prescription required</Text>
-          <Text style={styles.rxBody}>
-            Please carry a valid prescription when you visit or call the store.
+      <View style={styles.stack}>
+        <View style={styles.hero}>
+          <Text style={[styles.heroLetter, { fontSize: scale(64), lineHeight: scaleLineHeight(70) }]}>
+            {medicine.name.slice(0, 1)}
           </Text>
         </View>
-      ) : null}
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Nearby stores that have it</Text>
-        <Text style={styles.sectionHint}>Mock availability</Text>
-      </View>
-
-      {stores.length > 0 ? (
-        <View style={styles.storeStack}>
-          {stores.map((result) => (
-            <StoreAvailabilityCard key={result.availability.id} result={result} />
-          ))}
-        </View>
-      ) : (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>No nearby stores found</Text>
-          <Text style={styles.emptyBody}>
-            Real availability will come from the search backend after the discovery
-            contracts are ready.
+        <View style={styles.identity}>
+          <View style={styles.badgeRow}>
+            {medicine.requiresPrescription ? <Badge kind="rx" label="Prescription required" /> : null}
+            <Badge kind="availableNearby" label={`Available at ${stores.length} nearby`} />
+          </View>
+          <Text style={[styles.name, { fontSize: scale(typography.h2), lineHeight: scaleLineHeight(28) }]}>
+            {medicine.name}
           </Text>
+          <Text style={[styles.meta, { fontSize: scale(typography.body), lineHeight: scaleLineHeight(22) }]}>
+            {formatComposition(medicine)}
+          </Text>
+          <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            {medicine.packSize} - {medicine.form}
+          </Text>
+          <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+            By {medicine.manufacturer.name}
+          </Text>
+          {medicine.description ? (
+            <Text style={[styles.description, { fontSize: scale(typography.body), lineHeight: scaleLineHeight(22) }]}>
+              {medicine.description}
+            </Text>
+          ) : null}
         </View>
-      )}
+
+        {medicine.requiresPrescription ? (
+          <View style={styles.rxBlock}>
+            <Text style={[styles.rxTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+              Prescription required
+            </Text>
+            <Text style={[styles.rxBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              Please carry a valid prescription when you visit or call the store.
+            </Text>
+            <Text style={[styles.rxBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              Medifind does not take prescriptions or fulfil orders.
+            </Text>
+          </View>
+        ) : null}
+
+        {hasStale ? <StaleDataBanner /> : null}
+
+        <View style={styles.availabilityCard}>
+          <Text style={[styles.sectionTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+            {stores.length > 0
+              ? `Available at ${stores.length} nearby pharmacies`
+              : 'Not currently in nearby pharmacies.'}
+          </Text>
+          {stores.length > 0 ? (
+            <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              {stores
+                .slice(0, 3)
+                .map(({ store }) => `${store.name} (${formatDistance(store.distanceKm)})`)
+                .join(', ')}
+              {stores.length > 3 ? ` +${stores.length - 3} more` : ''}
+            </Text>
+          ) : (
+            <Text style={[styles.meta, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              Browse pharmacies and call directly to ask in person.
+            </Text>
+          )}
+        </View>
+
+        {similar.length > 0 ? (
+          <View style={styles.similarSection}>
+            <Text style={[styles.sectionTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+              Similar medicines
+            </Text>
+            <View style={styles.similarStack}>
+              {similar.map((similarMedicine) => (
+                <ProductCard
+                  key={similarMedicine.id}
+                  medicine={similarMedicine}
+                  onPress={() => {
+                    medifindTelemetry.emit('medifind.results.similar_tapped', {
+                      medicine_id: medicine.id,
+                      similar_id: similarMedicine.id,
+                    });
+                    router.push({
+                      pathname: '/medicine/[medicineId]',
+                      params: { medicineId: similarMedicine.id },
+                    });
+                  }}
+                />
+              ))}
+            </View>
+          </View>
+        ) : (
+          <EmptyState
+            body="No similar medicines are present in the mock catalog."
+            title="No similar medicines yet"
+          />
+        )}
+
+        <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/results', params: { q: medicine.name } })}>
+          <Text style={styles.backToResults}>Back to grouped results</Text>
+        </Pressable>
+      </View>
     </Screen>
   );
 }
 
-function StoreAvailabilityCard({ result }: { result: StoreAvailabilityResult }) {
-  const { store, availability } = result;
-
-  return (
-    <View style={styles.storeCard}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() =>
-          router.push({
-            pathname: '/store/[storeId]',
-            params: { storeId: store.id },
-          })
-        }
-        style={({ pressed }) => [styles.storeInfo, pressed && styles.pressed]}
-      >
-        <View style={styles.titleRow}>
-          <Text style={styles.storeName}>{store.name}</Text>
-          <AvailabilityBadge status={availability.status} />
-        </View>
-        <Text style={styles.meta}>
-          {formatDistance(store.distanceKm)} • {store.locality} •{' '}
-          {store.isOpen ? `Open until ${store.closesAt}` : 'Closed now'}
-        </Text>
-        <Text style={styles.meta}>
-          {availability.priceLabel} • {availability.updatedLabel}
-        </Text>
-      </Pressable>
-      <View style={styles.actionRow}>
-        <SmallAction
-          label="Call"
-          onPress={() => {
-            void Linking.openURL(getPhoneUrl(store));
-          }}
-        />
-        <SmallAction
-          label="Navigate"
-          onPress={() => {
-            void Linking.openURL(getMapsUrl(store));
-          }}
-        />
-      </View>
-    </View>
-  );
-}
-
-function AvailabilityBadge({ status }: { status: AvailabilityStatus }) {
-  return (
-    <Text style={[styles.availabilityBadge, badgeStyles[status]]}>
-      {getStatusLabel(status)}
-    </Text>
-  );
-}
-
-function SmallAction({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [styles.smallAction, pressed && styles.pressed]}
-    >
-      <Text style={styles.smallActionText}>{label}</Text>
-    </Pressable>
-  );
-}
-
 const styles = StyleSheet.create({
-  summaryCard: {
-    gap: spacing.sm,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
+  stack: {
+    gap: spacing.xl,
   },
-  titleRow: {
-    flexDirection: 'row',
+  hero: {
+    minHeight: 240,
     alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.xl,
+    backgroundColor: colors.surfaceAlt,
+  },
+  heroLetter: {
+    color: colors.textMuted,
+    fontWeight: '700',
+  },
+  identity: {
     gap: spacing.sm,
   },
-  medicineName: {
-    flex: 1,
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  name: {
     color: colors.text,
-    fontSize: typography.h2,
     fontWeight: '700',
-    lineHeight: 28,
   },
   meta: {
     color: colors.textMuted,
-    fontSize: typography.bodySm,
-    lineHeight: 18,
   },
-  rxBadge: {
-    overflow: 'hidden',
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.rxBorder,
-    backgroundColor: colors.rxBg,
-    color: colors.rxText,
-    fontSize: typography.caption,
-    fontWeight: '700',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+  description: {
+    color: colors.text,
   },
-  rxPanel: {
-    gap: spacing.xs,
+  rxBlock: {
+    gap: spacing.sm,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.rxBorder,
     backgroundColor: colors.rxBg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
+    padding: spacing.xl,
   },
   rxTitle: {
     color: colors.rxText,
-    fontSize: typography.body,
     fontWeight: '700',
   },
   rxBody: {
     color: colors.rxText,
-    fontSize: typography.bodySm,
-    lineHeight: 18,
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  sectionTitle: {
-    flex: 1,
-    color: colors.text,
-    fontSize: typography.h3,
-    fontWeight: '700',
-  },
-  sectionHint: {
-    color: colors.textSoft,
-    fontSize: typography.caption,
-    fontWeight: '600',
-  },
-  storeStack: {
-    gap: spacing.md,
-  },
-  storeCard: {
-    gap: spacing.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  storeInfo: {
-    gap: spacing.sm,
-  },
-  storeName: {
-    flex: 1,
-    color: colors.text,
-    fontSize: typography.body,
-    fontWeight: '700',
-  },
-  availabilityBadge: {
-    overflow: 'hidden',
-    borderRadius: radius.pill,
-    fontSize: typography.caption,
-    fontWeight: '700',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  availableBadge: {
-    backgroundColor: colors.primary50,
-    color: colors.primary700,
-  },
-  lowStockBadge: {
-    backgroundColor: colors.rxBg,
-    color: colors.warning,
-  },
-  callBadge: {
-    backgroundColor: colors.surfaceAlt,
-    color: colors.textMuted,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  smallAction: {
-    minHeight: 40,
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.bg,
-  },
-  smallActionText: {
-    color: colors.primary700,
-    fontSize: typography.bodySm,
-    fontWeight: '700',
-  },
-  emptyCard: {
+  availabilityCard: {
     gap: spacing.sm,
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -300,23 +234,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: spacing.xl,
   },
-  emptyTitle: {
+  sectionTitle: {
     color: colors.text,
-    fontSize: typography.h3,
     fontWeight: '700',
   },
-  emptyBody: {
-    color: colors.textMuted,
-    fontSize: typography.bodySm,
-    lineHeight: 18,
+  similarSection: {
+    gap: spacing.md,
   },
-  pressed: {
-    opacity: 0.72,
+  similarStack: {
+    gap: spacing.md,
+  },
+  backToResults: {
+    color: colors.primary700,
+    fontSize: typography.bodySm,
+    fontWeight: '700',
+    textAlign: 'center',
   },
 });
-
-const badgeStyles = {
-  available: styles.availableBadge,
-  low_stock: styles.lowStockBadge,
-  call_to_confirm: styles.callBadge,
-};

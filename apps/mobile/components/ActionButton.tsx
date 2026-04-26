@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
+import { useFontScale } from '../hooks/useFontScale';
 
 type ActionButtonProps = Omit<PressableProps, 'style'> & {
   label: string;
@@ -32,6 +33,7 @@ export function ActionButton({
 }: ActionButtonProps) {
   const isDisabled = disabled || loading;
   const visibleLabel = loading ? loadingLabel ?? label : label;
+  const { scale, scaleLineHeight } = useFontScale();
 
   return (
     <Pressable
@@ -54,10 +56,25 @@ export function ActionButton({
           />
         ) : leadingLabel ? (
           <View style={styles.leadingBadge}>
-            <Text style={styles.leadingText}>{leadingLabel}</Text>
+            <Text
+              style={[
+                styles.leadingText,
+                { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) },
+              ]}
+            >
+              {leadingLabel}
+            </Text>
           </View>
         ) : null}
-        <Text style={[styles.label, labelStyles[variant]]}>{visibleLabel}</Text>
+        <Text
+          style={[
+            styles.label,
+            labelStyles[variant],
+            { fontSize: scale(typography.body), lineHeight: scaleLineHeight(22) },
+          ]}
+        >
+          {visibleLabel}
+        </Text>
       </View>
     </Pressable>
   );
@@ -87,7 +104,6 @@ const styles = StyleSheet.create({
   },
   leadingText: {
     color: colors.primary700,
-    fontSize: typography.bodySm,
     fontWeight: '600',
   },
   primary: {
@@ -110,7 +126,6 @@ const styles = StyleSheet.create({
     opacity: 0.58,
   },
   label: {
-    fontSize: typography.body,
     fontWeight: '600',
   },
   primaryLabel: {

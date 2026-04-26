@@ -9,7 +9,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\eslint.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_eslint_config_js",
-      "community": 54,
+      "community": 56,
       "norm_label": "eslint.config.js"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\main.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_main_jsx",
-      "community": 55,
+      "community": 57,
       "norm_label": "main.jsx"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\vite.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_vite_config_js",
-      "community": 56,
+      "community": 58,
       "norm_label": "vite.config.js"
     },
     {
@@ -36,35 +36,53 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
-      "community": 0,
+      "community": 3,
       "norm_label": "home.tsx"
     },
     {
-      "label": "openSearch()",
+      "label": "getParamValue()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L58",
-      "id": "home_opensearch",
-      "community": 0,
-      "norm_label": "opensearch()"
+      "source_location": "L33",
+      "id": "home_getparamvalue",
+      "community": 3,
+      "norm_label": "getparamvalue()"
+    },
+    {
+      "label": "updateMode()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L93",
+      "id": "home_updatemode",
+      "community": 3,
+      "norm_label": "updatemode()"
     },
     {
       "label": "handleSignOut()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L68",
+      "source_location": "L98",
       "id": "home_handlesignout",
       "community": 0,
       "norm_label": "handlesignout()"
     },
     {
-      "label": "formatDistance()",
+      "label": "openPhone()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L206",
-      "id": "home_formatdistance",
-      "community": 0,
-      "norm_label": "formatdistance()"
+      "source_location": "L108",
+      "id": "home_openphone",
+      "community": 3,
+      "norm_label": "openphone()"
+    },
+    {
+      "label": "openMaps()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L120",
+      "id": "home_openmaps",
+      "community": 3,
+      "norm_label": "openmaps()"
     },
     {
       "label": "index.tsx",
@@ -72,7 +90,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\index.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_index_tsx",
-      "community": 57,
+      "community": 59,
       "norm_label": "index.tsx"
     },
     {
@@ -92,6 +110,15 @@
       "id": "phone_otp_phoneotpscreen",
       "community": 33,
       "norm_label": "phoneotpscreen()"
+    },
+    {
+      "label": "privacy.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\privacy.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_privacy_tsx",
+      "community": 60,
+      "norm_label": "privacy.tsx"
     },
     {
       "label": "profile-setup.tsx",
@@ -130,40 +157,85 @@
       "norm_label": "handlesignout()"
     },
     {
+      "label": "profile.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\profile.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_profile_tsx",
+      "community": 4,
+      "norm_label": "profile.tsx"
+    },
+    {
+      "label": "ProfileScreen()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\profile.tsx",
+      "source_location": "L14",
+      "id": "profile_profilescreen",
+      "community": 4,
+      "norm_label": "profilescreen()"
+    },
+    {
+      "label": "results.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
+      "community": 23,
+      "norm_label": "results.tsx"
+    },
+    {
+      "label": "getParamValue()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L20",
+      "id": "results_getparamvalue",
+      "community": 23,
+      "norm_label": "getparamvalue()"
+    },
+    {
+      "label": "ResultsScreen()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L24",
+      "id": "results_resultsscreen",
+      "community": 23,
+      "norm_label": "resultsscreen()"
+    },
+    {
       "label": "search.tsx",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_search_tsx",
-      "community": 17,
+      "community": 1,
       "norm_label": "search.tsx"
     },
     {
       "label": "getParamValue()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L28",
+      "source_location": "L20",
       "id": "search_getparamvalue",
-      "community": 17,
+      "community": 1,
       "norm_label": "getparamvalue()"
     },
     {
       "label": "submitSearch()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L49",
+      "source_location": "L39",
       "id": "search_submitsearch",
-      "community": 17,
+      "community": 1,
       "norm_label": "submitsearch()"
     },
     {
-      "label": "formatDistance()",
+      "label": "openSuggestion()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L174",
-      "id": "search_formatdistance",
-      "community": 17,
-      "norm_label": "formatdistance()"
+      "source_location": "L64",
+      "id": "search_opensuggestion",
+      "community": 1,
+      "norm_label": "opensuggestion()"
     },
     {
       "label": "sign-in.tsx",
@@ -178,7 +250,7 @@
       "label": "completeGoogleSignIn()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L40",
+      "source_location": "L41",
       "id": "sign_in_completegooglesignin",
       "community": 0,
       "norm_label": "completegooglesignin()"
@@ -187,7 +259,7 @@
       "label": "handleEmailSignIn()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L72",
+      "source_location": "L77",
       "id": "sign_in_handleemailsignin",
       "community": 0,
       "norm_label": "handleemailsignin()"
@@ -196,7 +268,7 @@
       "label": "handleGoogleSignIn()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L95",
+      "source_location": "L100",
       "id": "sign_in_handlegooglesignin",
       "community": 0,
       "norm_label": "handlegooglesignin()"
@@ -211,10 +283,28 @@
       "norm_label": "sign-up.tsx"
     },
     {
+      "label": "validateForm()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
+      "source_location": "L32",
+      "id": "sign_up_validateform",
+      "community": 0,
+      "norm_label": "validateform()"
+    },
+    {
+      "label": "showFieldError()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
+      "source_location": "L94",
+      "id": "sign_up_showfielderror",
+      "community": 0,
+      "norm_label": "showfielderror()"
+    },
+    {
       "label": "completeGoogleSignIn()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L42",
+      "source_location": "L108",
       "id": "sign_up_completegooglesignin",
       "community": 0,
       "norm_label": "completegooglesignin()"
@@ -223,7 +313,7 @@
       "label": "handleCreateAccount()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L74",
+      "source_location": "L144",
       "id": "sign_up_handlecreateaccount",
       "community": 0,
       "norm_label": "handlecreateaccount()"
@@ -232,10 +322,19 @@
       "label": "handleGoogleSignIn()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L107",
+      "source_location": "L163",
       "id": "sign_up_handlegooglesignin",
       "community": 0,
       "norm_label": "handlegooglesignin()"
+    },
+    {
+      "label": "terms.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\terms.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_terms_tsx",
+      "community": 61,
+      "norm_label": "terms.tsx"
     },
     {
       "label": "verify-email.tsx",
@@ -310,31 +409,85 @@
       "norm_label": "rootlayout()"
     },
     {
+      "label": "[categoryId].tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\category\\[categoryId].tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_category_categoryid_tsx",
+      "community": 36,
+      "norm_label": "[categoryid].tsx"
+    },
+    {
+      "label": "getParamValue()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\category\\[categoryId].tsx",
+      "source_location": "L19",
+      "id": "categoryid_getparamvalue",
+      "community": 36,
+      "norm_label": "getparamvalue()"
+    },
+    {
       "label": "[medicineId].tsx",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId].tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_tsx",
-      "community": 23,
+      "community": 37,
       "norm_label": "[medicineid].tsx"
     },
     {
       "label": "getParamValue()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId].tsx",
-      "source_location": "L17",
+      "source_location": "L23",
       "id": "medicineid_getparamvalue",
-      "community": 23,
+      "community": 37,
       "norm_label": "getparamvalue()"
     },
     {
-      "label": "formatDistance()",
+      "label": "stores.tsx",
       "file_type": "code",
-      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId].tsx",
-      "source_location": "L116",
-      "id": "medicineid_formatdistance",
-      "community": 23,
-      "norm_label": "formatdistance()"
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "community": 3,
+      "norm_label": "stores.tsx"
+    },
+    {
+      "label": "getParamValue()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L24",
+      "id": "stores_getparamvalue",
+      "community": 3,
+      "norm_label": "getparamvalue()"
+    },
+    {
+      "label": "openPhone()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L64",
+      "id": "stores_openphone",
+      "community": 3,
+      "norm_label": "openphone()"
+    },
+    {
+      "label": "openMaps()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L76",
+      "id": "stores_openmaps",
+      "community": 3,
+      "norm_label": "openmaps()"
+    },
+    {
+      "label": "openStore()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L88",
+      "id": "stores_openstore",
+      "community": 3,
+      "norm_label": "openstore()"
     },
     {
       "label": "[storeId].tsx",
@@ -342,17 +495,71 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
-      "community": 36,
+      "community": 10,
       "norm_label": "[storeid].tsx"
     },
     {
       "label": "getParamValue()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
-      "source_location": "L17",
+      "source_location": "L32",
       "id": "storeid_getparamvalue",
-      "community": 36,
+      "community": 10,
       "norm_label": "getparamvalue()"
+    },
+    {
+      "label": "formatDistance()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
+      "source_location": "L119",
+      "id": "storeid_formatdistance",
+      "community": 10,
+      "norm_label": "formatdistance()"
+    },
+    {
+      "label": "getStockLabel()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
+      "source_location": "L237",
+      "id": "storeid_getstocklabel",
+      "community": 10,
+      "norm_label": "getstocklabel()"
+    },
+    {
+      "label": "index.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "community": 3,
+      "norm_label": "index.tsx"
+    },
+    {
+      "label": "openPhone()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L46",
+      "id": "index_openphone",
+      "community": 3,
+      "norm_label": "openphone()"
+    },
+    {
+      "label": "openMaps()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L58",
+      "id": "index_openmaps",
+      "community": 3,
+      "norm_label": "openmaps()"
+    },
+    {
+      "label": "openStore()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L70",
+      "id": "index_openstore",
+      "community": 3,
+      "norm_label": "openstore()"
     },
     {
       "label": "ActionButton.tsx",
@@ -360,8 +567,89 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ActionButton.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_actionbutton_tsx",
-      "community": 58,
+      "community": 62,
       "norm_label": "actionbutton.tsx"
+    },
+    {
+      "label": "Badge.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Badge.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_badge_tsx",
+      "community": 4,
+      "norm_label": "badge.tsx"
+    },
+    {
+      "label": "Badge()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Badge.tsx",
+      "source_location": "L21",
+      "id": "badge_badge",
+      "community": 4,
+      "norm_label": "badge()"
+    },
+    {
+      "label": "BottomSheet.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\BottomSheet.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_bottomsheet_tsx",
+      "community": 38,
+      "norm_label": "bottomsheet.tsx"
+    },
+    {
+      "label": "BottomSheet()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\BottomSheet.tsx",
+      "source_location": "L10",
+      "id": "bottomsheet_bottomsheet",
+      "community": 38,
+      "norm_label": "bottomsheet()"
+    },
+    {
+      "label": "CategoryCard.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\CategoryCard.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_categorycard_tsx",
+      "community": 63,
+      "norm_label": "categorycard.tsx"
+    },
+    {
+      "label": "Chip.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Chip.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_chip_tsx",
+      "community": 4,
+      "norm_label": "chip.tsx"
+    },
+    {
+      "label": "Chip()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Chip.tsx",
+      "source_location": "L12",
+      "id": "chip_chip",
+      "community": 4,
+      "norm_label": "chip()"
+    },
+    {
+      "label": "EmptyState.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\EmptyState.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_emptystate_tsx",
+      "community": 64,
+      "norm_label": "emptystate.tsx"
+    },
+    {
+      "label": "ErrorState.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ErrorState.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_errorstate_tsx",
+      "community": 65,
+      "norm_label": "errorstate.tsx"
     },
     {
       "label": "InfoCard.tsx",
@@ -369,7 +657,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\InfoCard.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_infocard_tsx",
-      "community": 37,
+      "community": 39,
       "norm_label": "infocard.tsx"
     },
     {
@@ -378,8 +666,62 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\InfoCard.tsx",
       "source_location": "L10",
       "id": "infocard_infocard",
-      "community": 37,
+      "community": 39,
       "norm_label": "infocard()"
+    },
+    {
+      "label": "MapPlaceholder.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\MapPlaceholder.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_mapplaceholder_tsx",
+      "community": 66,
+      "norm_label": "mapplaceholder.tsx"
+    },
+    {
+      "label": "ModeToggle.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ModeToggle.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_modetoggle_tsx",
+      "community": 40,
+      "norm_label": "modetoggle.tsx"
+    },
+    {
+      "label": "ModeToggle()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ModeToggle.tsx",
+      "source_location": "L12",
+      "id": "modetoggle_modetoggle",
+      "community": 40,
+      "norm_label": "modetoggle()"
+    },
+    {
+      "label": "OfflineBanner.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\OfflineBanner.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_offlinebanner_tsx",
+      "community": 4,
+      "norm_label": "offlinebanner.tsx"
+    },
+    {
+      "label": "OfflineBanner()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\OfflineBanner.tsx",
+      "source_location": "L13",
+      "id": "offlinebanner_offlinebanner",
+      "community": 4,
+      "norm_label": "offlinebanner()"
+    },
+    {
+      "label": "ProductCard.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ProductCard.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_productcard_tsx",
+      "community": 67,
+      "norm_label": "productcard.tsx"
     },
     {
       "label": "Screen.tsx",
@@ -387,17 +729,98 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Screen.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_screen_tsx",
-      "community": 38,
+      "community": 68,
       "norm_label": "screen.tsx"
     },
     {
-      "label": "Screen()",
+      "label": "SearchBar.tsx",
       "file_type": "code",
-      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Screen.tsx",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\SearchBar.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_searchbar_tsx",
+      "community": 4,
+      "norm_label": "searchbar.tsx"
+    },
+    {
+      "label": "SearchBar()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\SearchBar.tsx",
+      "source_location": "L28",
+      "id": "searchbar_searchbar",
+      "community": 4,
+      "norm_label": "searchbar()"
+    },
+    {
+      "label": "StaleDataBanner.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StaleDataBanner.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_staledatabanner_tsx",
+      "community": 4,
+      "norm_label": "staledatabanner.tsx"
+    },
+    {
+      "label": "StaleDataBanner()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StaleDataBanner.tsx",
+      "source_location": "L10",
+      "id": "staledatabanner_staledatabanner",
+      "community": 4,
+      "norm_label": "staledatabanner()"
+    },
+    {
+      "label": "StoreCard.tsx",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_components_storecard_tsx",
+      "community": 10,
+      "norm_label": "storecard.tsx"
+    },
+    {
+      "label": "formatDistance()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L57",
+      "id": "storecard_formatdistance",
+      "community": 10,
+      "norm_label": "formatdistance()"
+    },
+    {
+      "label": "getStockLabel()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L68",
+      "id": "storecard_getstocklabel",
+      "community": 10,
+      "norm_label": "getstocklabel()"
+    },
+    {
+      "label": "useFontScale.ts",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\hooks\\useFontScale.ts",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_hooks_usefontscale_ts",
+      "community": 4,
+      "norm_label": "usefontscale.ts"
+    },
+    {
+      "label": "notify()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\hooks\\useFontScale.ts",
+      "source_location": "L9",
+      "id": "usefontscale_notify",
+      "community": 4,
+      "norm_label": "notify()"
+    },
+    {
+      "label": "useFontScale()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\hooks\\useFontScale.ts",
       "source_location": "L14",
-      "id": "screen_screen",
-      "community": 38,
-      "norm_label": "screen()"
+      "id": "usefontscale_usefontscale",
+      "community": 4,
+      "norm_label": "usefontscale()"
     },
     {
       "label": "auth.ts",
@@ -490,6 +913,24 @@
       "norm_label": "getautherrormessage()"
     },
     {
+      "label": "externalLinks.ts",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\externalLinks.ts",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_services_externallinks_ts",
+      "community": 3,
+      "norm_label": "externallinks.ts"
+    },
+    {
+      "label": "openExternalUrl()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\externalLinks.ts",
+      "source_location": "L3",
+      "id": "externallinks_openexternalurl",
+      "community": 3,
+      "norm_label": "openexternalurl()"
+    },
+    {
       "label": "firebase.ts",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\firebase.ts",
@@ -522,7 +963,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\googleAuth.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_services_googleauth_ts",
-      "community": 12,
+      "community": 0,
       "norm_label": "googleauth.ts"
     },
     {
@@ -531,7 +972,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\googleAuth.ts",
       "source_location": "L25",
       "id": "googleauth_getenvvalue",
-      "community": 12,
+      "community": 0,
       "norm_label": "getenvvalue()"
     },
     {
@@ -540,7 +981,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\googleAuth.ts",
       "source_location": "L29",
       "id": "googleauth_getgoogleauthrequestconfig",
-      "community": 12,
+      "community": 0,
       "norm_label": "getgoogleauthrequestconfig()"
     },
     {
@@ -549,7 +990,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\googleAuth.ts",
       "source_location": "L43",
       "id": "googleauth_getmissinggoogleauthenvkeys",
-      "community": 12,
+      "community": 0,
       "norm_label": "getmissinggoogleauthenvkeys()"
     },
     {
@@ -558,7 +999,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\googleAuth.ts",
       "source_location": "L59",
       "id": "googleauth_hasgoogleauthconfig",
-      "community": 12,
+      "community": 0,
       "norm_label": "hasgoogleauthconfig()"
     },
     {
@@ -585,143 +1026,332 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "community": 2,
+      "community": 1,
       "norm_label": "mockdiscovery.ts"
+    },
+    {
+      "label": "minutesAgo()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L20",
+      "id": "mockdiscovery_minutesago",
+      "community": 1,
+      "norm_label": "minutesago()"
+    },
+    {
+      "label": "hoursAgo()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L21",
+      "id": "mockdiscovery_hoursago",
+      "community": 1,
+      "norm_label": "hoursago()"
+    },
+    {
+      "label": "mfr()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L160",
+      "id": "mockdiscovery_mfr",
+      "community": 1,
+      "norm_label": "mfr()"
+    },
+    {
+      "label": "comp()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L168",
+      "id": "mockdiscovery_comp",
+      "community": 1,
+      "norm_label": "comp()"
+    },
+    {
+      "label": "tokens()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L176",
+      "id": "mockdiscovery_tokens",
+      "community": 1,
+      "norm_label": "tokens()"
+    },
+    {
+      "label": "medicine()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L184",
+      "id": "mockdiscovery_medicine",
+      "community": 1,
+      "norm_label": "medicine()"
     },
     {
       "label": "normalize()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L256",
+      "source_location": "L947",
       "id": "mockdiscovery_normalize",
-      "community": 2,
+      "community": 1,
       "norm_label": "normalize()"
     },
     {
-      "label": "medicineMatchesQuery()",
+      "label": "getCategories()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L260",
-      "id": "mockdiscovery_medicinematchesquery",
-      "community": 2,
-      "norm_label": "medicinematchesquery()"
+      "source_location": "L951",
+      "id": "mockdiscovery_getcategories",
+      "community": 1,
+      "norm_label": "getcategories()"
     },
     {
-      "label": "getStore()",
+      "label": "getCategoryById()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L281",
-      "id": "mockdiscovery_getstore",
-      "community": 2,
-      "norm_label": "getstore()"
+      "source_location": "L955",
+      "id": "mockdiscovery_getcategorybyid",
+      "community": 1,
+      "norm_label": "getcategorybyid()"
     },
     {
-      "label": "getMedicineAvailability()",
+      "label": "getMedicineById()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L285",
-      "id": "mockdiscovery_getmedicineavailability",
-      "community": 2,
-      "norm_label": "getmedicineavailability()"
+      "source_location": "L959",
+      "id": "mockdiscovery_getmedicinebyid",
+      "community": 1,
+      "norm_label": "getmedicinebyid()"
     },
     {
-      "label": "searchMockMedicines()",
+      "label": "getStoreById()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L305",
-      "id": "mockdiscovery_searchmockmedicines",
-      "community": 2,
-      "norm_label": "searchmockmedicines()"
+      "source_location": "L963",
+      "id": "mockdiscovery_getstorebyid",
+      "community": 1,
+      "norm_label": "getstorebyid()"
     },
     {
-      "label": "getMockMedicineById()",
+      "label": "getStoresByDistance()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L315",
-      "id": "mockdiscovery_getmockmedicinebyid",
-      "community": 2,
-      "norm_label": "getmockmedicinebyid()"
+      "source_location": "L967",
+      "id": "mockdiscovery_getstoresbydistance",
+      "community": 1,
+      "norm_label": "getstoresbydistance()"
     },
     {
-      "label": "getMockStoreById()",
+      "label": "getRecentSearches()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L319",
-      "id": "mockdiscovery_getmockstorebyid",
-      "community": 2,
-      "norm_label": "getmockstorebyid()"
+      "source_location": "L971",
+      "id": "mockdiscovery_getrecentsearches",
+      "community": 4,
+      "norm_label": "getrecentsearches()"
     },
     {
-      "label": "getNearbyStoresPreview()",
+      "label": "getPopularSuggestions()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L323",
-      "id": "mockdiscovery_getnearbystorespreview",
-      "community": 2,
-      "norm_label": "getnearbystorespreview()"
+      "source_location": "L975",
+      "id": "mockdiscovery_getpopularsuggestions",
+      "community": 1,
+      "norm_label": "getpopularsuggestions()"
     },
     {
-      "label": "getPopularMedicines()",
+      "label": "getSuggestions()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L327",
-      "id": "mockdiscovery_getpopularmedicines",
-      "community": 2,
-      "norm_label": "getpopularmedicines()"
+      "source_location": "L979",
+      "id": "mockdiscovery_getsuggestions",
+      "community": 1,
+      "norm_label": "getsuggestions()"
     },
     {
-      "label": "getStoreInventory()",
+      "label": "getResultGroups()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L333",
-      "id": "mockdiscovery_getstoreinventory",
-      "community": 2,
-      "norm_label": "getstoreinventory()"
+      "source_location": "L1034",
+      "id": "mockdiscovery_getresultgroups",
+      "community": 1,
+      "norm_label": "getresultgroups()"
     },
     {
-      "label": "getMedicineStoreAvailability()",
+      "label": "getAvailabilityForMedicine()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L351",
-      "id": "mockdiscovery_getmedicinestoreavailability",
-      "community": 2,
-      "norm_label": "getmedicinestoreavailability()"
+      "source_location": "L1083",
+      "id": "mockdiscovery_getavailabilityformedicine",
+      "community": 1,
+      "norm_label": "getavailabilityformedicine()"
+    },
+    {
+      "label": "getAvailabilityCount()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1114",
+      "id": "mockdiscovery_getavailabilitycount",
+      "community": 1,
+      "norm_label": "getavailabilitycount()"
+    },
+    {
+      "label": "getSimilarMedicines()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1118",
+      "id": "mockdiscovery_getsimilarmedicines",
+      "community": 1,
+      "norm_label": "getsimilarmedicines()"
+    },
+    {
+      "label": "getMedicinesByCategory()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1129",
+      "id": "mockdiscovery_getmedicinesbycategory",
+      "community": 1,
+      "norm_label": "getmedicinesbycategory()"
+    },
+    {
+      "label": "getInventoryForStore()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1136",
+      "id": "mockdiscovery_getinventoryforstore",
+      "community": 1,
+      "norm_label": "getinventoryforstore()"
+    },
+    {
+      "label": "getFreshnessStatus()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1185",
+      "id": "mockdiscovery_getfreshnessstatus",
+      "community": 1,
+      "norm_label": "getfreshnessstatus()"
+    },
+    {
+      "label": "hasStaleDataForMedicine()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1196",
+      "id": "mockdiscovery_hasstaledataformedicine",
+      "community": 1,
+      "norm_label": "hasstaledataformedicine()"
+    },
+    {
+      "label": "formatFreshness()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1202",
+      "id": "mockdiscovery_formatfreshness",
+      "community": 10,
+      "norm_label": "formatfreshness()"
     },
     {
       "label": "formatDistance()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L355",
+      "source_location": "L1215",
       "id": "mockdiscovery_formatdistance",
-      "community": 2,
+      "community": 1,
       "norm_label": "formatdistance()"
     },
     {
-      "label": "getStatusLabel()",
+      "label": "formatPrice()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L359",
-      "id": "mockdiscovery_getstatuslabel",
-      "community": 2,
-      "norm_label": "getstatuslabel()"
+      "source_location": "L1219",
+      "id": "mockdiscovery_formatprice",
+      "community": 1,
+      "norm_label": "formatprice()"
+    },
+    {
+      "label": "formatComposition()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1223",
+      "id": "mockdiscovery_formatcomposition",
+      "community": 1,
+      "norm_label": "formatcomposition()"
+    },
+    {
+      "label": "formatStoreAddress()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1227",
+      "id": "mockdiscovery_formatstoreaddress",
+      "community": 1,
+      "norm_label": "formatstoreaddress()"
+    },
+    {
+      "label": "getStockLabel()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1233",
+      "id": "mockdiscovery_getstocklabel",
+      "community": 1,
+      "norm_label": "getstocklabel()"
     },
     {
       "label": "getMapsUrl()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L370",
+      "source_location": "L1244",
       "id": "mockdiscovery_getmapsurl",
-      "community": 2,
+      "community": 3,
       "norm_label": "getmapsurl()"
+    },
+    {
+      "label": "getGeoUrl()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1248",
+      "id": "mockdiscovery_getgeourl",
+      "community": 1,
+      "norm_label": "getgeourl()"
     },
     {
       "label": "getPhoneUrl()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L375",
+      "source_location": "L1252",
       "id": "mockdiscovery_getphoneurl",
-      "community": 2,
+      "community": 3,
       "norm_label": "getphoneurl()"
+    },
+    {
+      "label": "applyMedicineFilter()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1256",
+      "id": "mockdiscovery_applymedicinefilter",
+      "community": 1,
+      "norm_label": "applymedicinefilter()"
+    },
+    {
+      "label": "medicineMatchesQuery()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1266",
+      "id": "mockdiscovery_medicinematchesquery",
+      "community": 1,
+      "norm_label": "medicinematchesquery()"
+    },
+    {
+      "label": "findSymptom()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1288",
+      "id": "mockdiscovery_findsymptom",
+      "community": 1,
+      "norm_label": "findsymptom()"
+    },
+    {
+      "label": "stockRank()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1300",
+      "id": "mockdiscovery_stockrank",
+      "community": 1,
+      "norm_label": "stockrank()"
     },
     {
       "label": "phoneAuth.ts",
@@ -729,7 +1359,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\phoneAuth.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_services_phoneauth_ts",
-      "community": 39,
+      "community": 41,
       "norm_label": "phoneauth.ts"
     },
     {
@@ -738,8 +1368,17 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\phoneAuth.ts",
       "source_location": "L4",
       "id": "phoneauth_normalizeindianmobilenumber",
-      "community": 39,
+      "community": 41,
       "norm_label": "normalizeindianmobilenumber()"
+    },
+    {
+      "label": "telemetry.ts",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\telemetry.ts",
+      "source_location": "L1",
+      "id": "c_projects_nearnest_web_portal_apps_mobile_services_telemetry_ts",
+      "community": 69,
+      "norm_label": "telemetry.ts"
     },
     {
       "label": "userProfile.ts",
@@ -855,7 +1494,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\types\\discovery.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_types_discovery_ts",
-      "community": 59,
+      "community": 70,
       "norm_label": "discovery.ts"
     },
     {
@@ -864,7 +1503,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\types\\firebase-auth-react-native.d.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_types_firebase_auth_react_native_d_ts",
-      "community": 60,
+      "community": 71,
       "norm_label": "firebase-auth-react-native.d.ts"
     },
     {
@@ -873,7 +1512,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\functions\\index.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_functions_index_js",
-      "community": 61,
+      "community": 72,
       "norm_label": "index.js"
     },
     {
@@ -882,7 +1521,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\scripts\\seedFirestore.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_scripts_seedfirestore_js",
-      "community": 62,
+      "community": 73,
       "norm_label": "seedfirestore.js"
     },
     {
@@ -891,7 +1530,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\App.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_app_jsx",
-      "community": 40,
+      "community": 42,
       "norm_label": "app.jsx"
     },
     {
@@ -900,7 +1539,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\App.jsx",
       "source_location": "L45",
       "id": "app_app",
-      "community": 40,
+      "community": 42,
       "norm_label": "app()"
     },
     {
@@ -909,7 +1548,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\main.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_main_jsx",
-      "community": 63,
+      "community": 74,
       "norm_label": "main.jsx"
     },
     {
@@ -999,7 +1638,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\lib\\firebase.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_lib_firebase_js",
-      "community": 64,
+      "community": 75,
       "norm_label": "firebase.js"
     },
     {
@@ -1035,7 +1674,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
-      "community": 41,
+      "community": 43,
       "norm_label": "nearnesthome.jsx"
     },
     {
@@ -1044,7 +1683,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
       "source_location": "L6",
       "id": "nearnesthome_nearnesthome",
-      "community": 41,
+      "community": 43,
       "norm_label": "nearnesthome()"
     },
     {
@@ -1053,7 +1692,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\AdminLayout.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_adminlayout_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "adminlayout.jsx"
     },
     {
@@ -1062,7 +1701,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L7",
       "id": "adminlayout_useclickaway",
-      "community": 1,
+      "community": 2,
       "norm_label": "useclickaway()"
     },
     {
@@ -1071,7 +1710,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L21",
       "id": "adminlayout_icon",
-      "community": 1,
+      "community": 2,
       "norm_label": "icon()"
     },
     {
@@ -1080,7 +1719,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L54",
       "id": "adminlayout_adminlayout",
-      "community": 1,
+      "community": 2,
       "norm_label": "adminlayout()"
     },
     {
@@ -1089,7 +1728,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_dashboard_dashboard_jsx",
-      "community": 7,
+      "community": 8,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -1098,7 +1737,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L60",
       "id": "dashboard_icon",
-      "community": 7,
+      "community": 8,
       "norm_label": "icon()"
     },
     {
@@ -1107,7 +1746,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_kpicard",
-      "community": 7,
+      "community": 8,
       "norm_label": "kpicard()"
     },
     {
@@ -1116,7 +1755,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L93",
       "id": "dashboard_card",
-      "community": 7,
+      "community": 8,
       "norm_label": "card()"
     },
     {
@@ -1125,7 +1764,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L108",
       "id": "dashboard_rangetabs",
-      "community": 7,
+      "community": 8,
       "norm_label": "rangetabs()"
     },
     {
@@ -1134,7 +1773,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_makemonthbuckets",
-      "community": 7,
+      "community": 8,
       "norm_label": "makemonthbuckets()"
     },
     {
@@ -1143,7 +1782,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L126",
       "id": "dashboard_dashboard",
-      "community": 7,
+      "community": 8,
       "norm_label": "dashboard()"
     },
     {
@@ -1152,7 +1791,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_stores_storeservice_js",
-      "community": 6,
+      "community": 9,
       "norm_label": "storeservice.js"
     },
     {
@@ -1161,7 +1800,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L20",
       "id": "storeservice_prettylabel",
-      "community": 6,
+      "community": 9,
       "norm_label": "prettylabel()"
     },
     {
@@ -1170,7 +1809,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L46",
       "id": "storeservice_normalizestore",
-      "community": 6,
+      "community": 9,
       "norm_label": "normalizestore()"
     },
     {
@@ -1179,7 +1818,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L41",
       "id": "storeservice_liststores",
-      "community": 6,
+      "community": 9,
       "norm_label": "liststores()"
     },
     {
@@ -1188,7 +1827,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L82",
       "id": "storeservice_setstorestatus",
-      "community": 6,
+      "community": 9,
       "norm_label": "setstorestatus()"
     },
     {
@@ -1197,7 +1836,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L99",
       "id": "storeservice_deletestore",
-      "community": 6,
+      "community": 9,
       "norm_label": "deletestore()"
     },
     {
@@ -1206,7 +1845,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L216",
       "id": "storeservice_getstoredocuments",
-      "community": 6,
+      "community": 9,
       "norm_label": "getstoredocuments()"
     },
     {
@@ -1215,7 +1854,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L238",
       "id": "storeservice_getstoreverificationlogs",
-      "community": 6,
+      "community": 9,
       "norm_label": "getstoreverificationlogs()"
     },
     {
@@ -1224,7 +1863,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\StoresPage.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_stores_storespage_jsx",
-      "community": 8,
+      "community": 11,
       "norm_label": "storespage.jsx"
     },
     {
@@ -1233,7 +1872,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L9",
       "id": "storespage_icon",
-      "community": 8,
+      "community": 11,
       "norm_label": "icon()"
     },
     {
@@ -1242,7 +1881,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L31",
       "id": "storespage_statuspill",
-      "community": 8,
+      "community": 11,
       "norm_label": "statuspill()"
     },
     {
@@ -1251,7 +1890,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L44",
       "id": "storespage_formatdate",
-      "community": 8,
+      "community": 11,
       "norm_label": "formatdate()"
     },
     {
@@ -1260,7 +1899,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L56",
       "id": "storespage_buildrange",
-      "community": 8,
+      "community": 11,
       "norm_label": "buildrange()"
     },
     {
@@ -1269,7 +1908,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L84",
       "id": "storespage_pagination",
-      "community": 8,
+      "community": 11,
       "norm_label": "pagination()"
     },
     {
@@ -1278,7 +1917,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L146",
       "id": "storespage_storespage",
-      "community": 8,
+      "community": 11,
       "norm_label": "storespage()"
     },
     {
@@ -1287,7 +1926,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_support_supporttickets_jsx",
-      "community": 10,
+      "community": 13,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -1296,7 +1935,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L15",
       "id": "supporttickets_tstostr",
-      "community": 10,
+      "community": 13,
       "norm_label": "tstostr()"
     },
     {
@@ -1305,7 +1944,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L25",
       "id": "supporttickets_normalizeticket",
-      "community": 10,
+      "community": 13,
       "norm_label": "normalizeticket()"
     },
     {
@@ -1314,7 +1953,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Support\\SupportTickets.jsx",
       "source_location": "L10",
       "id": "supporttickets_supporttickets",
-      "community": 10,
+      "community": 13,
       "norm_label": "supporttickets()"
     },
     {
@@ -1323,7 +1962,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Verification\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_verification_documentverification_jsx",
-      "community": 9,
+      "community": 12,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -1332,7 +1971,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L14",
       "id": "documentverification_icon",
-      "community": 9,
+      "community": 12,
       "norm_label": "icon()"
     },
     {
@@ -1341,7 +1980,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L21",
       "id": "documentverification_pill",
-      "community": 9,
+      "community": 12,
       "norm_label": "pill()"
     },
     {
@@ -1350,7 +1989,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L30",
       "id": "documentverification_prettylabel",
-      "community": 9,
+      "community": 12,
       "norm_label": "prettylabel()"
     },
     {
@@ -1359,7 +1998,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L45",
       "id": "documentverification_todate",
-      "community": 9,
+      "community": 12,
       "norm_label": "todate()"
     },
     {
@@ -1368,7 +2007,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L53",
       "id": "documentverification_documentverification",
-      "community": 9,
+      "community": 12,
       "norm_label": "documentverification()"
     },
     {
@@ -1413,7 +2052,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_admindashboard_jsx",
-      "community": 42,
+      "community": 44,
       "norm_label": "admindashboard.jsx"
     },
     {
@@ -1422,7 +2061,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminDashboard.jsx",
       "source_location": "L9",
       "id": "admindashboard_admindashboard",
-      "community": 42,
+      "community": 44,
       "norm_label": "admindashboard()"
     },
     {
@@ -1431,7 +2070,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_adminlayout_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "adminlayout.jsx"
     },
     {
@@ -1440,7 +2079,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_jsx",
-      "community": 7,
+      "community": 8,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -1449,7 +2088,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_documentverification_jsx",
-      "community": 9,
+      "community": 12,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -1458,7 +2097,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Notifications.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_notifications_jsx",
-      "community": 43,
+      "community": 45,
       "norm_label": "notifications.jsx"
     },
     {
@@ -1467,7 +2106,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Notifications.jsx",
       "source_location": "L43",
       "id": "notifications_notifications",
-      "community": 43,
+      "community": 45,
       "norm_label": "notifications()"
     },
     {
@@ -1476,7 +2115,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\RolePermission.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_rolepermission_jsx",
-      "community": 44,
+      "community": 46,
       "norm_label": "rolepermission.jsx"
     },
     {
@@ -1485,7 +2124,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\RolePermission.jsx",
       "source_location": "L4",
       "id": "rolepermission_rolepermission",
-      "community": 44,
+      "community": 46,
       "norm_label": "rolepermission()"
     },
     {
@@ -1494,7 +2133,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Settings.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_settings_jsx",
-      "community": 45,
+      "community": 47,
       "norm_label": "settings.jsx"
     },
     {
@@ -1503,7 +2142,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Settings.jsx",
       "source_location": "L5",
       "id": "settings_settings",
-      "community": 45,
+      "community": 47,
       "norm_label": "settings()"
     },
     {
@@ -1512,7 +2151,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\StoreManagement.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_storemanagement_jsx",
-      "community": 46,
+      "community": 48,
       "norm_label": "storemanagement.jsx"
     },
     {
@@ -1521,7 +2160,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\StoreManagement.jsx",
       "source_location": "L4",
       "id": "storemanagement_storemanagement",
-      "community": 46,
+      "community": 48,
       "norm_label": "storemanagement()"
     },
     {
@@ -1530,7 +2169,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_supporttickets_jsx",
-      "community": 10,
+      "community": 13,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -1539,7 +2178,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_dashboard_jsx",
-      "community": 7,
+      "community": 8,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -1548,7 +2187,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L20",
       "id": "dashboard_makemonthly",
-      "community": 7,
+      "community": 8,
       "norm_label": "makemonthly()"
     },
     {
@@ -1557,7 +2196,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_stores_storeservice_js",
-      "community": 6,
+      "community": 9,
       "norm_label": "storeservice.js"
     },
     {
@@ -1566,7 +2205,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L37",
       "id": "storeservice_mockdelay",
-      "community": 6,
+      "community": 9,
       "norm_label": "mockdelay()"
     },
     {
@@ -1575,7 +2214,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\StoresPage.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_stores_storespage_jsx",
-      "community": 8,
+      "community": 11,
       "norm_label": "storespage.jsx"
     },
     {
@@ -1584,7 +2223,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Support\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_support_supporttickets_jsx",
-      "community": 10,
+      "community": 13,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -1593,7 +2232,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_verification_documentverification_jsx",
-      "community": 9,
+      "community": 12,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -1602,7 +2241,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\AuthContext.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_authcontext_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "authcontext.jsx"
     },
     {
@@ -1611,7 +2250,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\AuthContext.jsx",
       "source_location": "L9",
       "id": "authcontext_authprovider",
-      "community": 1,
+      "community": 2,
       "norm_label": "authprovider()"
     },
     {
@@ -1620,7 +2259,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\AuthContext.jsx",
       "source_location": "L80",
       "id": "authcontext_useauth",
-      "community": 1,
+      "community": 2,
       "norm_label": "useauth()"
     },
     {
@@ -1629,7 +2268,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\AuthContext.jsx",
       "source_location": "L82",
       "id": "authcontext_roleredirect",
-      "community": 1,
+      "community": 2,
       "norm_label": "roleredirect()"
     },
     {
@@ -1638,7 +2277,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\firebase.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_firebase_js",
-      "community": 65,
+      "community": 76,
       "norm_label": "firebase.js"
     },
     {
@@ -1683,7 +2322,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignUp.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_signup_jsx",
-      "community": 47,
+      "community": 49,
       "norm_label": "signup.jsx"
     },
     {
@@ -1692,7 +2331,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignUp.jsx",
       "source_location": "L10",
       "id": "signup_signup",
-      "community": 47,
+      "community": 49,
       "norm_label": "signup()"
     },
     {
@@ -1701,7 +2340,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\VerifyEmail.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_verifyemail_jsx",
-      "community": 48,
+      "community": 50,
       "norm_label": "verifyemail.jsx"
     },
     {
@@ -1710,7 +2349,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\VerifyEmail.jsx",
       "source_location": "L10",
       "id": "verifyemail_verifyemail",
-      "community": 48,
+      "community": 50,
       "norm_label": "verifyemail()"
     },
     {
@@ -1719,7 +2358,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Landing\\landing.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_landing_landing_jsx",
-      "community": 49,
+      "community": 51,
       "norm_label": "landing.jsx"
     },
     {
@@ -1728,7 +2367,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Landing\\landing.jsx",
       "source_location": "L5",
       "id": "landing_landing",
-      "community": 49,
+      "community": 51,
       "norm_label": "landing()"
     },
     {
@@ -1737,7 +2376,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_createstore_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "createstore.jsx"
     },
     {
@@ -1746,7 +2385,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L9",
       "id": "createstore_loadgoogle",
-      "community": 1,
+      "community": 2,
       "norm_label": "loadgoogle()"
     },
     {
@@ -1755,7 +2394,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L25",
       "id": "createstore_extractfromplace",
-      "community": 1,
+      "community": 2,
       "norm_label": "extractfromplace()"
     },
     {
@@ -1764,7 +2403,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L49",
       "id": "createstore_parsegmapslink",
-      "community": 1,
+      "community": 2,
       "norm_label": "parsegmapslink()"
     },
     {
@@ -1773,7 +2412,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L65",
       "id": "createstore_locationeditor",
-      "community": 1,
+      "community": 2,
       "norm_label": "locationeditor()"
     },
     {
@@ -1782,7 +2421,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\CreateStore.jsx",
       "source_location": "L310",
       "id": "createstore_createstore",
-      "community": 1,
+      "community": 2,
       "norm_label": "createstore()"
     },
     {
@@ -1791,7 +2430,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\ReviewSubmit.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_reviewsubmit_jsx",
-      "community": 5,
+      "community": 6,
       "norm_label": "reviewsubmit.jsx"
     },
     {
@@ -1800,7 +2439,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\ReviewSubmit.jsx",
       "source_location": "L13",
       "id": "reviewsubmit_reviewsubmit",
-      "community": 5,
+      "community": 6,
       "norm_label": "reviewsubmit()"
     },
     {
@@ -1809,7 +2448,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_stores_js",
-      "community": 4,
+      "community": 7,
       "norm_label": "stores.js"
     },
     {
@@ -1818,7 +2457,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L19",
       "id": "stores_toarraymaybe",
-      "community": 4,
+      "community": 7,
       "norm_label": "toarraymaybe()"
     },
     {
@@ -1827,7 +2466,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L25",
       "id": "stores_ensureaddressshape",
-      "community": 4,
+      "community": 7,
       "norm_label": "ensureaddressshape()"
     },
     {
@@ -1836,7 +2475,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L38",
       "id": "stores_doctostore",
-      "community": 4,
+      "community": 7,
       "norm_label": "doctostore()"
     },
     {
@@ -1845,7 +2484,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L57",
       "id": "stores_storebucket",
-      "community": 4,
+      "community": 7,
       "norm_label": "storebucket()"
     },
     {
@@ -1854,7 +2493,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L62",
       "id": "stores_isadmin",
-      "community": 4,
+      "community": 7,
       "norm_label": "isadmin()"
     },
     {
@@ -1863,7 +2502,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L82",
       "id": "stores_createstore",
-      "community": 4,
+      "community": 7,
       "norm_label": "createstore()"
     },
     {
@@ -1872,7 +2511,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L139",
       "id": "stores_deletestore",
-      "community": 4,
+      "community": 7,
       "norm_label": "deletestore()"
     },
     {
@@ -1881,7 +2520,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L143",
       "id": "stores_getstore",
-      "community": 4,
+      "community": 7,
       "norm_label": "getstore()"
     },
     {
@@ -1890,7 +2529,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L154",
       "id": "stores_submitstoreforverification",
-      "community": 4,
+      "community": 7,
       "norm_label": "submitstoreforverification()"
     },
     {
@@ -1899,7 +2538,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\stores.js",
       "source_location": "L170",
       "id": "stores_listenuserstores",
-      "community": 4,
+      "community": 7,
       "norm_label": "listenuserstores()"
     },
     {
@@ -1908,7 +2547,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\UploadDocuments.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_uploaddocuments_jsx",
-      "community": 5,
+      "community": 6,
       "norm_label": "uploaddocuments.jsx"
     },
     {
@@ -1917,7 +2556,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\UploadDocuments.jsx",
       "source_location": "L23",
       "id": "uploaddocuments_uploaddocuments",
-      "community": 5,
+      "community": 6,
       "norm_label": "uploaddocuments()"
     },
     {
@@ -1926,7 +2565,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_verification_js",
-      "community": 5,
+      "community": 6,
       "norm_label": "verification.js"
     },
     {
@@ -1935,7 +2574,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L43",
       "id": "verification_uploadverificationdoc",
-      "community": 5,
+      "community": 6,
       "norm_label": "uploadverificationdoc()"
     },
     {
@@ -1944,7 +2583,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L82",
       "id": "verification_listenverificationdocs",
-      "community": 5,
+      "community": 6,
       "norm_label": "listenverificationdocs()"
     },
     {
@@ -1953,7 +2592,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L94",
       "id": "verification_fetchverificationdocsonce",
-      "community": 5,
+      "community": 6,
       "norm_label": "fetchverificationdocsonce()"
     },
     {
@@ -1962,7 +2601,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L102",
       "id": "verification_hasallrequired",
-      "community": 5,
+      "community": 6,
       "norm_label": "hasallrequired()"
     },
     {
@@ -1971,7 +2610,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L108",
       "id": "verification_deleteverificationdoc",
-      "community": 5,
+      "community": 6,
       "norm_label": "deleteverificationdoc()"
     },
     {
@@ -1980,7 +2619,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\verification.js",
       "source_location": "L120",
       "id": "verification_getstatuslabel",
-      "community": 5,
+      "community": 6,
       "norm_label": "getstatuslabel()"
     },
     {
@@ -1989,7 +2628,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_register_store_verificationstatus_jsx",
-      "community": 11,
+      "community": 2,
       "norm_label": "verificationstatus.jsx"
     },
     {
@@ -1998,7 +2637,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L16",
       "id": "verificationstatus_statusclass",
-      "community": 11,
+      "community": 2,
       "norm_label": "statusclass()"
     },
     {
@@ -2007,7 +2646,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L21",
       "id": "verificationstatus_statusbadge",
-      "community": 11,
+      "community": 2,
       "norm_label": "statusbadge()"
     },
     {
@@ -2016,7 +2655,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L24",
       "id": "verificationstatus_fmtbytes",
-      "community": 11,
+      "community": 2,
       "norm_label": "fmtbytes()"
     },
     {
@@ -2025,7 +2664,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L30",
       "id": "verificationstatus_tstodate",
-      "community": 11,
+      "community": 2,
       "norm_label": "tstodate()"
     },
     {
@@ -2034,7 +2673,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\register-store\\VerificationStatus.jsx",
       "source_location": "L43",
       "id": "verificationstatus_verificationstatus",
-      "community": 11,
+      "community": 2,
       "norm_label": "verificationstatus()"
     },
     {
@@ -2043,7 +2682,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\RegisterStore.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_registerstore_registerstore_jsx",
-      "community": 50,
+      "community": 52,
       "norm_label": "registerstore.jsx"
     },
     {
@@ -2052,7 +2691,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\RegisterStore.jsx",
       "source_location": "L4",
       "id": "registerstore_registerstore",
-      "community": 50,
+      "community": 52,
       "norm_label": "registerstore()"
     },
     {
@@ -2061,7 +2700,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\StoreForm.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_registerstore_storeform_jsx",
-      "community": 51,
+      "community": 53,
       "norm_label": "storeform.jsx"
     },
     {
@@ -2070,7 +2709,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\StoreForm.jsx",
       "source_location": "L3",
       "id": "storeform_storeform",
-      "community": 51,
+      "community": 53,
       "norm_label": "storeform()"
     },
     {
@@ -2079,7 +2718,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\routes\\ProtectedRoute.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_routes_protectedroute_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "protectedroute.jsx"
     },
     {
@@ -2088,7 +2727,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\routes\\ProtectedRoute.jsx",
       "source_location": "L6",
       "id": "protectedroute_protectedroute",
-      "community": 1,
+      "community": 2,
       "norm_label": "protectedroute()"
     },
     {
@@ -2097,7 +2736,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_analytics_jsx",
-      "community": 13,
+      "community": 14,
       "norm_label": "analytics.jsx"
     },
     {
@@ -2106,7 +2745,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L12",
       "id": "analytics_downloadcsv",
-      "community": 13,
+      "community": 14,
       "norm_label": "downloadcsv()"
     },
     {
@@ -2115,7 +2754,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L48",
       "id": "analytics_renderpercentlabel",
-      "community": 13,
+      "community": 14,
       "norm_label": "renderpercentlabel()"
     },
     {
@@ -2124,7 +2763,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L68",
       "id": "analytics_analytics",
-      "community": 13,
+      "community": 14,
       "norm_label": "analytics()"
     },
     {
@@ -2178,7 +2817,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadmindashboard_jsx",
-      "community": 14,
+      "community": 15,
       "norm_label": "storeadmindashboard.jsx"
     },
     {
@@ -2187,7 +2826,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L41",
       "id": "storeadmindashboard_storeadmindashboard",
-      "community": 14,
+      "community": 15,
       "norm_label": "storeadmindashboard()"
     },
     {
@@ -2214,7 +2853,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminLayout.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadminlayout_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "storeadminlayout.jsx"
     },
     {
@@ -2223,7 +2862,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminLayout.jsx",
       "source_location": "L11",
       "id": "storeadminlayout_useclickaway",
-      "community": 1,
+      "community": 2,
       "norm_label": "useclickaway()"
     },
     {
@@ -2232,7 +2871,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminLayout.jsx",
       "source_location": "L25",
       "id": "storeadminlayout_icon",
-      "community": 1,
+      "community": 2,
       "norm_label": "icon()"
     },
     {
@@ -2241,7 +2880,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminLayout.jsx",
       "source_location": "L82",
       "id": "storeadminlayout_storeadminlayout",
-      "community": 1,
+      "community": 2,
       "norm_label": "storeadminlayout()"
     },
     {
@@ -2295,7 +2934,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_analytics_analytics_jsx",
-      "community": 13,
+      "community": 14,
       "norm_label": "analytics.jsx"
     },
     {
@@ -2322,7 +2961,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadmindashboard_storeadmindashboard_jsx",
-      "community": 14,
+      "community": 15,
       "norm_label": "storeadmindashboard.jsx"
     },
     {
@@ -2331,7 +2970,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L15",
       "id": "storeadmindashboard_kpicard",
-      "community": 14,
+      "community": 15,
       "norm_label": "kpicard()"
     },
     {
@@ -2340,7 +2979,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L34",
       "id": "storeadmindashboard_builddaybuckets",
-      "community": 14,
+      "community": 15,
       "norm_label": "builddaybuckets()"
     },
     {
@@ -2376,7 +3015,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_alltickets_jsx",
-      "community": 15,
+      "community": 16,
       "norm_label": "alltickets.jsx"
     },
     {
@@ -2385,7 +3024,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L114",
       "id": "alltickets_buildticket",
-      "community": 15,
+      "community": 16,
       "norm_label": "buildticket()"
     },
     {
@@ -2394,7 +3033,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L170",
       "id": "alltickets_ticketrow",
-      "community": 15,
+      "community": 16,
       "norm_label": "ticketrow()"
     },
     {
@@ -2403,7 +3042,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L196",
       "id": "alltickets_chatmessage",
-      "community": 15,
+      "community": 16,
       "norm_label": "chatmessage()"
     },
     {
@@ -2412,7 +3051,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L212",
       "id": "alltickets_alltickets",
-      "community": 15,
+      "community": 16,
       "norm_label": "alltickets()"
     },
     {
@@ -2448,7 +3087,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportAnalytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supportanalytics_jsx",
-      "community": 52,
+      "community": 54,
       "norm_label": "supportanalytics.jsx"
     },
     {
@@ -2457,7 +3096,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportAnalytics.jsx",
       "source_location": "L75",
       "id": "supportanalytics_supportanalytics",
-      "community": 52,
+      "community": 54,
       "norm_label": "supportanalytics()"
     },
     {
@@ -2466,7 +3105,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supportdashboard_jsx",
-      "community": 16,
+      "community": 17,
       "norm_label": "supportdashboard.jsx"
     },
     {
@@ -2475,7 +3114,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L10",
       "id": "supportdashboard_getnow",
-      "community": 16,
+      "community": 17,
       "norm_label": "getnow()"
     },
     {
@@ -2484,7 +3123,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L27",
       "id": "supportdashboard_statcard",
-      "community": 16,
+      "community": 17,
       "norm_label": "statcard()"
     },
     {
@@ -2493,7 +3132,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L37",
       "id": "supportdashboard_sidebaricon",
-      "community": 16,
+      "community": 17,
       "norm_label": "sidebaricon()"
     },
     {
@@ -2502,7 +3141,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L45",
       "id": "supportdashboard_supportdashboard",
-      "community": 16,
+      "community": 17,
       "norm_label": "supportdashboard()"
     },
     {
@@ -2511,7 +3150,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportHome.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supporthome_jsx",
-      "community": 53,
+      "community": 55,
       "norm_label": "supporthome.jsx"
     },
     {
@@ -2520,7 +3159,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportHome.jsx",
       "source_location": "L5",
       "id": "supporthome_supporthome",
-      "community": 53,
+      "community": 55,
       "norm_label": "supporthome()"
     },
     {
@@ -2529,7 +3168,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\RequireProfile.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_user_requireprofile_jsx",
-      "community": 3,
+      "community": 5,
       "norm_label": "requireprofile.jsx"
     },
     {
@@ -2538,7 +3177,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\RequireProfile.jsx",
       "source_location": "L7",
       "id": "requireprofile_requireprofile",
-      "community": 3,
+      "community": 5,
       "norm_label": "requireprofile()"
     },
     {
@@ -2547,7 +3186,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_user_userhome_jsx",
-      "community": 3,
+      "community": 5,
       "norm_label": "userhome.jsx"
     },
     {
@@ -2556,7 +3195,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L14",
       "id": "userhome_useavatarmenu",
-      "community": 3,
+      "community": 5,
       "norm_label": "useavatarmenu()"
     },
     {
@@ -2565,7 +3204,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L28",
       "id": "userhome_initials",
-      "community": 3,
+      "community": 5,
       "norm_label": "initials()"
     },
     {
@@ -2574,7 +3213,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L38",
       "id": "userhome_prettyaddress",
-      "community": 3,
+      "community": 5,
       "norm_label": "prettyaddress()"
     },
     {
@@ -2583,7 +3222,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L45",
       "id": "userhome_userhome",
-      "community": 3,
+      "community": 5,
       "norm_label": "userhome()"
     },
     {
@@ -2592,7 +3231,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L394",
       "id": "userhome_skeletongrid",
-      "community": 3,
+      "community": 5,
       "norm_label": "skeletongrid()"
     },
     {
@@ -2601,7 +3240,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L404",
       "id": "userhome_empty",
-      "community": 3,
+      "community": 5,
       "norm_label": "empty()"
     },
     {
@@ -2610,7 +3249,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserHome.jsx",
       "source_location": "L408",
       "id": "userhome_storecard",
-      "community": 3,
+      "community": 5,
       "norm_label": "storecard()"
     },
     {
@@ -2619,7 +3258,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\userProfile.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_user_userprofile_js",
-      "community": 3,
+      "community": 5,
       "norm_label": "userprofile.js"
     },
     {
@@ -2628,7 +3267,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\userProfile.js",
       "source_location": "L18",
       "id": "userprofile_getprofile",
-      "community": 3,
+      "community": 5,
       "norm_label": "getprofile()"
     },
     {
@@ -2637,7 +3276,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\userProfile.js",
       "source_location": "L25",
       "id": "userprofile_onprofile",
-      "community": 3,
+      "community": 5,
       "norm_label": "onprofile()"
     },
     {
@@ -2646,7 +3285,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\userProfile.js",
       "source_location": "L45",
       "id": "userprofile_saveprofile",
-      "community": 3,
+      "community": 5,
       "norm_label": "saveprofile()"
     },
     {
@@ -2655,7 +3294,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\userProfile.js",
       "source_location": "L101",
       "id": "userprofile_useprofilecomplete",
-      "community": 3,
+      "community": 5,
       "norm_label": "useprofilecomplete()"
     },
     {
@@ -2664,7 +3303,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserProfiles.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_user_userprofiles_jsx",
-      "community": 1,
+      "community": 2,
       "norm_label": "userprofiles.jsx"
     },
     {
@@ -2673,7 +3312,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\user\\UserProfiles.jsx",
       "source_location": "L11",
       "id": "userprofiles_profilesetup",
-      "community": 1,
+      "community": 2,
       "norm_label": "profilesetup()"
     },
     {
@@ -2718,19 +3357,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L58",
+      "source_location": "L33",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
-      "_tgt": "home_opensearch",
+      "_tgt": "home_getparamvalue",
       "source": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
-      "target": "home_opensearch",
+      "target": "home_getparamvalue",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L68",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
+      "_tgt": "home_updatemode",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
+      "target": "home_updatemode",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L98",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
       "_tgt": "home_handlesignout",
@@ -2742,12 +3393,24 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
-      "source_location": "L206",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
-      "_tgt": "home_formatdistance",
+      "_tgt": "home_openphone",
       "source": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
-      "target": "home_formatdistance",
+      "target": "home_openphone",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
+      "_tgt": "home_openmaps",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_home_tsx",
+      "target": "home_openmaps",
       "confidence_score": 1.0
     },
     {
@@ -2761,6 +3424,54 @@
       "_tgt": "auth_signout",
       "source": "home_handlesignout",
       "target": "auth_signout"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_src": "home_openphone",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "home_openphone",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_src": "home_openphone",
+      "_tgt": "mockdiscovery_getphoneurl",
+      "source": "home_openphone",
+      "target": "mockdiscovery_getphoneurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_src": "home_openmaps",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "home_openmaps",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\home.tsx",
+      "source_location": "L126",
+      "weight": 1.0,
+      "_src": "home_openmaps",
+      "_tgt": "mockdiscovery_getmapsurl",
+      "source": "home_openmaps",
+      "target": "mockdiscovery_getmapsurl"
     },
     {
       "relation": "contains",
@@ -2849,8 +3560,80 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\profile.tsx",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_profile_tsx",
+      "_tgt": "profile_profilescreen",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_profile_tsx",
+      "target": "profile_profilescreen",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\profile.tsx",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "profile_profilescreen",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "profile_profilescreen",
+      "target": "usefontscale_usefontscale"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\profile.tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "profile_profilescreen",
+      "_tgt": "mockdiscovery_getrecentsearches",
+      "source": "profile_profilescreen",
+      "target": "mockdiscovery_getrecentsearches"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
+      "_tgt": "results_getparamvalue",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
+      "target": "results_getparamvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
+      "_tgt": "results_resultsscreen",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
+      "target": "results_resultsscreen",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "results_resultsscreen",
+      "_tgt": "results_getparamvalue",
+      "source": "results_getparamvalue",
+      "target": "results_resultsscreen",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L28",
+      "source_location": "L20",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_search_tsx",
       "_tgt": "search_getparamvalue",
@@ -2862,7 +3645,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L49",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_search_tsx",
       "_tgt": "search_submitsearch",
@@ -2874,19 +3657,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
-      "source_location": "L174",
+      "source_location": "L64",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_search_tsx",
-      "_tgt": "search_formatdistance",
+      "_tgt": "search_opensuggestion",
       "source": "c_projects_nearnest_web_portal_apps_mobile_app_search_tsx",
-      "target": "search_formatdistance",
+      "target": "search_opensuggestion",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\search.tsx",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "search_submitsearch",
+      "_tgt": "mockdiscovery_getsuggestions",
+      "source": "search_submitsearch",
+      "target": "mockdiscovery_getsuggestions"
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L40",
+      "source_location": "L41",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_in_tsx",
       "_tgt": "sign_in_completegooglesignin",
@@ -2898,7 +3693,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L72",
+      "source_location": "L77",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_in_tsx",
       "_tgt": "sign_in_handleemailsignin",
@@ -2910,7 +3705,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-in.tsx",
-      "source_location": "L95",
+      "source_location": "L100",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_in_tsx",
       "_tgt": "sign_in_handlegooglesignin",
@@ -3030,7 +3825,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L42",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
+      "_tgt": "sign_up_validateform",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
+      "target": "sign_up_validateform",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
+      "source_location": "L94",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
+      "_tgt": "sign_up_showfielderror",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
+      "target": "sign_up_showfielderror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
+      "source_location": "L108",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
       "_tgt": "sign_up_completegooglesignin",
@@ -3042,7 +3861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L74",
+      "source_location": "L144",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
       "_tgt": "sign_up_handlecreateaccount",
@@ -3054,7 +3873,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\sign-up.tsx",
-      "source_location": "L107",
+      "source_location": "L163",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_sign_up_tsx",
       "_tgt": "sign_up_handlegooglesignin",
@@ -3305,8 +4124,20 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\category\\[categoryId].tsx",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_category_categoryid_tsx",
+      "_tgt": "categoryid_getparamvalue",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_category_categoryid_tsx",
+      "target": "categoryid_getparamvalue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId].tsx",
-      "source_location": "L17",
+      "source_location": "L23",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_tsx",
       "_tgt": "medicineid_getparamvalue",
@@ -3317,26 +4148,290 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId].tsx",
-      "source_location": "L116",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L24",
       "weight": 1.0,
-      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_tsx",
-      "_tgt": "medicineid_formatdistance",
-      "source": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_tsx",
-      "target": "medicineid_formatdistance",
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "_tgt": "stores_getparamvalue",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "target": "stores_getparamvalue",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "_tgt": "stores_openphone",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "target": "stores_openphone",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "_tgt": "stores_openmaps",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "target": "stores_openmaps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L88",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "_tgt": "stores_openstore",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_medicine_medicineid_stores_tsx",
+      "target": "stores_openstore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "stores_openphone",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "stores_openphone",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "stores_openphone",
+      "_tgt": "mockdiscovery_getphoneurl",
+      "source": "stores_openphone",
+      "target": "mockdiscovery_getphoneurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "stores_openmaps",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "stores_openmaps",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\medicine\\[medicineId]\\stores.tsx",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "stores_openmaps",
+      "_tgt": "mockdiscovery_getmapsurl",
+      "source": "stores_openmaps",
+      "target": "mockdiscovery_getmapsurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
-      "source_location": "L17",
+      "source_location": "L32",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
       "_tgt": "storeid_getparamvalue",
       "source": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
       "target": "storeid_getparamvalue",
       "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
+      "source_location": "L119",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
+      "_tgt": "storeid_formatdistance",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
+      "target": "storeid_formatdistance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
+      "source_location": "L237",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
+      "_tgt": "storeid_getstocklabel",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_store_storeid_tsx",
+      "target": "storeid_getstocklabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\store\\[storeId].tsx",
+      "source_location": "L237",
+      "weight": 1.0,
+      "_src": "storeid_getstocklabel",
+      "_tgt": "mockdiscovery_formatfreshness",
+      "source": "storeid_getstocklabel",
+      "target": "mockdiscovery_formatfreshness"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "_tgt": "index_openphone",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "target": "index_openphone",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "_tgt": "index_openmaps",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "target": "index_openmaps",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "_tgt": "index_openstore",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_app_stores_index_tsx",
+      "target": "index_openstore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "index_openphone",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "index_openphone",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "index_openphone",
+      "_tgt": "mockdiscovery_getphoneurl",
+      "source": "index_openphone",
+      "target": "mockdiscovery_getphoneurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "index_openmaps",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "index_openmaps",
+      "target": "externallinks_openexternalurl"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\stores\\index.tsx",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_src": "index_openmaps",
+      "_tgt": "mockdiscovery_getmapsurl",
+      "source": "index_openmaps",
+      "target": "mockdiscovery_getmapsurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Badge.tsx",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_badge_tsx",
+      "_tgt": "badge_badge",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_badge_tsx",
+      "target": "badge_badge",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Badge.tsx",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "badge_badge",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "badge_badge",
+      "target": "usefontscale_usefontscale"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\BottomSheet.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_bottomsheet_tsx",
+      "_tgt": "bottomsheet_bottomsheet",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_bottomsheet_tsx",
+      "target": "bottomsheet_bottomsheet",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Chip.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_chip_tsx",
+      "_tgt": "chip_chip",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_chip_tsx",
+      "target": "chip_chip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Chip.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "chip_chip",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "chip_chip",
+      "target": "usefontscale_usefontscale"
     },
     {
       "relation": "contains",
@@ -3353,13 +4448,145 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Screen.tsx",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ModeToggle.tsx",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_modetoggle_tsx",
+      "_tgt": "modetoggle_modetoggle",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_modetoggle_tsx",
+      "target": "modetoggle_modetoggle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\OfflineBanner.tsx",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_offlinebanner_tsx",
+      "_tgt": "offlinebanner_offlinebanner",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_offlinebanner_tsx",
+      "target": "offlinebanner_offlinebanner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\OfflineBanner.tsx",
       "source_location": "L14",
       "weight": 1.0,
-      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_screen_tsx",
-      "_tgt": "screen_screen",
-      "source": "c_projects_nearnest_web_portal_apps_mobile_components_screen_tsx",
-      "target": "screen_screen",
+      "_src": "offlinebanner_offlinebanner",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "offlinebanner_offlinebanner",
+      "target": "usefontscale_usefontscale"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\SearchBar.tsx",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_searchbar_tsx",
+      "_tgt": "searchbar_searchbar",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_searchbar_tsx",
+      "target": "searchbar_searchbar",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\SearchBar.tsx",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "searchbar_searchbar",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "searchbar_searchbar",
+      "target": "usefontscale_usefontscale"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StaleDataBanner.tsx",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_staledatabanner_tsx",
+      "_tgt": "staledatabanner_staledatabanner",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_staledatabanner_tsx",
+      "target": "staledatabanner_staledatabanner",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StaleDataBanner.tsx",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "staledatabanner_staledatabanner",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "staledatabanner_staledatabanner",
+      "target": "usefontscale_usefontscale"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_storecard_tsx",
+      "_tgt": "storecard_formatdistance",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_storecard_tsx",
+      "target": "storecard_formatdistance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_components_storecard_tsx",
+      "_tgt": "storecard_getstocklabel",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_components_storecard_tsx",
+      "target": "storecard_getstocklabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\StoreCard.tsx",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_src": "storecard_getstocklabel",
+      "_tgt": "mockdiscovery_formatfreshness",
+      "source": "storecard_getstocklabel",
+      "target": "mockdiscovery_formatfreshness"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\hooks\\useFontScale.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_hooks_usefontscale_ts",
+      "_tgt": "usefontscale_notify",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_hooks_usefontscale_ts",
+      "target": "usefontscale_notify",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\hooks\\useFontScale.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_hooks_usefontscale_ts",
+      "_tgt": "usefontscale_usefontscale",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_hooks_usefontscale_ts",
+      "target": "usefontscale_usefontscale",
       "confidence_score": 1.0
     },
     {
@@ -3521,6 +4748,18 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\externalLinks.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_externallinks_ts",
+      "_tgt": "externallinks_openexternalurl",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_externallinks_ts",
+      "target": "externallinks_openexternalurl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\firebase.ts",
       "source_location": "L26",
       "weight": 1.0,
@@ -3654,7 +4893,79 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L256",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_minutesago",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_minutesago",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_hoursago",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_hoursago",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L160",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_mfr",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_mfr",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L168",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_comp",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_comp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L176",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_tokens",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_tokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L184",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_medicine",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_medicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L947",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
       "_tgt": "mockdiscovery_normalize",
@@ -3666,127 +4977,211 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L260",
+      "source_location": "L951",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_medicinematchesquery",
+      "_tgt": "mockdiscovery_getcategories",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_medicinematchesquery",
+      "target": "mockdiscovery_getcategories",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L281",
+      "source_location": "L955",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getstore",
+      "_tgt": "mockdiscovery_getcategorybyid",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getstore",
+      "target": "mockdiscovery_getcategorybyid",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L285",
+      "source_location": "L959",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getmedicineavailability",
+      "_tgt": "mockdiscovery_getmedicinebyid",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getmedicineavailability",
+      "target": "mockdiscovery_getmedicinebyid",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L305",
+      "source_location": "L963",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_searchmockmedicines",
+      "_tgt": "mockdiscovery_getstorebyid",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_searchmockmedicines",
+      "target": "mockdiscovery_getstorebyid",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L315",
+      "source_location": "L967",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getmockmedicinebyid",
+      "_tgt": "mockdiscovery_getstoresbydistance",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getmockmedicinebyid",
+      "target": "mockdiscovery_getstoresbydistance",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L319",
+      "source_location": "L971",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getmockstorebyid",
+      "_tgt": "mockdiscovery_getrecentsearches",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getmockstorebyid",
+      "target": "mockdiscovery_getrecentsearches",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L323",
+      "source_location": "L975",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getnearbystorespreview",
+      "_tgt": "mockdiscovery_getpopularsuggestions",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getnearbystorespreview",
+      "target": "mockdiscovery_getpopularsuggestions",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L327",
+      "source_location": "L979",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getpopularmedicines",
+      "_tgt": "mockdiscovery_getsuggestions",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getpopularmedicines",
+      "target": "mockdiscovery_getsuggestions",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L333",
+      "source_location": "L1034",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getstoreinventory",
+      "_tgt": "mockdiscovery_getresultgroups",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getstoreinventory",
+      "target": "mockdiscovery_getresultgroups",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L351",
+      "source_location": "L1083",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getmedicinestoreavailability",
+      "_tgt": "mockdiscovery_getavailabilityformedicine",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getmedicinestoreavailability",
+      "target": "mockdiscovery_getavailabilityformedicine",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L355",
+      "source_location": "L1114",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getavailabilitycount",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getavailabilitycount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1118",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getsimilarmedicines",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getsimilarmedicines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1129",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getmedicinesbycategory",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getmedicinesbycategory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1136",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getinventoryforstore",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getinventoryforstore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1185",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getfreshnessstatus",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getfreshnessstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1196",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_hasstaledataformedicine",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_hasstaledataformedicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1202",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_formatfreshness",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_formatfreshness",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1215",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
       "_tgt": "mockdiscovery_formatdistance",
@@ -3798,19 +5193,55 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L359",
+      "source_location": "L1219",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "_tgt": "mockdiscovery_getstatuslabel",
+      "_tgt": "mockdiscovery_formatprice",
       "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
-      "target": "mockdiscovery_getstatuslabel",
+      "target": "mockdiscovery_formatprice",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L370",
+      "source_location": "L1223",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_formatcomposition",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_formatcomposition",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1227",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_formatstoreaddress",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_formatstoreaddress",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1233",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getstocklabel",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getstocklabel",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1244",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
       "_tgt": "mockdiscovery_getmapsurl",
@@ -3822,7 +5253,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L375",
+      "source_location": "L1248",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_getgeourl",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_getgeourl",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1252",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
       "_tgt": "mockdiscovery_getphoneurl",
@@ -3831,27 +5274,207 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
+      "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L261",
+      "source_location": "L1256",
       "weight": 1.0,
-      "_src": "mockdiscovery_medicinematchesquery",
-      "_tgt": "mockdiscovery_normalize",
-      "source": "mockdiscovery_normalize",
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_applymedicinefilter",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_applymedicinefilter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1266",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_medicinematchesquery",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
       "target": "mockdiscovery_medicinematchesquery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1288",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_findsymptom",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_findsymptom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1300",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "_tgt": "mockdiscovery_stockrank",
+      "source": "c_projects_nearnest_web_portal_apps_mobile_services_mockdiscovery_ts",
+      "target": "mockdiscovery_stockrank",
       "confidence_score": 1.0
     },
     {
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
-      "source_location": "L352",
+      "source_location": "L191",
       "weight": 1.0,
-      "_src": "mockdiscovery_getmedicinestoreavailability",
-      "_tgt": "mockdiscovery_getmedicineavailability",
-      "source": "mockdiscovery_getmedicineavailability",
-      "target": "mockdiscovery_getmedicinestoreavailability",
+      "_src": "mockdiscovery_medicine",
+      "_tgt": "mockdiscovery_mfr",
+      "source": "mockdiscovery_mfr",
+      "target": "mockdiscovery_medicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L194",
+      "weight": 1.0,
+      "_src": "mockdiscovery_medicine",
+      "_tgt": "mockdiscovery_tokens",
+      "source": "mockdiscovery_tokens",
+      "target": "mockdiscovery_medicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L980",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getsuggestions",
+      "_tgt": "mockdiscovery_normalize",
+      "source": "mockdiscovery_normalize",
+      "target": "mockdiscovery_getsuggestions",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1035",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getresultgroups",
+      "_tgt": "mockdiscovery_normalize",
+      "source": "mockdiscovery_normalize",
+      "target": "mockdiscovery_getresultgroups",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1141",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getinventoryforstore",
+      "_tgt": "mockdiscovery_normalize",
+      "source": "mockdiscovery_normalize",
+      "target": "mockdiscovery_getinventoryforstore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1175",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getinventoryforstore",
+      "_tgt": "mockdiscovery_getcategories",
+      "source": "mockdiscovery_getcategories",
+      "target": "mockdiscovery_getinventoryforstore",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1084",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getavailabilityformedicine",
+      "_tgt": "mockdiscovery_getmedicinebyid",
+      "source": "mockdiscovery_getmedicinebyid",
+      "target": "mockdiscovery_getavailabilityformedicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1119",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getsimilarmedicines",
+      "_tgt": "mockdiscovery_getmedicinebyid",
+      "source": "mockdiscovery_getmedicinebyid",
+      "target": "mockdiscovery_getsimilarmedicines",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1036",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getresultgroups",
+      "_tgt": "mockdiscovery_findsymptom",
+      "source": "mockdiscovery_getresultgroups",
+      "target": "mockdiscovery_findsymptom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1045",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getresultgroups",
+      "_tgt": "mockdiscovery_applymedicinefilter",
+      "source": "mockdiscovery_getresultgroups",
+      "target": "mockdiscovery_applymedicinefilter",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1115",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getavailabilitycount",
+      "_tgt": "mockdiscovery_getavailabilityformedicine",
+      "source": "mockdiscovery_getavailabilityformedicine",
+      "target": "mockdiscovery_getavailabilitycount",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1197",
+      "weight": 1.0,
+      "_src": "mockdiscovery_hasstaledataformedicine",
+      "_tgt": "mockdiscovery_getavailabilityformedicine",
+      "source": "mockdiscovery_getavailabilityformedicine",
+      "target": "mockdiscovery_hasstaledataformedicine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\mockDiscovery.ts",
+      "source_location": "L1130",
+      "weight": 1.0,
+      "_src": "mockdiscovery_getmedicinesbycategory",
+      "_tgt": "mockdiscovery_applymedicinefilter",
+      "source": "mockdiscovery_getmedicinesbycategory",
+      "target": "mockdiscovery_applymedicinefilter",
       "confidence_score": 1.0
     },
     {

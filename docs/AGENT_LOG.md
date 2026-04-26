@@ -4,6 +4,61 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Implement Discovery Redesign With Dual-Mode Home And Mock Data
+**Agent:** Codex
+**Session goal:** Build the locked Medifind discovery redesign in the Expo app with mock data only, keeping auth intact and avoiding backend/Maps/OTP/commerce work.
+
+**Files inspected (read-only):**
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current graph structure before code work.
+- `docs/TODO_NEXT_AGENT.md`, `docs/MOBILE_APP_PLAN.md`, `docs/MOBILE_UI_SCREEN_SPECS.md`, `docs/DESIGN_SYSTEM.md`, `docs/SESSION_STATE.md`, and `docs/AGENT_LOG.md` - confirmed the locked Discovery Redesign 2026-04-25 scope and handoff state.
+- Existing mobile discovery/auth files under `apps/mobile/app/`, `apps/mobile/components/`, `apps/mobile/services/`, and `apps/mobile/types/` - checked current patterns before replacing the earlier single-mode mock flow.
+
+**Files created / edited:**
+- `apps/mobile/types/discovery.ts` - replaced the old minimal discovery types with the locked data-model shape for medicines, compositions, manufacturers, categories, stores, inventory, suggestions, recents, result groups, and freshness states.
+- `apps/mobile/services/mockDiscovery.ts` - replaced old mock data with 20 medicines, 17 compositions, 6 manufacturers, 8 categories, 10 stores, 90 inventory items, 10 recent searches, 12 popular suggestions, symptom routing, result grouping, availability, freshness, address, phone, and maps helpers.
+- `apps/mobile/services/telemetry.ts` - added console-only `medifindTelemetry.emit` for the documented event names. Firestore telemetry is deferred because this task prohibited backend calls.
+- `apps/mobile/services/externalLinks.ts` - added safe `Linking.canOpenURL` / `openURL` wrapper for Call and Navigate actions.
+- `apps/mobile/hooks/useFontScale.ts` - added AsyncStorage-backed larger-text preference and 1.15x scaling helper.
+- `apps/mobile/components/ActionButton.tsx` and `apps/mobile/components/Screen.tsx` - wired shared text to the large-text hook.
+- `apps/mobile/components/Badge.tsx`, `BottomSheet.tsx`, `CategoryCard.tsx`, `Chip.tsx`, `EmptyState.tsx`, `ErrorState.tsx`, `MapPlaceholder.tsx`, `ModeToggle.tsx`, `OfflineBanner.tsx`, `ProductCard.tsx`, `SearchBar.tsx`, `StaleDataBanner.tsx`, and `StoreCard.tsx` - added the Discovery Redesign component set from `DESIGN_SYSTEM.md` R8.
+- `apps/mobile/app/home.tsx` - redesigned Home as the dual-mode Medicine / Medical Stores entry with search, recent chips, category grid, popular medicines, store preview, sign-out, and safe store actions.
+- `apps/mobile/app/search.tsx` - redesigned Search with live suggestions, recents, popular suggestions, no-result state, and neutral symptom routing copy.
+- `apps/mobile/app/results.tsx` - added grouped search results with All/OTC/Rx filters and Find nearby stores CTAs.
+- `apps/mobile/app/medicine/[medicineId].tsx` - redesigned Medicine detail with hero placeholder, manufacturer/composition/pack facts, Rx warning, availability summary, and similar medicines.
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx` - added nearby stores screen with `MapPlaceholder`, bottom-sheet list, store cards, Call/Navigate/View store actions, and call-to-confirm disclaimer.
+- `apps/mobile/app/stores/index.tsx` - added Stores mode landing with map placeholder, store search, and nearby store cards.
+- `apps/mobile/app/store/[storeId].tsx` - redesigned Store detail with verified/license/open status, Call/Navigate/Hours actions, address, in-store search, grouped inventory, freshness states, and Rx badges.
+- `apps/mobile/app/category/[categoryId].tsx` - added category browse with All/OTC/Rx filter and medicine grid.
+- `apps/mobile/app/profile.tsx` - added customer profile screen with larger-text toggle, account summary, recent searches, and sign-out.
+- `docs/TODO_NEXT_AGENT.md` - rewrote the top Next up section around the implemented redesign and next backend/testing tasks.
+- `docs/SESSION_STATE.md` - updated current state with routes, components, mock data, verification, and deferred backend sync notes.
+- `docs/AGENT_LOG.md` - this entry.
+- `graphify-out/**` - updated by `graphify update .` after code changes.
+
+**Verification status:**
+- `cd apps/mobile && npm run typecheck` - passed.
+- `npx expo export --platform android --output-dir .expo\discovery-redesign-export` - passed after sandbox escalation for Windows user-profile access.
+- `graphify update .` - initial PATH lookup failed; after restoring the user Python Scripts path it passed and rebuilt the graph at 372 nodes, 406 edges, and 77 communities.
+- `git diff --check` - passed after trimming Graphify-generated trailing whitespace in `graphify-out/GRAPH_REPORT.md`.
+
+**Files intentionally NOT touched:**
+- Root `src/**`, `functions/**`, `dataconnect/**`, Firebase rules/config, root package files, root env files, and `serviceAccountKey.json`.
+- No real backend calls, Firestore inventory reads, real Maps SDK, Phone OTP, cart, checkout, payment, delivery, or order tracking were added.
+- Existing unrelated `.claude/settings.local.json` and `.codex/*.png` working-tree files were not changed by this task.
+
+**Decisions made:**
+- To obey the current no-backend-call rule, telemetry is console-only and larger-text persistence is local AsyncStorage only. Firestore telemetry/profile-preference sync remains a later approved backend/client-write task.
+
+**Warnings for next agent:**
+- Run a manual dev-build smoke test before calling this UX runtime-verified.
+- Replace mocks only after `searchMedicines`, `nearbyStores`, store coordinates, public contacts, inventory freshness, rules, and indexes are ready.
+- Keep Phone OTP deferred by D-015 and keep mobile customer-only.
+
+**Suggested commit message:**
+`feat(mobile): implement discovery redesign with dual-mode home and mock data`
+
+---
+
 ## 2026-04-26 - Auth polish: confirm-password, terms/privacy screens, password show-hide, Phone OTP DEFERRED
 **Agent:** Claude Opus 4.7 (Claude Code)
 **Session goal:** Tighten the signup UX (confirm password, real terms/privacy screens, error polish, password toggles) without regressing the working email/password + Google auth, and reach a clean DEFER decision on Phone OTP.

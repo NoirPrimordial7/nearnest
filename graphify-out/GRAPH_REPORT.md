@@ -1,12 +1,12 @@
 # Graph Report - C:\projects\nearnest\web-portal  (2026-04-26)
 
 ## Corpus Check
-- 100 files · ~136,245 words
+- 123 files · ~162,207 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 301 nodes · 324 edges · 66 communities detected
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 48 edges (avg confidence: 0.8)
+- 372 nodes · 406 edges · 77 communities detected
+- Extraction: 83% EXTRACTED · 17% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -76,104 +76,115 @@
 - [[_COMMUNITY_Community 63|Community 63]]
 - [[_COMMUNITY_Community 64|Community 64]]
 - [[_COMMUNITY_Community 65|Community 65]]
+- [[_COMMUNITY_Community 66|Community 66]]
+- [[_COMMUNITY_Community 67|Community 67]]
+- [[_COMMUNITY_Community 68|Community 68]]
+- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 70|Community 70]]
+- [[_COMMUNITY_Community 71|Community 71]]
+- [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `useAuth()` - 14 edges
 2. `getAuthErrorMessage()` - 10 edges
 3. `upsertUserProfileFromAuthUser()` - 8 edges
 4. `getPostAuthRouteForUser()` - 8 edges
-5. `completeGoogleSignIn()` - 5 edges
-6. `completeGoogleSignIn()` - 5 edges
-7. `UserHome()` - 5 edges
-8. `handleEmailSignIn()` - 4 edges
-9. `handleCreateAccount()` - 4 edges
-10. `signInWithGoogleIdToken()` - 4 edges
+5. `useFontScale()` - 7 edges
+6. `openExternalUrl()` - 7 edges
+7. `completeGoogleSignIn()` - 5 edges
+8. `completeGoogleSignIn()` - 5 edges
+9. `UserHome()` - 5 edges
+10. `handleEmailSignIn()` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `useAuth()` --calls--> `VerificationStatus()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\VerificationStatus.jsx
-- `SupportTickets()` --calls--> `useAuth()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Admin copy\Support\SupportTickets.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
-- `DocumentVerification()` --calls--> `useAuth()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Admin copy\Verification\DocumentVerification.jsx → C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx
-- `useAuth()` --calls--> `CreateStore()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\CreateStore.jsx
-- `useAuth()` --calls--> `ReviewSubmit()`  [INFERRED]
-  C:\projects\nearnest\web-portal\src\pages\Auth\AuthContext.jsx → C:\projects\nearnest\web-portal\src\pages\register-store\ReviewSubmit.jsx
+- `Badge()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\Badge.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
+- `Chip()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\Chip.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
+- `OfflineBanner()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\OfflineBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
+- `SearchBar()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\SearchBar.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
+- `StaleDataBanner()` --calls--> `useFontScale()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\components\StaleDataBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 
 ## Communities
 
 ### Community 0 - "Community 0"
 Cohesion: 0.08
-Nodes (34): getAuthErrorMessage(), reloadCurrentUser(), sendVerificationEmailToCurrentUser(), signInWithEmail(), signInWithGoogleIdToken(), signOut(), signUpWithEmail(), subscribeToAuthState() (+26 more)
+Nodes (38): getAuthErrorMessage(), reloadCurrentUser(), sendVerificationEmailToCurrentUser(), signInWithEmail(), signInWithGoogleIdToken(), signOut(), signUpWithEmail(), subscribeToAuthState() (+30 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.11
-Nodes (10): AdminLayout(), Icon(), useClickAway(), RoleRedirect(), useAuth(), CreateStore(), ProtectedRoute(), StoreAdminLayout() (+2 more)
+Cohesion: 0.07
+Nodes (17): applyMedicineFilter(), findSymptom(), getAvailabilityCount(), getAvailabilityForMedicine(), getCategories(), getInventoryForStore(), getMedicineById(), getMedicinesByCategory() (+9 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.14
-Nodes (4): getMedicineAvailability(), getMedicineStoreAvailability(), medicineMatchesQuery(), normalize()
+Cohesion: 0.08
+Nodes (13): AdminLayout(), Icon(), useClickAway(), RoleRedirect(), useAuth(), CreateStore(), ProtectedRoute(), StoreAdminLayout() (+5 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.16
-Nodes (7): RequireProfile(), initials(), prettyAddress(), StoreCard(), useAvatarMenu(), UserHome(), useProfileComplete()
+Nodes (9): openExternalUrl(), openMaps(), openPhone(), openMaps(), openPhone(), getMapsUrl(), getPhoneUrl(), openMaps() (+1 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.27
-Nodes (7): createStore(), docToStore(), ensureAddressShape(), getStore(), isAdmin(), listenUserStores(), toArrayMaybe()
+Cohesion: 0.12
+Nodes (8): Badge(), Chip(), getRecentSearches(), OfflineBanner(), ProfileScreen(), SearchBar(), StaleDataBanner(), useFontScale()
 
 ### Community 5 - "Community 5"
+Cohesion: 0.16
+Nodes (7): RequireProfile(), initials(), prettyAddress(), StoreCard(), useAvatarMenu(), UserHome(), useProfileComplete()
+
+### Community 6 - "Community 6"
 Cohesion: 0.18
 Nodes (3): ReviewSubmit(), UploadDocuments(), hasAllRequired()
 
-### Community 6 - "Community 6"
-Cohesion: 0.31
-Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
-
 ### Community 7 - "Community 7"
+Cohesion: 0.27
+Nodes (7): createStore(), docToStore(), ensureAddressShape(), getStore(), isAdmin(), listenUserStores(), toArrayMaybe()
+
+### Community 8 - "Community 8"
 Cohesion: 0.31
 Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
+Cohesion: 0.31
+Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
+
+### Community 10 - "Community 10"
+Cohesion: 0.25
+Nodes (3): formatFreshness(), getStockLabel(), getStockLabel()
+
+### Community 11 - "Community 11"
 Cohesion: 0.46
 Nodes (6): buildRange(), formatDate(), Icon(), Pagination(), StatusPill(), StoresPage()
 
-### Community 9 - "Community 9"
+### Community 12 - "Community 12"
 Cohesion: 0.39
 Nodes (5): DocumentVerification(), Icon(), Pill(), prettyLabel(), toDate()
 
-### Community 10 - "Community 10"
+### Community 13 - "Community 13"
 Cohesion: 0.4
 Nodes (3): normalizeTicket(), SupportTickets(), tsToStr()
 
-### Community 11 - "Community 11"
-Cohesion: 0.4
-Nodes (3): StatusBadge(), statusClass(), VerificationStatus()
-
-### Community 12 - "Community 12"
-Cohesion: 0.6
-Nodes (4): getEnvValue(), getGoogleAuthRequestConfig(), getMissingGoogleAuthEnvKeys(), hasGoogleAuthConfig()
-
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
 Cohesion: 0.6
 Nodes (3): Analytics(), downloadCSV(), renderPercentLabel()
 
-### Community 14 - "Community 14"
+### Community 15 - "Community 15"
 Cohesion: 0.5
 Nodes (2): buildDayBuckets(), StoreAdminDashboard()
 
-### Community 15 - "Community 15"
+### Community 16 - "Community 16"
 Cohesion: 0.4
 Nodes (0):
 
-### Community 16 - "Community 16"
-Cohesion: 0.5
-Nodes (2): getNow(), SupportDashboard()
-
 ### Community 17 - "Community 17"
 Cohesion: 0.5
-Nodes (0):
+Nodes (2): getNow(), SupportDashboard()
 
 ### Community 18 - "Community 18"
 Cohesion: 0.5
@@ -196,8 +207,8 @@ Cohesion: 0.5
 Nodes (0):
 
 ### Community 23 - "Community 23"
-Cohesion: 0.67
-Nodes (0):
+Cohesion: 1.0
+Nodes (2): getParamValue(), ResultsScreen()
 
 ### Community 24 - "Community 24"
 Cohesion: 0.67
@@ -367,6 +378,50 @@ Nodes (0):
 Cohesion: 1.0
 Nodes (0):
 
+### Community 66 - "Community 66"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 67 - "Community 67"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 68 - "Community 68"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 69 - "Community 69"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 70 - "Community 70"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 71 - "Community 71"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 72 - "Community 72"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 73 - "Community 73"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 74 - "Community 74"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 75 - "Community 75"
+Cohesion: 1.0
+Nodes (0):
+
+### Community 76 - "Community 76"
+Cohesion: 1.0
+Nodes (0):
+
 ## Knowledge Gaps
 - **Thin community `Community 33`** (2 nodes): `phone-otp.tsx`, `PhoneOtpScreen()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -374,76 +429,96 @@ Nodes (0):
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 35`** (2 nodes): `_layout.tsx`, `RootLayout()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 36`** (2 nodes): `[storeId].tsx`, `getParamValue()`
+- **Thin community `Community 36`** (2 nodes): `[categoryId].tsx`, `getParamValue()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 37`** (2 nodes): `InfoCard.tsx`, `InfoCard()`
+- **Thin community `Community 37`** (2 nodes): `[medicineId].tsx`, `getParamValue()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 38`** (2 nodes): `Screen.tsx`, `Screen()`
+- **Thin community `Community 38`** (2 nodes): `BottomSheet()`, `BottomSheet.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 39`** (2 nodes): `phoneAuth.ts`, `normalizeIndianMobileNumber()`
+- **Thin community `Community 39`** (2 nodes): `InfoCard.tsx`, `InfoCard()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 40`** (2 nodes): `App()`, `App.jsx`
+- **Thin community `Community 40`** (2 nodes): `ModeToggle.tsx`, `ModeToggle()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 41`** (2 nodes): `NearnestHome.jsx`, `NearNestHome()`
+- **Thin community `Community 41`** (2 nodes): `phoneAuth.ts`, `normalizeIndianMobileNumber()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 42`** (2 nodes): `AdminDashboard()`, `AdminDashboard.jsx`
+- **Thin community `Community 42`** (2 nodes): `App()`, `App.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 43`** (2 nodes): `Notifications.jsx`, `Notifications()`
+- **Thin community `Community 43`** (2 nodes): `NearnestHome.jsx`, `NearNestHome()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 44`** (2 nodes): `RolePermission.jsx`, `RolePermission()`
+- **Thin community `Community 44`** (2 nodes): `AdminDashboard()`, `AdminDashboard.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 45`** (2 nodes): `Settings.jsx`, `Settings()`
+- **Thin community `Community 45`** (2 nodes): `Notifications.jsx`, `Notifications()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 46`** (2 nodes): `StoreManagement.jsx`, `StoreManagement()`
+- **Thin community `Community 46`** (2 nodes): `RolePermission.jsx`, `RolePermission()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 47`** (2 nodes): `SignUp.jsx`, `SignUp()`
+- **Thin community `Community 47`** (2 nodes): `Settings.jsx`, `Settings()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 48`** (2 nodes): `VerifyEmail.jsx`, `VerifyEmail()`
+- **Thin community `Community 48`** (2 nodes): `StoreManagement.jsx`, `StoreManagement()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 49`** (2 nodes): `landing.jsx`, `Landing()`
+- **Thin community `Community 49`** (2 nodes): `SignUp.jsx`, `SignUp()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 50`** (2 nodes): `RegisterStore.jsx`, `RegisterStore()`
+- **Thin community `Community 50`** (2 nodes): `VerifyEmail.jsx`, `VerifyEmail()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 51`** (2 nodes): `StoreForm.jsx`, `StoreForm()`
+- **Thin community `Community 51`** (2 nodes): `landing.jsx`, `Landing()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 52`** (2 nodes): `SupportAnalytics.jsx`, `SupportAnalytics()`
+- **Thin community `Community 52`** (2 nodes): `RegisterStore.jsx`, `RegisterStore()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 53`** (2 nodes): `SupportHome.jsx`, `SupportHome()`
+- **Thin community `Community 53`** (2 nodes): `StoreForm.jsx`, `StoreForm()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 54`** (1 nodes): `eslint.config.js`
+- **Thin community `Community 54`** (2 nodes): `SupportAnalytics.jsx`, `SupportAnalytics()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 55`** (1 nodes): `main.jsx`
+- **Thin community `Community 55`** (2 nodes): `SupportHome.jsx`, `SupportHome()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 56`** (1 nodes): `vite.config.js`
+- **Thin community `Community 56`** (1 nodes): `eslint.config.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 57`** (1 nodes): `index.tsx`
+- **Thin community `Community 57`** (1 nodes): `main.jsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 58`** (1 nodes): `ActionButton.tsx`
+- **Thin community `Community 58`** (1 nodes): `vite.config.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 59`** (1 nodes): `discovery.ts`
+- **Thin community `Community 59`** (1 nodes): `index.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 60`** (1 nodes): `firebase-auth-react-native.d.ts`
+- **Thin community `Community 60`** (1 nodes): `privacy.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 61`** (1 nodes): `index.js`
+- **Thin community `Community 61`** (1 nodes): `terms.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 62`** (1 nodes): `seedFirestore.js`
+- **Thin community `Community 62`** (1 nodes): `ActionButton.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 63`** (1 nodes): `main.jsx`
+- **Thin community `Community 63`** (1 nodes): `CategoryCard.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 64`** (1 nodes): `firebase.js`
+- **Thin community `Community 64`** (1 nodes): `EmptyState.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 65`** (1 nodes): `firebase.js`
+- **Thin community `Community 65`** (1 nodes): `ErrorState.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 66`** (1 nodes): `MapPlaceholder.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 67`** (1 nodes): `ProductCard.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 68`** (1 nodes): `Screen.tsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 69`** (1 nodes): `telemetry.ts`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 70`** (1 nodes): `discovery.ts`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 71`** (1 nodes): `firebase-auth-react-native.d.ts`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 72`** (1 nodes): `index.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 73`** (1 nodes): `seedFirestore.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 74`** (1 nodes): `main.jsx`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 75`** (1 nodes): `firebase.js`
+  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
+- **Thin community `Community 76`** (1 nodes): `firebase.js`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `useAuth()` connect `Community 1` to `Community 3`, `Community 5`, `Community 9`, `Community 10`, `Community 11`?**
-  _High betweenness centrality (0.045) - this node is a cross-community bridge._
-- **Why does `UserHome()` connect `Community 3` to `Community 1`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `DocumentVerification()` connect `Community 9` to `Community 1`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
+- **Why does `handleSignOut()` connect `Community 0` to `Community 3`?**
+  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+- **Why does `getMapsUrl()` connect `Community 3` to `Community 1`?**
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 9 inferred relationships involving `getAuthErrorMessage()` (e.g. with `completeGoogleSignIn()` and `handleEmailSignIn()`) actually correct?**
@@ -452,3 +527,5 @@ _Questions this graph is uniquely positioned to answer:_
   _`upsertUserProfileFromAuthUser()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 4 inferred relationships involving `getPostAuthRouteForUser()` (e.g. with `completeGoogleSignIn()` and `handleEmailSignIn()`) actually correct?**
   _`getPostAuthRouteForUser()` has 4 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 6 inferred relationships involving `useFontScale()` (e.g. with `ProfileScreen()` and `Badge()`) actually correct?**
+  _`useFontScale()` has 6 INFERRED edges - model-reasoned connections that need verification._

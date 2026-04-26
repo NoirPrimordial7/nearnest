@@ -1,68 +1,98 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import {
-  Linking,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
+import { CategoryCard } from '../components/CategoryCard';
+import { Chip } from '../components/Chip';
+import { ErrorState } from '../components/ErrorState';
+import { MapPlaceholder } from '../components/MapPlaceholder';
+import { ModeToggle } from '../components/ModeToggle';
+import { ProductCard } from '../components/ProductCard';
 import { Screen } from '../components/Screen';
+import { SearchBar } from '../components/SearchBar';
+import { StoreCard } from '../components/StoreCard';
+import { useFontScale } from '../hooks/useFontScale';
+import { openExternalUrl } from '../services/externalLinks';
 import {
-  formatDistance,
+  getAvailabilityForMedicine,
+  getCategories,
   getMapsUrl,
-  getNearbyStoresPreview,
+  getMedicineById,
   getPhoneUrl,
-  getPopularMedicines,
-  recentMedicineQueries,
+  getPopularSuggestions,
+  getRecentSearches,
+  getStoresByDistance,
 } from '../services/mockDiscovery';
+import { medifindTelemetry } from '../services/telemetry';
 import { signOut, subscribeToAuthState } from '../services/auth';
 import { loadUserProfile, type UserProfile } from '../services/userProfile';
-import { colors, radius, spacing, type as typography } from '../theme/tokens';
-import type { DiscoveryMedicine, DiscoveryStore } from '../types/discovery';
+import { colors, spacing, type as typography } from '../theme/tokens';
+import type { DiscoveryMode, Store } from '../types/discovery';
+
+function getParamValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] ?? '' : value ?? '';
+}
 
 export default function HomeScreen() {
+  const params = useLocalSearchParams();
+  const initialMode = getParamValue(params.mode) === 'stores' ? 'stores' : 'medicine';
+  const [mode, setMode] = useState<DiscoveryMode>(initialMode);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [query, setQuery] = useState('');
   const [signingOut, setSigningOut] = useState(false);
-  const nearbyStores = getNearbyStoresPreview();
-  const popularMedicines = getPopularMedicines();
+  const [actionError, setActionError] = useState('');
+  const { scale, scaleLineHeight } = useFontScale();
+  const categories = useMemo(getCategories, []);
+  const stores = useMemo(() => getStoresByDistance().slice(0, 4), []);
+  const recentSearches = useMemo(() => getRecentSearches().slice(0, 6), []);
+  const popularMedicines = useMemo(
+    () =>
+      getPopularSuggestions()
+        .filter((suggestion) => suggestion.routeHint.kind === 'medicine')
+        .map((suggestion) =>
+          suggestion.routeHint.kind === 'medicine'
+            ? getMedicineById(suggestion.routeHint.medicineId)
+            : null,
+        )
+        .filter(Boolean)
+        .slice(0, 4),
+    [],
+  );
+
+  useEffect(() => {
+    medifindTelemetry.emit('medifind.app.launch', {
+      auth_state: 'unknown',
+      cached_profile: Boolean(profile),
+      cold: true,
+    });
+  }, [profile]);
 
   useEffect(() => {
     let cancelled = false;
     const unsubscribe = subscribeToAuthState(async (user) => {
-      if (cancelled) {
+      if (!user || cancelled) {
         return;
       }
-      if (!user) {
-        return;
-      }
+
       try {
         const loaded = await loadUserProfile(user.uid);
         if (!cancelled) {
           setProfile(loaded);
         }
       } catch {
-        // Profile may not exist yet on a freshly-created account; safe to ignore here.
+        // Home can render without the profile while auth state settles.
       }
     });
+
     return () => {
       cancelled = true;
       unsubscribe();
     };
   }, []);
 
-  function openSearch(nextQuery = query) {
-    const trimmed = nextQuery.trim();
-    if (trimmed) {
-      router.push({ pathname: '/search', params: { q: trimmed } });
-      return;
-    }
-
-    router.push('/search');
+  function updateMode(nextMode: DiscoveryMode) {
+    setMode(nextMode);
+    medifindTelemetry.emit('medifind.home.mode_toggle', { mode: nextMode });
   }
 
   async function handleSignOut() {
@@ -75,14 +105,41 @@ export default function HomeScreen() {
     }
   }
 
+  async function openPhone(store: Store, fromScreen = 'home') {
+    setActionError('');
+    medifindTelemetry.emit('medifind.stores.store_call_clicked', {
+      store_id: store.id,
+      from_screen: fromScreen,
+    });
+    const opened = await openExternalUrl(getPhoneUrl(store));
+    if (!opened) {
+      setActionError('We could not open the dialer on this device.');
+    }
+  }
+
+  async function openMaps(store: Store, fromScreen = 'home') {
+    setActionError('');
+    medifindTelemetry.emit('medifind.stores.store_navigate_clicked', {
+      store_id: store.id,
+      from_screen: fromScreen,
+    });
+    const opened = await openExternalUrl(getMapsUrl(store));
+    if (!opened) {
+      setActionError('We could not open maps on this device.');
+    }
+  }
+
   return (
     <Screen
       eyebrow="Medifind discovery"
-      title={profile?.displayName ? `Welcome, ${profile.displayName}` : 'Find a medicine nearby'}
-      description="Search a medicine, compare nearby verified stores, then call or open directions before you go."
+      title={profile?.displayName ? `Welcome, ${profile.displayName}` : 'Find medicine nearby'}
+      description="Search a medicine, compare verified pharmacies, then call or open directions before you go."
       footer={
         <>
-          <ActionButton label="Search medicines" onPress={() => openSearch()} />
+          <ActionButton
+            label={mode === 'medicine' ? 'Search medicines' : 'Browse nearby pharmacies'}
+            onPress={() => router.push(mode === 'medicine' ? '/search' : '/stores')}
+          />
           <ActionButton
             disabled={signingOut}
             label="Sign out"
@@ -94,59 +151,135 @@ export default function HomeScreen() {
         </>
       }
     >
-      <View style={styles.searchPanel}>
-        <Text style={styles.sectionTitle}>What do you need?</Text>
-        <View style={styles.searchRow}>
-          <TextInput
-            autoCapitalize="words"
-            onChangeText={setQuery}
-            onSubmitEditing={() => openSearch()}
-            placeholder="Search medicine or salt"
-            placeholderTextColor={colors.textSoft}
-            returnKeyType="search"
-            style={styles.searchInput}
-            value={query}
+      <View style={styles.stack}>
+        <ModeToggle value={mode} onChange={updateMode} />
+
+        {actionError ? (
+          <ErrorState
+            body={actionError}
+            errorCode="external_link_failed"
+            screenId="home"
+            title="Action could not open"
           />
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => openSearch()}
-            style={({ pressed }) => [styles.searchButton, pressed && styles.pressed]}
-          >
-            <Text style={styles.searchButtonText}>Search</Text>
-          </Pressable>
-        </View>
-      </View>
+        ) : null}
 
-      <SectionHeader
-        title="Popular medicines"
-        actionLabel="View all"
-        onPress={() => router.push('/search')}
-      />
-      <View style={styles.chipWrap}>
-        {popularMedicines.map((medicine) => (
-          <MedicineChip key={medicine.id} medicine={medicine} onPress={openSearch} />
-        ))}
-        {recentMedicineQueries.map((recentQuery) => (
-          <Pressable
-            accessibilityRole="button"
-            key={recentQuery}
-            onPress={() => openSearch(recentQuery)}
-            style={({ pressed }) => [styles.chip, pressed && styles.pressed]}
-          >
-            <Text style={styles.chipText}>{recentQuery}</Text>
-          </Pressable>
-        ))}
-      </View>
+        {mode === 'medicine' ? (
+          <>
+            <SearchBar
+              onPress={() => router.push('/search')}
+              placeholder="Search medicine, brand, or composition"
+              variant="pressable"
+            />
 
-      <SectionHeader
-        title="Nearby verified stores"
-        actionLabel="Search first"
-        onPress={() => router.push('/search')}
-      />
-      <View style={styles.cardStack}>
-        {nearbyStores.map((store) => (
-          <StorePreviewCard key={store.id} store={store} />
-        ))}
+            <SectionHeader title="Recent searches" />
+            <View style={styles.chipRow}>
+              {recentSearches.map((recent) => (
+                <Chip
+                  key={`${recent.query}-${recent.ts}`}
+                  label={recent.query}
+                  onPress={() =>
+                    router.push({ pathname: '/results', params: { q: recent.query } })
+                  }
+                />
+              ))}
+            </View>
+
+            <SectionHeader title="Browse categories" />
+            <View style={styles.categoryGrid}>
+              {categories.map((category) => (
+                <CategoryCard
+                  category={category}
+                  key={category.id}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/category/[categoryId]',
+                      params: { categoryId: category.id },
+                    })
+                  }
+                />
+              ))}
+            </View>
+
+            <SectionHeader title="Popular nearby" actionLabel="See all" onAction={() => router.push('/search')} />
+            <View style={styles.productStack}>
+              {popularMedicines.map((medicine) =>
+                medicine ? (
+                  <ProductCard
+                    key={medicine.id}
+                    medicine={medicine}
+                    onFindStores={() =>
+                      router.push({
+                        pathname: '/medicine/[medicineId]/stores',
+                        params: { medicineId: medicine.id },
+                      })
+                    }
+                    onPress={() =>
+                      router.push({
+                        pathname: '/medicine/[medicineId]',
+                        params: { medicineId: medicine.id },
+                      })
+                    }
+                    variant="compact"
+                  />
+                ) : null,
+              )}
+            </View>
+          </>
+        ) : (
+          <>
+            <MapPlaceholder stores={stores} />
+            <View style={styles.storeModeHeader}>
+              <View>
+                <Text
+                  style={[
+                    styles.storeModeTitle,
+                    { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) },
+                  ]}
+                >
+                  Medical stores near you
+                </Text>
+                <Text
+                  style={[
+                    styles.storeModeBody,
+                    { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) },
+                  ]}
+                >
+                  Browse pharmacies, view public contact details, or switch back to medicine search.
+                </Text>
+              </View>
+              <Pressable accessibilityRole="button" onPress={() => updateMode('medicine')}>
+                <Text style={styles.modeLink}>Search a medicine</Text>
+              </Pressable>
+            </View>
+            <View style={styles.productStack}>
+              {stores.map((store) => {
+                const firstAvailable = getAvailabilityForMedicine('med_dolo_650').find(
+                  (availability) => availability.store.id === store.id,
+                );
+
+                return (
+                  <StoreCard
+                    inventoryItem={firstAvailable?.item}
+                    key={store.id}
+                    onCall={() => {
+                      void openPhone(store, 'home_stores_mode');
+                    }}
+                    onNavigate={() => {
+                      void openMaps(store, 'home_stores_mode');
+                    }}
+                    onPress={() => {
+                      medifindTelemetry.emit('medifind.stores.store_card_tapped', {
+                        store_id: store.id,
+                      });
+                      router.push({ pathname: '/store/[storeId]', params: { storeId: store.id } });
+                    }}
+                    store={store}
+                  />
+                );
+              })}
+            </View>
+          </>
+        )}
       </View>
     </Screen>
   );
@@ -155,235 +288,72 @@ export default function HomeScreen() {
 function SectionHeader({
   title,
   actionLabel,
-  onPress,
+  onAction,
 }: {
   title: string;
-  actionLabel: string;
-  onPress: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
 }) {
+  const { scale, scaleLineHeight } = useFontScale();
+
   return (
     <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <Pressable accessibilityRole="button" onPress={onPress}>
-        <Text style={styles.sectionAction}>{actionLabel}</Text>
-      </Pressable>
-    </View>
-  );
-}
-
-function MedicineChip({
-  medicine,
-  onPress,
-}: {
-  medicine: DiscoveryMedicine;
-  onPress: (query: string) => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => onPress(medicine.name)}
-      style={({ pressed }) => [styles.chip, pressed && styles.pressed]}
-    >
-      <Text style={styles.chipText}>{medicine.name}</Text>
-      {medicine.requiresPrescription ? <Text style={styles.rxDot}>Rx</Text> : null}
-    </Pressable>
-  );
-}
-
-function StorePreviewCard({ store }: { store: DiscoveryStore }) {
-  return (
-    <View style={styles.storeCard}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push({ pathname: '/store/[storeId]', params: { storeId: store.id } })}
-        style={({ pressed }) => [styles.storeMain, pressed && styles.pressed]}
-      >
-        <View style={styles.storeTitleRow}>
-          <Text style={styles.storeName}>{store.name}</Text>
-          <Text style={styles.verifiedBadge}>Verified</Text>
-        </View>
-        <Text style={styles.storeMeta}>
-          {formatDistance(store.distanceKm)} • {store.locality} •{' '}
-          {store.isOpen ? `Open until ${store.closesAt}` : 'Closed now'}
-        </Text>
-        <Text style={styles.storeFreshness}>{store.freshnessLabel}</Text>
-      </Pressable>
-      <View style={styles.quickActions}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            void Linking.openURL(getPhoneUrl(store));
-          }}
-          style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
-        >
-          <Text style={styles.quickActionText}>Call</Text>
+      <Text style={[styles.sectionTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+        {title}
+      </Text>
+      {actionLabel && onAction ? (
+        <Pressable accessibilityRole="button" onPress={onAction}>
+          <Text style={styles.sectionAction}>{actionLabel}</Text>
         </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            void Linking.openURL(getMapsUrl(store));
-          }}
-          style={({ pressed }) => [styles.quickAction, pressed && styles.pressed]}
-        >
-          <Text style={styles.quickActionText}>Navigate</Text>
-        </Pressable>
-      </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  searchPanel: {
-    gap: spacing.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.xl,
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    color: colors.text,
-    fontSize: typography.h3,
-    fontWeight: '600',
-    lineHeight: 24,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  searchInput: {
-    minHeight: 48,
-    flex: 1,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.bg,
-    color: colors.text,
-    fontSize: typography.body,
-    paddingHorizontal: spacing.lg,
-  },
-  searchButton: {
-    minHeight: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary500,
-    paddingHorizontal: spacing.lg,
-  },
-  searchButtonText: {
-    color: colors.textInvert,
-    fontSize: typography.bodySm,
-    fontWeight: '700',
+  stack: {
+    gap: spacing.xl,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontWeight: '700',
   },
   sectionAction: {
     color: colors.primary700,
     fontSize: typography.bodySm,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  chipWrap: {
+  chipRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    marginBottom: spacing.xl,
   },
-  chip: {
-    minHeight: 36,
+  categoryGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-  },
-  chipText: {
-    color: colors.text,
-    fontSize: typography.bodySm,
-    fontWeight: '600',
-  },
-  rxDot: {
-    overflow: 'hidden',
-    borderRadius: radius.pill,
-    backgroundColor: colors.rxBg,
-    color: colors.rxText,
-    fontSize: typography.caption,
-    fontWeight: '700',
-    paddingHorizontal: spacing.xs,
-  },
-  cardStack: {
-    gap: spacing.md,
-  },
-  storeCard: {
-    gap: spacing.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  storeMain: {
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  storeTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  productStack: {
+    gap: spacing.lg,
   },
-  storeName: {
-    flex: 1,
+  storeModeHeader: {
+    gap: spacing.md,
+  },
+  storeModeTitle: {
     color: colors.text,
-    fontSize: typography.h3,
     fontWeight: '700',
-    lineHeight: 24,
   },
-  verifiedBadge: {
-    overflow: 'hidden',
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary50,
-    color: colors.primary700,
-    fontSize: typography.caption,
-    fontWeight: '700',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  storeMeta: {
+  storeModeBody: {
     color: colors.textMuted,
-    fontSize: typography.bodySm,
-    lineHeight: 18,
   },
-  storeFreshness: {
-    color: colors.textSoft,
-    fontSize: typography.caption,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  quickAction: {
-    minHeight: 40,
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.bg,
-  },
-  quickActionText: {
+  modeLink: {
     color: colors.primary700,
     fontSize: typography.bodySm,
     fontWeight: '700',
-  },
-  pressed: {
-    opacity: 0.72,
   },
 });
