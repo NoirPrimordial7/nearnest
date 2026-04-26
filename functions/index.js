@@ -23,7 +23,9 @@ exports.helloWorld = functions.https.onRequest((req, res) => {
 
 exports.searchMedicines = functions
     .region(REGION)
-    .https.onCall(async (data) => {
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
       const queryText = normalizeString(data && data.q);
       if (queryText.length < 2) {
         throw new functions.https.HttpsError(
@@ -61,7 +63,9 @@ exports.searchMedicines = functions
 
 exports.nearbyStores = functions
     .region(REGION)
-    .https.onCall(async (data) => {
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
       const location = normalizeLocation(data && data.location, false);
       const radiusKm = clampNumber(data && data.radiusKm, 1, 25, 5);
       const openNow = Boolean(data && data.filters && data.filters.openNow);
@@ -83,6 +87,142 @@ exports.nearbyStores = functions
 
       return {
         stores: enrichedStores,
+      };
+    });
+
+exports.getMedicineDetail = functions
+    .region(REGION)
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
+      const medicineId = normalizeString(data && data.medicineId);
+      if (!medicineId) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "medicineId is required.",
+        );
+      }
+
+      const medicineDoc = await db.collection("medicines").doc(medicineId).get();
+      if (!medicineDoc.exists || medicineDoc.data().isActive === false) {
+        return {
+          medicine: null,
+          availability: [],
+          similar: [],
+        };
+      }
+
+      const location = normalizeLocation(data && data.location, false);
+      const radiusKm = clampNumber(data && data.radiusKm, 1, 25, 5);
+      const medicine = normalizeMedicine(medicineDoc);
+      const availability = await getAvailabilityForMedicine(
+          medicine.id,
+          location,
+          radiusKm,
+          MAX_AVAILABILITY_PER_MEDICINE,
+      );
+      const similar = await getSimilarMedicineRows(medicine.similarMedicineIds);
+
+      return {
+        medicine,
+        availability,
+        similar,
+      };
+    });
+
+exports.getMedicineStores = functions
+    .region(REGION)
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
+      const medicineId = normalizeString(data && data.medicineId);
+      if (!medicineId) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "medicineId is required.",
+        );
+      }
+
+      const location = normalizeLocation(data && data.location, false);
+      const radiusKm = clampNumber(data && data.radiusKm, 1, 25, 5);
+      const openNow = Boolean(data && data.filters && data.filters.openNow);
+      const stores = await findNearbyStores(location, radiusKm, openNow);
+      const enrichedStores = [];
+
+      for (const row of stores.slice(0, MAX_NEARBY_STORES)) {
+        const availableMedicines = await getInventoryPreview(
+            row.doc.ref,
+            medicineId,
+        );
+
+        if (availableMedicines.length === 0) {
+          continue;
+        }
+
+        enrichedStores.push({
+          ...normalizeStore(row.doc, row.distanceKm),
+          availableMedicines,
+        });
+      }
+
+      return {
+        stores: enrichedStores,
+      };
+    });
+
+exports.getStoreDetail = functions
+    .region(REGION)
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
+      const storeId = normalizeString(data && data.storeId);
+      if (!storeId) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "storeId is required.",
+        );
+      }
+
+      const storeDoc = await db.collection("stores").doc(storeId).get();
+      if (!storeDoc.exists || !isPublicStoreData(storeDoc.data())) {
+        return {
+          store: null,
+          groups: [],
+        };
+      }
+
+      const queryText = normalizeString(data && data.q);
+      const filters = normalizeFilters(data && data.filters);
+      const groups = await getInventoryGroupsForStore(storeDoc.ref, queryText, filters);
+
+      return {
+        store: normalizeStore(storeDoc, 0),
+        groups,
+      };
+    });
+
+exports.getCategoryMedicines = functions
+    .region(REGION)
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
+      const categoryId = normalizeString(data && data.categoryId);
+      if (!categoryId) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "categoryId is required.",
+        );
+      }
+
+      const filters = normalizeFilters(data && data.filters);
+      const snapshot = await db.collection("medicines").limit(100).get();
+      const medicines = snapshot.docs
+          .filter((doc) => medicinePassesCategory(doc.data(), categoryId, filters))
+          .map((doc) => normalizeMedicine(doc));
+
+      return {
+        category: resolveCategory(categoryId),
+        medicines,
       };
     });
 
@@ -230,6 +370,58 @@ async function getInventoryPreview(storeRef, medicineId) {
       .filter((item) => item.inStock);
 }
 
+async function getSimilarMedicineRows(similarMedicineIds) {
+  const rows = [];
+
+  for (const similarId of similarMedicineIds.slice(0, 6)) {
+    const doc = await db.collection("medicines").doc(similarId).get();
+    if (doc.exists && doc.data().isActive !== false) {
+      rows.push(normalizeMedicine(doc));
+    }
+  }
+
+  return rows;
+}
+
+async function getInventoryGroupsForStore(storeRef, queryText, filters) {
+  const snapshot = await storeRef.collection("inventory").limit(100).get();
+  const rows = [];
+
+  for (const inventoryDoc of snapshot.docs) {
+    const item = normalizeInventoryItem(inventoryDoc, storeRef.id);
+    if (!item.inStock) {
+      continue;
+    }
+
+    const medicineDoc = await db.collection("medicines").doc(item.medicineId).get();
+    if (!medicineDoc.exists) {
+      continue;
+    }
+
+    const medicineData = medicineDoc.data() || {};
+    if (!medicinePassesFiltersWithoutQuery(medicineData, filters)) {
+      continue;
+    }
+    if (queryText && !medicineMatchesQuery(medicineData, queryText)) {
+      continue;
+    }
+
+    const medicine = normalizeMedicine(medicineDoc);
+    rows.push({
+      medicine,
+      item,
+      freshnessStatus: getFreshnessStatus(item.updatedAt),
+    });
+  }
+
+  return getKnownCategories()
+      .map((category) => ({
+        category,
+        items: rows.filter((row) => row.medicine.categoryIds.includes(category.id)),
+      }))
+      .filter((group) => group.items.length > 0);
+}
+
 function normalizeMedicine(doc) {
   const data = doc.data() || {};
   const manufacturerName =
@@ -307,10 +499,7 @@ function normalizeStore(doc, distanceKm) {
   return {
     id: doc.id,
     name: data.name || data.storeName || "Unnamed pharmacy",
-    ownerName: data.ownerName || null,
     verified: isPublicStoreData(data),
-    licenseNumber: data.licenseNumber || getNested(data, ["license", "number"]) || null,
-    licenseAuthority: data.licenseAuthority || getNested(data, ["license", "issuingAuthority"]) || null,
     address,
     location,
     contact: {
@@ -403,6 +592,15 @@ function normalizeFilters(filters) {
   };
 }
 
+function requireAuthenticated(context) {
+  if (!context.auth || !context.auth.uid) {
+    throw new functions.https.HttpsError(
+        "unauthenticated",
+        "Sign in to use Medifind discovery.",
+    );
+  }
+}
+
 function normalizeLocation(value, required) {
   if (!value && !required) {
     return null;
@@ -424,6 +622,11 @@ function normalizeLocation(value, required) {
 }
 
 function medicinePassesFilters(data, queryText, filters) {
+  return medicinePassesFiltersWithoutQuery(data, filters) &&
+    medicineMatchesQuery(data, queryText);
+}
+
+function medicinePassesFiltersWithoutQuery(data, filters) {
   if (!data || data.isActive === false) {
     return false;
   }
@@ -440,7 +643,13 @@ function medicinePassesFilters(data, queryText, filters) {
     }
   }
 
-  return medicineMatchesQuery(data, queryText);
+  return true;
+}
+
+function medicinePassesCategory(data, categoryId, filters) {
+  const categoryIds = asStringArray(data && data.categoryIds);
+  return categoryIds.includes(categoryId) &&
+    medicinePassesFiltersWithoutQuery(data, filters);
 }
 
 function medicineMatchesQuery(data, queryText) {
@@ -613,6 +822,44 @@ function formatFreshness(updatedAt) {
     return `Inventory updated ${ageHours} hr ago`;
   }
   return `Inventory updated ${Math.round(ageHours / 24)} days ago`;
+}
+
+function getFreshnessStatus(updatedAt) {
+  const ageHours = Math.max(0, (Date.now() - updatedAt) / 3600000);
+  if (ageHours > 72) {
+    return "very_stale";
+  }
+  if (ageHours > 24) {
+    return "stale";
+  }
+  return "fresh";
+}
+
+function resolveCategory(categoryId) {
+  return getKnownCategories().find((category) => category.id === categoryId) || {
+    id: categoryId,
+    name: categoryId
+        .replace(/^cat_/, "")
+        .split("_")
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ") || "Category",
+    iconKey: "pill",
+    order: 999,
+  };
+}
+
+function getKnownCategories() {
+  return [
+    {id: "cat_pain_relief", name: "Pain Relief", iconKey: "pill", order: 1},
+    {id: "cat_cold_cough", name: "Cold & Cough", iconKey: "thermometer", order: 2},
+    {id: "cat_digestion", name: "Digestion", iconKey: "activity", order: 3},
+    {id: "cat_allergy", name: "Allergy", iconKey: "shield", order: 4},
+    {id: "cat_first_aid", name: "First Aid", iconKey: "cross", order: 5},
+    {id: "cat_diabetes", name: "Diabetes Care", iconKey: "droplet", order: 6},
+    {id: "cat_heart", name: "Heart Care", iconKey: "heart", order: 7},
+    {id: "cat_vitamins", name: "Vitamins", iconKey: "sparkles", order: 8},
+  ];
 }
 
 function asStringArray(value) {

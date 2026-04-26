@@ -4,6 +4,60 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-26 - Harden public discovery reads and callable projections
+**Agent:** Codex
+**Session goal:** Remove unsafe direct mobile discovery reads, require auth on discovery callables, return public-safe projections, and tighten Firestore rules without deploying.
+
+**Files inspected (read-only):**
+- `AGENTS.md`, `graphify-out/GRAPH_REPORT.md` - confirmed Graphify requirements and current core nodes before code work.
+- `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md`, `docs/DECISIONS.md`, `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, `docs/AGENT_LOG.md` - loaded project memory and discovery/auth constraints.
+- `functions/index.js`, `firestore.rules`, `firestore.indexes.json`, `apps/mobile/services/discoveryApi.ts`, `apps/mobile/types/discovery.ts`, and mobile discovery screen imports - audited discovery backend and direct-read surface.
+
+**Files created / edited:**
+- `functions/index.js` - added auth enforcement to `searchMedicines` / `nearbyStores`; added `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, and `getCategoryMedicines` callables; moved medicine detail, store detail, category, similar-medicine, and store-inventory projections server-side; removed owner/license fields from the public store projection.
+- `apps/mobile/services/discoveryApi.ts` - removed all direct Firestore reads from discovery APIs; routed detail/category/store/medicine-stores paths through public-safe callables; kept mock fallback behavior intact.
+- `firestore.rules` - removed customer/public direct reads for `medicines`, `stores`, and `stores/{storeId}/inventory`; store/inventory reads are now only `canAccessStore`; medicines direct reads are verifier/admin-only; global fallback is now deny-all.
+- `graphify-out/**` - updated with `graphify update .` after code changes.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md` - updated handoff state.
+
+**Security risks found and addressed:**
+- **Anonymous callable access:** fixed locally by requiring `context.auth` on all discovery callables.
+- **Direct mobile reads of full store/inventory docs:** fixed locally by removing `getDoc`/`getDocs` from `discoveryApi.ts`.
+- **Broad signed-in Firestore read fallback:** fixed locally by changing global fallback to `allow read, write: if false`.
+- **Public projection field leakage:** public store callable projection now includes only id/name/verified/address/location/contact/hours/distance/open/freshness-style fields. It no longer returns `ownerName`, `licenseNumber`, `licenseAuthority`, members, owner IDs, internal notes, or admin fields.
+
+**Direct reads removed or justified:**
+- Removed from `apps/mobile/services/discoveryApi.ts`: `medicines/{id}`, `stores/{id}`, `stores/{id}/inventory`, similar medicine docs, and category medicine scans.
+- Remaining mobile Firestore reads are in `apps/mobile/services/userProfile.ts` for the signed-in user's profile gate/profile setup, not discovery data.
+
+**Verification:**
+- `cd functions && node --check index.js` - passed.
+- `cd functions && npm run lint` - passed.
+- `cd apps/mobile && npm run typecheck` - passed.
+- `cd apps/mobile && npx expo export --platform android --output-dir .expo/security-discovery-export` - passed after rerunning outside sandbox due Windows profile `EPERM` on the first attempt.
+- `git diff --check` - clean except existing Windows line-ending warnings and sandbox warnings for global git ignore access.
+- `graphify update .` failed on PATH as `graphify`, then passed via `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .`; graph rebuilt at 447 nodes, 555 edges, 79 communities.
+
+**Deploy status:**
+- Not deployed. Production still runs the previously deployed callable/rules behavior until the user explicitly approves deploy.
+- Deploy command after review/approval: `firebase deploy --only functions:searchMedicines,functions:nearbyStores,functions:getMedicineDetail,functions:getMedicineStores,functions:getStoreDetail,functions:getCategoryMedicines,firestore:rules --project nearnest-platform`.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**`, web portal UI/routes, store-admin/admin portal code.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`.
+- `.claude/settings.local.json`, `.codex/*.png` pre-existing local/protected files.
+- Phone OTP, cart, checkout, payment, delivery, order tracking, prescription upload, and medical advice/dosage surfaces.
+
+**Warnings for next agent:**
+- Before deploying, review web portal assumptions around direct `medicines` reads. The current web app does not appear to use the `medicines` collection, but this rules change intentionally blocks ordinary signed-in direct reads.
+- After deployment, run authenticated Android dev-client QA. Without deploy, mobile will hit old production Functions/rules if pointed at live backend.
+- Existing remote Functions outside local source still exist. Do not deploy all Functions blindly if Firebase CLI warns about deleting remote functions.
+
+**Suggested commit message:**
+`fix(discovery): harden public store reads and callable projections`
+
+---
+
 ## 2026-04-26 - Verify live discovery backend integration and deployment readiness
 **Agent:** Codex
 **Session goal:** Re-read the repo from local files, verify the current Medifind discovery backend/mobile integration, prepare deployment status without deploying, run static/mobile checks, and leave a clear next-agent handoff.

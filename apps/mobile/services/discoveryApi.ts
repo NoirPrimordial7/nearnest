@@ -1,18 +1,7 @@
 import { httpsCallable } from 'firebase/functions';
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  query,
-  type DocumentData,
-  type QueryDocumentSnapshot,
-} from 'firebase/firestore';
 
 import type {
   Category,
-  FreshnessStatus,
   Medicine,
   MedicineAvailability,
   ResultFilter,
@@ -22,7 +11,7 @@ import type {
   StoreInventoryGroup,
   StoreInventoryItem,
 } from '../types/discovery';
-import { db, firebaseFunctions } from './firebase';
+import { firebaseFunctions } from './firebase';
 import {
   getAvailabilityForMedicine,
   getCategoryById,
@@ -34,8 +23,6 @@ import {
   getSimilarMedicines,
   getStoreById,
   getStoresByDistance,
-  mockCategories,
-  normalize,
 } from './mockDiscovery';
 
 export const DEFAULT_DISCOVERY_LOCATION = {
@@ -69,6 +56,25 @@ type SearchMedicinesResponse = {
 
 type NearbyStoresResponse = {
   stores?: Array<Store & { availableMedicines?: StoreInventoryItem[] }>;
+};
+
+type MedicineDetailResponse = {
+  medicine?: Medicine | null;
+  availability?: Array<{
+    store?: Store;
+    item?: StoreInventoryItem;
+  }>;
+  similar?: Medicine[];
+};
+
+type StoreDetailResponse = {
+  store?: Store | null;
+  groups?: StoreInventoryGroup[];
+};
+
+type CategoryMedicinesResponse = {
+  category?: Category | null;
+  medicines?: Medicine[];
 };
 
 export async function searchMedicinesApi({
@@ -146,7 +152,10 @@ export async function getNearbyStoresApi(
   }>
 > {
   try {
-    const callable = httpsCallable(firebaseFunctions, 'nearbyStores');
+    const callable = httpsCallable(
+      firebaseFunctions,
+      medicineId ? 'getMedicineStores' : 'nearbyStores',
+    );
     const result = await callable({
       medicineId,
       radiusKm,
@@ -208,8 +217,16 @@ export async function getMedicineDetailApi(
   }>
 > {
   try {
-    const medicineSnap = await getDoc(doc(db, 'medicines', medicineId));
-    if (!medicineSnap.exists()) {
+    const callable = httpsCallable(firebaseFunctions, 'getMedicineDetail');
+    const result = await callable({
+      medicineId,
+      radiusKm: 5,
+      location: DEFAULT_DISCOVERY_LOCATION,
+    });
+    const data = result.data as MedicineDetailResponse;
+    const medicine = ensureMedicine(data.medicine);
+
+    if (!medicine) {
       return {
         source: 'backend',
         medicine: null,
@@ -218,9 +235,25 @@ export async function getMedicineDetailApi(
       };
     }
 
-    const medicine = mapMedicineDoc(medicineSnap.id, medicineSnap.data());
-    const availability = await fetchAvailabilityForMedicine(medicine);
-    const similar = await fetchSimilarMedicines(medicine);
+    const availability = (data.availability ?? [])
+      .map((row) => {
+        const store = ensureStore(row.store);
+        const item = ensureInventoryItem(row.item, store?.id, medicine.id);
+        if (!store || !item) {
+          return null;
+        }
+
+        return {
+          medicine,
+          store,
+          item,
+          freshnessStatus: getFreshnessStatus(item.updatedAt),
+        };
+      })
+      .filter((row): row is MedicineAvailability => Boolean(row));
+    const similar = (data.similar ?? [])
+      .map((row) => ensureMedicine(row))
+      .filter((row): row is Medicine => Boolean(row));
 
     return {
       source: 'backend',
@@ -251,8 +284,16 @@ export async function getStoreDetailApi(
   }>
 > {
   try {
-    const storeSnap = await getDoc(doc(db, 'stores', storeId));
-    if (!storeSnap.exists()) {
+    const callable = httpsCallable(firebaseFunctions, 'getStoreDetail');
+    const result = await callable({
+      storeId,
+      q,
+      filters: filterToBackend(filter),
+    });
+    const data = result.data as StoreDetailResponse;
+    const store = ensureStore(data.store);
+
+    if (!store) {
       return {
         source: 'backend',
         store: null,
@@ -260,8 +301,9 @@ export async function getStoreDetailApi(
       };
     }
 
-    const store = mapStoreDoc(storeSnap.id, storeSnap.data());
-    const groups = await fetchInventoryGroupsForStore(store.id, q, filter);
+    const groups = (data.groups ?? [])
+      .map((group) => ensureStoreInventoryGroup(group))
+      .filter((group): group is StoreInventoryGroup => Boolean(group));
 
     return {
       source: 'backend',
@@ -288,15 +330,20 @@ export async function getCategoryMedicinesApi(
   }>
 > {
   try {
-    const medicinesSnap = await getDocs(query(collection(db, 'medicines'), limit(100)));
-    const medicines = medicinesSnap.docs
-      .map((snapshot) => mapMedicineDoc(snapshot.id, snapshot.data()))
-      .filter((medicine) => medicine.categoryIds.includes(categoryId))
+    const callable = httpsCallable(firebaseFunctions, 'getCategoryMedicines');
+    const result = await callable({
+      categoryId,
+      filters: filterToBackend(filter),
+    });
+    const data = result.data as CategoryMedicinesResponse;
+    const medicines = (data.medicines ?? [])
+      .map((medicine) => ensureMedicine(medicine))
+      .filter((medicine): medicine is Medicine => Boolean(medicine))
       .filter((medicine) => filterMedicine(medicine, filter));
 
     return {
       source: 'backend',
-      category: resolveCategory(categoryId),
+      category: ensureCategory(data.category) ?? getCategoryById(categoryId),
       medicines,
     };
   } catch (error) {
@@ -307,83 +354,6 @@ export async function getCategoryMedicinesApi(
       error: getErrorMessage(error),
     };
   }
-}
-
-async function fetchAvailabilityForMedicine(medicine: Medicine) {
-  const nearby = await getNearbyStoresApi(medicine.id);
-  return nearby.stores
-    .map((store) => {
-      const item = nearby.availableItemsByStore[store.id];
-      if (!item?.inStock) {
-        return null;
-      }
-
-      return {
-        medicine,
-        store,
-        item,
-        freshnessStatus: getFreshnessStatus(item.updatedAt),
-      };
-    })
-    .filter((row): row is MedicineAvailability => Boolean(row))
-    .sort((a, b) => a.store.distanceKm - b.store.distanceKm);
-}
-
-async function fetchSimilarMedicines(medicine: Medicine) {
-  const similarIds = medicine.similarMedicineIds.slice(0, 6);
-  const rows: Medicine[] = [];
-
-  for (const similarId of similarIds) {
-    const snapshot = await getDoc(doc(db, 'medicines', similarId));
-    if (snapshot.exists()) {
-      rows.push(mapMedicineDoc(snapshot.id, snapshot.data()));
-    }
-  }
-
-  return rows;
-}
-
-async function fetchInventoryGroupsForStore(
-  storeId: string,
-  q: string,
-  filter: ResultFilter,
-) {
-  const inventorySnap = await getDocs(query(collection(db, 'stores', storeId, 'inventory'), limit(100)));
-  const normalizedQuery = normalize(q);
-  const rows: StoreInventoryGroup['items'] = [];
-
-  for (const inventoryDoc of inventorySnap.docs) {
-    const item = mapInventoryDoc(inventoryDoc, storeId);
-    if (!item.inStock) {
-      continue;
-    }
-
-    const medicineSnap = await getDoc(doc(db, 'medicines', item.medicineId));
-    if (!medicineSnap.exists()) {
-      continue;
-    }
-
-    const medicine = mapMedicineDoc(medicineSnap.id, medicineSnap.data());
-    if (!filterMedicine(medicine, filter)) {
-      continue;
-    }
-    if (normalizedQuery && !medicineMatchesQuery(medicine, normalizedQuery)) {
-      continue;
-    }
-
-    rows.push({
-      medicine,
-      item,
-      freshnessStatus: getFreshnessStatus(item.updatedAt),
-    });
-  }
-
-  return mockCategories
-    .map((category) => ({
-      category,
-      items: rows.filter(({ medicine }) => medicine.categoryIds.includes(category.id)),
-    }))
-    .filter((group) => group.items.length > 0);
 }
 
 function buildResultGroups(
@@ -442,116 +412,6 @@ function buildMockAvailabilityMap(groups: ResultGroups) {
   return Object.fromEntries(
     medicines.map((medicine) => [medicine.id, getAvailabilityForMedicine(medicine.id)]),
   );
-}
-
-function mapMedicineDoc(id: string, data: DocumentData): Medicine {
-  const manufacturerName = String(
-    data.manufacturerName ?? data.manufacturer ?? data.brand ?? 'Unknown manufacturer',
-  );
-  const saltValues = asStringArray(data.salt);
-  const compositions =
-    Array.isArray(data.compositions) && data.compositions.length > 0
-      ? data.compositions.map((composition: DocumentData | string, index: number) =>
-          typeof composition === 'string'
-            ? {
-                id: `${id}_composition_${index}`,
-                name: composition,
-                saltKey: normalize(composition).replace(/\s+/g, '_'),
-                form: data.form ?? 'tablet',
-              }
-            : {
-                id: composition.id ?? `${id}_composition_${index}`,
-                name: composition.name ?? composition.salt ?? 'Composition',
-                saltKey:
-                  composition.saltKey ??
-                  normalize(composition.name ?? composition.salt ?? '').replace(/\s+/g, '_'),
-                strengthMg: composition.strengthMg,
-                form: composition.form ?? data.form ?? 'tablet',
-              },
-        )
-      : saltValues.map((salt, index) => ({
-          id: `${id}_composition_${index}`,
-          name: salt,
-          saltKey: normalize(salt).replace(/\s+/g, '_'),
-          form: data.form ?? 'tablet',
-        }));
-  const therapeuticCategory = normalize(data.therapeuticCategory);
-  const categoryIds = asStringArray(data.categoryIds);
-
-  return {
-    id,
-    name: data.name ?? data.brand ?? 'Unnamed medicine',
-    nameLocalised: data.nameLocalised,
-    aliases: asStringArray(data.aliases),
-    hindiAliases: asStringArray(data.hindiAliases),
-    manufacturer: {
-      id: normalize(manufacturerName).replace(/\s+/g, '_') || 'unknown',
-      name: manufacturerName,
-    },
-    compositions,
-    form: data.form ?? 'tablet',
-    packSize: data.packSize ?? '',
-    imageUrl: data.imageUrl ?? '',
-    requiresPrescription: Boolean(data.requiresPrescription),
-    categoryIds: categoryIds.length > 0 ? categoryIds : [therapeuticCategory].filter(Boolean),
-    searchTokens: asStringArray(data.searchTokens),
-    similarMedicineIds: asStringArray(data.similarMedicineIds),
-    variantOfMedicineId: data.variantOfMedicineId,
-    description: data.description,
-  };
-}
-
-function mapStoreDoc(id: string, data: DocumentData): Store {
-  const location = data.location ?? {};
-  const address = data.address ?? data;
-  const updatedAt = timestampToMillis(data.inventoryUpdatedAt ?? data.freshnessUpdatedAt ?? data.updatedAt);
-
-  return {
-    id,
-    name: data.name ?? data.storeName ?? 'Unnamed pharmacy',
-    ownerName: data.ownerName,
-    verified: Boolean(data.isVerified ?? data.verified ?? data.verification?.status === 'approved'),
-    licenseNumber: data.licenseNumber ?? data.license?.number,
-    licenseAuthority: data.licenseAuthority ?? data.license?.issuingAuthority,
-    address: {
-      line1: address.line1 ?? address.addressLine1 ?? address.address ?? '',
-      line2: address.line2 ?? address.area ?? '',
-      city: address.city ?? '',
-      state: address.state ?? '',
-      pincode: address.pincode ?? address.pinCode ?? '',
-    },
-    location: {
-      lat: Number(location.lat ?? data.lat ?? 0),
-      lng: Number(location.lng ?? data.lng ?? 0),
-      geohash: location.geohash ?? data.geohash ?? '',
-    },
-    contact: {
-      publicPhoneE164:
-        data.contact?.publicPhoneE164 ?? data.publicPhoneE164 ?? data.publicPhone ?? data.phone ?? '',
-      whatsapp: data.contact?.whatsapp ?? data.whatsapp,
-    },
-    hours: data.hours ?? {},
-    distanceKm: Number(data.distanceKm ?? 0),
-    isOpenNow: Boolean(data.isOpenNow ?? data.isOpen ?? true),
-    closesAtLabel: data.closesAtLabel ?? data.openStatusLabel,
-    freshnessLabel: data.freshnessLabel ?? formatFreshness(updatedAt),
-    freshnessUpdatedAt: updatedAt,
-  };
-}
-
-function mapInventoryDoc(
-  snapshot: QueryDocumentSnapshot<DocumentData>,
-  storeId: string,
-  fallbackMedicineId?: string,
-): StoreInventoryItem {
-  return ensureInventoryItem(
-    {
-      ...snapshot.data(),
-      sku: snapshot.id,
-    },
-    storeId,
-    fallbackMedicineId,
-  ) as StoreInventoryItem;
 }
 
 function ensureMedicine(value: unknown): Medicine | null {
@@ -638,6 +498,55 @@ function ensureInventoryItem(
   };
 }
 
+function ensureCategory(value: unknown): Category | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const data = value as Partial<Category>;
+  if (!data.id || !data.name) {
+    return null;
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    iconKey: data.iconKey ?? 'pill',
+    order: Number(data.order ?? 999),
+  };
+}
+
+function ensureStoreInventoryGroup(value: unknown): StoreInventoryGroup | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const data = value as Partial<StoreInventoryGroup>;
+  const category = ensureCategory(data.category);
+  if (!category || !Array.isArray(data.items)) {
+    return null;
+  }
+
+  const items = data.items
+    .map((row) => {
+      const medicine = ensureMedicine(row.medicine);
+      const item = ensureInventoryItem(row.item, undefined, medicine?.id);
+      if (!medicine || !item) {
+        return null;
+      }
+
+      return {
+        medicine,
+        item,
+        freshnessStatus: row.freshnessStatus ?? getFreshnessStatus(item.updatedAt),
+      };
+    })
+    .filter((row): row is StoreInventoryGroup['items'][number] => Boolean(row));
+
+  return {
+    category,
+    items,
+  };
+}
+
 function filterMedicine(medicine: Medicine, filter: ResultFilter) {
   if (filter === 'rx') {
     return medicine.requiresPrescription;
@@ -646,35 +555,6 @@ function filterMedicine(medicine: Medicine, filter: ResultFilter) {
     return !medicine.requiresPrescription;
   }
   return true;
-}
-
-function medicineMatchesQuery(medicine: Medicine, queryText: string) {
-  const haystack = [
-    medicine.name,
-    medicine.aliases.join(' '),
-    medicine.hindiAliases?.join(' ') ?? '',
-    medicine.manufacturer.name,
-    medicine.compositions.map((composition) => composition.name).join(' '),
-    medicine.categoryIds.join(' '),
-    medicine.searchTokens.join(' '),
-  ]
-    .join(' ')
-    .toLowerCase();
-
-  return haystack.includes(queryText);
-}
-
-function resolveCategory(categoryId: string): Category | null {
-  return getCategoryById(categoryId) ?? {
-    id: categoryId,
-    name: categoryId
-      .replace(/^cat_/, '')
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' '),
-    iconKey: 'pill',
-    order: 999,
-  };
 }
 
 function filterToBackend(filter: ResultFilter) {
@@ -708,48 +588,6 @@ function normalizePrice(data: { price?: { mrp?: number; sellingPrice?: number } 
     return Math.round(data.price.mrp / 100);
   }
   return undefined;
-}
-
-function formatFreshness(updatedAt: number) {
-  const ageMinutes = Math.max(1, Math.round((Date.now() - updatedAt) / 60000));
-  if (ageMinutes < 60) {
-    return `Inventory updated ${ageMinutes} min ago`;
-  }
-  const ageHours = Math.round(ageMinutes / 60);
-  if (ageHours <= 24) {
-    return `Inventory updated ${ageHours} hr ago`;
-  }
-  return `Inventory updated ${Math.round(ageHours / 24)} days ago`;
-}
-
-function timestampToMillis(value: unknown) {
-  if (!value) {
-    return Date.now();
-  }
-  if (typeof value === 'object' && value && 'toMillis' in value) {
-    const timestampValue = value as { toMillis?: () => number };
-    if (typeof timestampValue.toMillis === 'function') {
-      return timestampValue.toMillis();
-    }
-  }
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'string') {
-    const parsed = Date.parse(value);
-    return Number.isFinite(parsed) ? parsed : Date.now();
-  }
-  return Date.now();
-}
-
-function asStringArray(value: unknown) {
-  if (!value) {
-    return [];
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item || '').trim()).filter(Boolean);
-  }
-  return [String(value).trim()].filter(Boolean);
 }
 
 function getErrorMessage(error: unknown) {

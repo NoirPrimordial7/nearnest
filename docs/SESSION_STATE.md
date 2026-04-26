@@ -1,6 +1,18 @@
 # Nearnest Session State
 
-Last updated: 2026-04-26 (Codex re-verified live discovery backend; no deploy/seed this session; security blockers remain before next deploy)
+Last updated: 2026-04-26 (Codex implemented local discovery security hardening; not deployed)
+
+## Discovery security hardening 2026-04-26 (Codex follow-on)
+- **Local code change only, NOT deployed.** Production still runs the previously deployed Functions/rules until the user explicitly approves deployment.
+- `functions/index.js` now requires `context.auth` for `searchMedicines`, `nearbyStores`, `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, and `getCategoryMedicines`.
+- New public-safe callables added locally: `getMedicineDetail`, `getMedicineStores`, `getStoreDetail`, `getCategoryMedicines`.
+- Public store callable projection now omits `ownerName`, `licenseNumber`, `licenseAuthority`, owner/member/internal/admin fields, and raw store docs. It returns id/name/verified/address/location/contact/hours/distance/open/freshness style fields only.
+- `apps/mobile/services/discoveryApi.ts` no longer imports `firebase/firestore` and no longer uses `getDoc`/`getDocs` for discovery. Search, nearby stores, medicine detail, medicine stores, store detail, and category browse all call Functions and keep mock fallback.
+- Remaining mobile direct Firestore reads are in `apps/mobile/services/userProfile.ts` for signed-in user profile persistence/gating, not discovery data.
+- `firestore.rules` now blocks ordinary signed-in direct reads of full `medicines`, `stores`, and store inventory docs. Store/inventory direct reads require `canAccessStore`; medicine direct reads require `canVerifyDocs`; global fallback is deny-all.
+- Verification passed: `functions node --check index.js`, `functions npm run lint`, `apps/mobile npm run typecheck`, `apps/mobile npx expo export --platform android --output-dir .expo/security-discovery-export`, `git diff --check`, and Graphify update via absolute path.
+- Deploy command after review/approval: `firebase deploy --only functions:searchMedicines,functions:nearbyStores,functions:getMedicineDetail,functions:getMedicineStores,functions:getStoreDetail,functions:getCategoryMedicines,firestore:rules --project nearnest-platform`.
+- Next runtime proof needed after deploy: authenticated Android dev-client walkthrough against live backend and forced mock fallback test.
 
 ## Live discovery backend verification 2026-04-26 (Codex follow-on)
 - Re-read local repo files first. Current `git status --short` before edits showed only unrelated/protected local files: modified `.claude/settings.local.json` and untracked `.codex/medifind-*.png`; these were not touched.
