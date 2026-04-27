@@ -1,6 +1,30 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex fixed stale /home permission banner)
+Last updated: 2026-04-27 (Codex ran final regression verification)
+
+## Final web store access and mobile discovery regression check 2026-04-27
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- This session made documentation-only updates.
+- Starting `git status --short` showed only protected local files: `.claude/settings.local.json` and `.codex/medifind-*.png`.
+- Verification passed:
+  - `npm run build` at repo root; Vite reported only the existing large chunk warning.
+  - `npm run lint` in `functions/`.
+  - `npm run typecheck` in `apps/mobile/`.
+  - `git diff --check` before final docs edits.
+- Web static/code-path regression:
+  - `/store-admin/home` redirects to `/home`.
+  - `/store-admin/:storeId` is protected and indexes to `dashboard`.
+  - Dashboard, inventory, settings, advertisement, and support child routes remain wired.
+  - `UserHome` uses `showStoreError`, so the red store permission banner only renders when no stores are visible.
+- Mobile static/code-path regression:
+  - Google auth hooks remain wired in sign-in/sign-up.
+  - `apps/mobile/services/userProfile.ts` uses `mobileUsers/{uid}`.
+  - Discovery screens still call `discoveryApi` for Dolo/search/results/medicine/store flows.
+- Not run from this environment:
+  - Live authenticated web walkthrough with the friend account.
+  - Android emulator/dev-client Google login and discovery walkthrough.
+- Suggested commit: `test(app): verify web store access and mobile discovery regression`.
 
 ## Stale store permission banner fix 2026-04-27
 - **No Firebase deploy was run.**

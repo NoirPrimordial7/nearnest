@@ -4,6 +4,49 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Final web store access and mobile discovery regression check
+**Agent:** Codex (GPT-5)
+**Session goal:** Run final regression verification after the web store visibility and stale permission banner fixes. No Firebase deploy and no production data mutation.
+
+### Files inspected
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - required graphify and repo context.
+- `src/App.jsx` - verified `/store-admin/home`, `/store-admin/:storeId`, dashboard, inventory, and support routes remain wired.
+- `src/pages/User/UserHome.jsx` and `src/pages/register-store/stores.js` - verified stale banner gating and store listener diagnostics.
+- `apps/mobile/services/userProfile.ts`, `apps/mobile/services/discoveryApi.ts`, and mobile discovery route references via `rg` - verified mobile profile/discovery code paths still point to `mobileUsers` and callable-backed discovery APIs.
+
+### Files edited
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`
+  - Documentation-only regression handoff.
+
+### Verification run
+- `git status --short` showed only protected local files before docs edits: `.claude/settings.local.json` and `.codex/medifind-*.png`.
+- `npm run build` passed; Vite reported only the existing large chunk warning.
+- `cd functions && npm run lint` passed.
+- `cd apps/mobile && npm run typecheck` passed.
+- `git diff --check` passed before docs edits.
+
+### Regression result
+- Web static/code-path regression: passed.
+  - `/store-admin/home` redirects to `/home`.
+  - `/store-admin/:storeId` is protected and indexes to `dashboard`.
+  - Dashboard, inventory, and support child routes are present.
+  - `UserHome` only renders the store permission banner when no stores are visible.
+- Mobile static regression: passed by typecheck and code-path inspection for Google auth hooks, `mobileUsers/{uid}` profile service, and discovery screens using `discoveryApi`.
+
+### Not run
+- No live authenticated browser walkthrough was run from this environment.
+- No Android emulator/dev-client walkthrough was run from this environment.
+- Google OAuth cannot be proven without an active credentialed development build session.
+
+### Protected files
+- No Firebase deploy was run.
+- No production data was mutated.
+- Did not touch `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, `.codex/*.png`, or `dataconnect/**`.
+
+**Suggested commit message:** `test(app): verify web store access and mobile discovery regression`
+
+---
+
 ## 2026-04-27 - Clear stale store permission banner after load
 **Agent:** Codex (GPT-5)
 **Session goal:** Stop `/home` from showing a stale red permission banner after stores have successfully loaded. No Firebase deploy and no data mutation.

@@ -4,24 +4,29 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after stale permission banner fix)
+## Next up (as of 2026-04-27, after final regression verification)
 
-**Current local state:** `/home` should no longer show the red "Missing or insufficient permissions" banner after store cards are visible. No Firebase deploy was run and no production data was modified.
+**Current local state:** Static regression checks passed after the web store visibility and stale permission banner fixes. This session changed docs only. No Firebase deploy was run and no production data was modified.
 
-**What changed locally:**
-- `src/pages/User/UserHome.jsx` clears `errMsg` when `listenUserStores` delivers a valid non-empty store array.
-- The red store error banner is gated by `showStoreError`, so it only renders while there are no visible stores.
-- `src/pages/register-store/stores.js` listener behavior was inspected but not changed; primary query results still stay visible when optional query listeners warn/fail.
+**Verification passed:**
+- Root `npm run build` passed with only the existing large chunk warning.
+- `functions` lint passed.
+- `apps/mobile` typecheck passed.
+- `git diff --check` passed before final docs edits.
+- Route/code inspection confirms `/store-admin/home -> /home`, `/store-admin/:storeId -> dashboard`, and dashboard/inventory/support child routes remain wired.
+- `UserHome` still gates the red store permission banner so it cannot render while store cards are visible.
+- Mobile code-path inspection confirms Google auth hooks, `mobileUsers/{uid}` profile service, and discovery screens still point to the expected services.
 
-**Root cause:** `UserHome.jsx` rendered `errMsg` unconditionally in the loaded-store panel. A previous listener error could set `errMsg`, then later successful snapshots would update `stores` without clearing the stale message.
+**Still needs manual authenticated runtime proof:**
+- Web: sign in as the owner/member account, confirm `/home` shows stores with no red permission banner, open dashboard/inventory/support, and sign out from the avatar menu.
+- Mobile: use the Android dev build to confirm Google login, profile path, Home, Dolo search, Results, Medicine detail, Nearby stores, and Store detail.
 
 ### Next steps
 
-1. Rerun final verification before commit: `git diff --check` and `git status --short`.
-2. Commit this task with: `git add src/pages/User/UserHome.jsx docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): clear stale store permission banner after load"`.
+1. Rerun `git diff --check` after this docs update.
+2. Commit this docs-only regression pass with: `git add docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md && git commit -m "test(app): verify web store access and mobile discovery regression"`.
 3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. Refresh `/home` with the friend account. Expected result: store cards remain visible and no red permission banner appears.
-5. If an error still appears with visible stores, copy the `[UserHome] store access query counts` and `[UserHome] store access query failed` dev-console logs before changing rules or data.
+4. Do not deploy Firebase for this regression pass.
 
 ---
 
