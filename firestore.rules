@@ -202,12 +202,18 @@ service cloud.firestore {
         ]);
     }
 
+    function canAccessStoreData(storeData) {
+      return storeData != null && (
+        isOwner(storeData.ownerId)
+        || isMemberPlus(storeData.members, storeData.membersArr)
+        || isVisibleTo(storeData.visibleTo)
+        || canVerifyDocs()
+      );
+    }
+
     function canAccessStore(storeId) {
       let s = storeDoc(storeId);
-      return isOwner(s.data.ownerId)
-        || isMemberPlus(s.data.members, s.data.membersArr)
-        || isVisibleTo(s.data.visibleTo)
-        || canVerifyDocs();
+      return canAccessStoreData(s.data);
     }
 
     // ---------- USERS ----------
@@ -256,7 +262,7 @@ service cloud.firestore {
     // rules cannot field-filter a document read, so direct store reads stay
     // limited to owner/member/verifier/admin web-portal access.
     match /stores/{storeId} {
-      allow read, get, list: if canAccessStore(storeId);
+      allow read, get, list: if canAccessStoreData(resource.data);
       allow create: if signedIn();
 
       // Admin/Verifier or Owner can update verification status

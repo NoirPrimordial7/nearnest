@@ -4,6 +4,43 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Allow store owner queries with resource data rules
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix Firestore rules so web `/home` collection queries on `stores` can pass for UID-linked owner/member access without restoring broad signed-in reads. No real Firebase deploy.
+
+### Files inspected
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - required graphify and repo context.
+- `firestore.rules` - store access helpers and top-level/subcollection store rules.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md` - handoff state.
+
+### Files edited
+- `firestore.rules`
+  - Added `canAccessStoreData(storeData)`.
+  - Changed `canAccessStore(storeId)` to load the parent store once and delegate to `canAccessStoreData(s.data)`.
+  - Changed top-level `match /stores/{storeId}` reads from `canAccessStore(storeId)` to `canAccessStoreData(resource.data)`.
+  - Kept store subcollections (`inventory`, `documents`, `verificationLogs`, fallback nested paths) using `canAccessStore(storeId)`.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`
+  - Updated this handoff.
+- `graphify-out/**`
+  - Updated with the local graphify executable after the rules/docs change.
+
+### Why this fixes `/home`
+Browser `/home` queries list top-level `stores` by fields on each candidate store document (`ownerId`, `membersArr`, `visibleTo`, `members.{uid}`). The previous top-level list rule called `canAccessStore(storeId)`, which performed a parent `get()` through `storeDoc(storeId)`. The new top-level rule evaluates the candidate `resource.data` directly, so Firestore can authorize owner/member list queries against the document fields being queried.
+
+### Verification
+- `firebase deploy --only firestore:rules --dry-run --project nearnest-platform` passed; rules compiled successfully. Existing warning only: unused `isPublicStore` helper.
+- `git diff --check` passed with only the existing local protected-file and CRLF warnings.
+- `graphify update .` was not on PATH; rerun with `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .` passed.
+
+### Protected files
+- No real Firebase deploy was run.
+- No Firestore data was mutated.
+- Did not touch `src/**`, `apps/mobile/**`, `functions/**`, `dataconnect/**`, `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, or `.codex/*.png`.
+
+**Suggested commit message:** `fix(firebase): allow store owner queries with resource data rules`
+
+---
+
 ## 2026-04-27 - Keep store results when secondary ownership queries fail
 **Agent:** Codex (GPT-5)
 **Session goal:** Fix `/home` so a failing secondary ownership query cannot clear stores that were returned by primary UID-linked queries. No Firebase deploy and no data mutation.

@@ -4,39 +4,26 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after secondary-query error handling fix)
+## Next up (as of 2026-04-27, after store resource-data rules fix)
 
-**Current local state:** `/home` now keeps successful store query results even if a secondary ownership listener fails. No Firebase deploy was run and no production data was modified.
+**Current local state:** Firestore rules now allow top-level `stores` owner/member collection queries to evaluate access from `resource.data`. No real Firebase deploy was run and no production data was modified.
 
 **What changed locally:**
-- `listenUserStores(uid)` tracks each non-admin query independently:
-  - primary: `ownerId == uid`
-  - primary: `membersArr array-contains uid`
-  - secondary: `visibleTo array-contains uid`
-  - secondary: `members[uid] == true` through `FieldPath`
-- A secondary query failure no longer calls the page-level fatal `onError`.
-- The page-level fatal handler is called only if all active queries fail and no stores are available.
-- Dev console diagnostics now include browser Firebase `projectId`, auth UID/email, query counts, query status, and error code/message.
-- If all queries complete with merged count `0`, dev console logs a hint to compare the browser Firebase `projectId` with the Admin SDK/service account project.
+- Added `canAccessStoreData(storeData)` in `firestore.rules`.
+- `canAccessStore(storeId)` now delegates to `canAccessStoreData(storeDoc(storeId).data)`.
+- Top-level `match /stores/{storeId}` now uses `canAccessStoreData(resource.data)` for `allow read, get, list`.
+- Store subcollections still use `canAccessStore(storeId)` so nested documents inherit access from the parent store document.
 
-**Runtime bug found:** every listener previously used the same `onError` callback from `UserHome`. If `visibleTo` or `membersMap` failed, `UserHome` ran `setStores([])` and showed the empty state even though `ownerId`/`membersArr` had valid linked stores.
-
-**Console logs to check in browser dev mode:**
-- `[UserHome] store access query counts`
-- `[UserHome] store access query failed`
-- `[UserHome] no stores merged from browser queries`
-
-**App.jsx audit:** route fix still holds. `/home` works, `/store-admin/home` redirects to `/home`, `/store-admin/:storeId` is protected, the index redirects to `dashboard`, and no `/store-staff/home` redirect remains.
+**Why this matters:** browser `/home` queries list `stores` by fields on the candidate store docs (`ownerId`, `membersArr`, `visibleTo`, `members.{uid}`). The old top-level list rule used a separate parent `get()` via `storeDoc(storeId)`, causing `permission-denied` for those collection queries even when the UID was correctly linked. The new rule evaluates the candidate store document directly.
 
 ### Next steps
 
-1. Rerun final verification before commit: `git diff --check` and `git status --short`.
-2. Commit this task with: `git add src/pages/register-store/stores.js docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): keep store results when secondary ownership queries fail"`.
-3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. Refresh `/home` in the browser and inspect the dev console. The expected useful signal is whether `ownerId`/`membersArr` return the six stores or whether the browser `projectId` differs from the Admin SDK diagnostic project.
-5. If `/home` is still empty and browser `projectId` matches, copy the dev console query count/error logs before changing code again.
-6. Do not run `--apply` again unless a fresh diagnostic proves a new data-linkage issue; the latest diagnostic already showed six UID-linked stores.
-7. Do not deploy Firebase from this task.
+1. Commit the local rules/docs update with: `git add firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(firebase): allow store owner queries with resource data rules"`.
+2. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
+3. After explicit approval, deploy rules only: `firebase deploy --only firestore:rules --project nearnest-platform`.
+4. Refresh `/home` and confirm the browser dev console no longer reports `permission-denied` for `ownerId`, `membersArr`, `visibleTo`, or `membersMap` store queries.
+5. If `/home` is still empty after the real rules deploy, copy the `[UserHome] store access query counts` and `[UserHome] store access query failed` logs before changing code or data.
+6. Do not mutate store data; the latest diagnostic already proved six UID-linked stores for `adityagholap19.06@gmail.com`.
 
 ---
 

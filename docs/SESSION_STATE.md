@@ -1,6 +1,29 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex fixed secondary query error handling on /home)
+Last updated: 2026-04-27 (Codex fixed top-level store query Firestore rules)
+
+## Store resource-data rules fix 2026-04-27
+- **No real Firebase deploy was run.**
+- **No production data was modified.**
+- Current proof before this fix:
+  - Diagnostic script proved `adityagholap19.06@gmail.com` maps to Auth UID `ESrKx72DuOOXnxZqREcu4o3FU5r1`.
+  - Diagnostic found 6 stores already linked by UID through `ownerId`, `membersArr`, and `membersMap`.
+  - Browser console showed the same Firebase project `nearnest-platform`, same UID/email, and `permission-denied` for top-level `stores` queries.
+- Root cause: the top-level `stores/{storeId}` list/read rule called `canAccessStore(storeId)`, which used a separate parent `get()` through `storeDoc(storeId)`. That shape blocked browser collection queries even when the candidate store document had matching `ownerId`, `membersArr`, `visibleTo`, or `members.{uid}` fields.
+- `firestore.rules` now has `canAccessStoreData(storeData)`:
+  - owner path: `storeData.ownerId == request.auth.uid`
+  - member paths: `storeData.members[uid] == true` or `storeData.membersArr` contains UID
+  - visibility path: `storeData.visibleTo` contains UID
+  - admin/verifier path: `canVerifyDocs()`
+- `canAccessStore(storeId)` now delegates to `canAccessStoreData(storeDoc(storeId).data)`.
+- Top-level `stores/{storeId}` `allow read, get, list` now uses `canAccessStoreData(resource.data)`.
+- Store subcollections continue to use `canAccessStore(storeId)` because their access fields live on the parent store document.
+- Verification passed:
+  - `firebase deploy --only firestore:rules --dry-run --project nearnest-platform`
+  - `git diff --check` (only existing protected-file/CRLF warnings)
+  - graphify update via `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .`
+- Real deploy is still required before browser behavior changes: `firebase deploy --only firestore:rules --project nearnest-platform`.
+- Suggested commit: `fix(firebase): allow store owner queries with resource data rules`.
 
 ## Store listener secondary-query error handling fix 2026-04-27
 - **No Firebase deploy was run.**
