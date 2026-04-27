@@ -17,7 +17,6 @@ import { getNearbyStoresApi } from '../services/discoveryApi';
 import { openExternalUrl } from '../services/externalLinks';
 import {
   getCategories,
-  getMapsUrl,
   getMedicineById,
   getPhoneUrl,
   getPopularSuggestions,
@@ -148,23 +147,20 @@ export default function HomeScreen() {
     }
   }
 
-  async function openMaps(store: Store, fromScreen = 'home') {
+  function openRoute(store: Store, fromScreen = 'home') {
     setActionError('');
     medifindTelemetry.emit('medifind.stores.store_navigate_clicked', {
       store_id: store.id,
       from_screen: fromScreen,
     });
-    const opened = await openExternalUrl(getMapsUrl(store));
-    if (!opened) {
-      setActionError('We could not open maps on this device.');
-    }
+    router.push({ pathname: '/navigation/[storeId]', params: { storeId: store.id } });
   }
 
   return (
     <Screen
       eyebrow="Medifind discovery"
       title={profile?.displayName ? `Welcome, ${profile.displayName}` : 'Find medicine nearby'}
-      description="Search a medicine, compare verified pharmacies, then call or open directions before you go."
+      description="Search a medicine, compare verified pharmacies, then call or preview the route before you go."
       footer={
         <>
           <ActionButton
@@ -311,7 +307,7 @@ export default function HomeScreen() {
                     void openPhone(store, 'home_stores_mode');
                   }}
                   onNavigate={() => {
-                    void openMaps(store, 'home_stores_mode');
+                    openRoute(store, 'home_stores_mode');
                   }}
                   onPress={() => {
                     medifindTelemetry.emit('medifind.stores.store_card_tapped', {

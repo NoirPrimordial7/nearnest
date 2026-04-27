@@ -47,7 +47,6 @@ export function StoreCard({
         <View style={styles.titleRow}>
           <Text
             style={[styles.name, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}
-            numberOfLines={2}
           >
             {store.name}
           </Text>
@@ -73,27 +72,30 @@ export function StoreCard({
             {formatStoreAddress(store)}
           </Text>
         )}
-        <Badge kind={freshnessKind} label={inventoryItem ? 'Call to confirm availability' : store.freshnessLabel} />
+        <View style={styles.badgeRow}>
+          <Badge kind={freshnessKind} label={inventoryItem ? 'Call to confirm availability' : store.freshnessLabel} />
+          <Badge kind={store.isOpenNow ? 'fresh' : 'neutral'} label={store.isOpenNow ? store.closesAtLabel ?? 'Open now' : 'Closed now'} />
+        </View>
       </Pressable>
       <View style={styles.actions}>
         <CardAction label="Call" onPress={onCall} />
-        <CardAction label="Navigate" onPress={onNavigate} />
-        <CardAction label="View store" onPress={onViewStore ?? onPress} />
+        <CardAction label="Route" onPress={onNavigate} primary />
+        <CardAction label="Details" onPress={onViewStore ?? onPress} />
       </View>
     </View>
   );
 }
 
-function CardAction({ label, onPress }: { label: string; onPress: () => void }) {
+function CardAction({ label, onPress, primary = false }: { label: string; onPress: () => void; primary?: boolean }) {
   const { scale, scaleLineHeight } = useFontScale();
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.action, primary && styles.actionPrimary, pressed && styles.pressed]}
     >
-      <Text style={[styles.actionLabel, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+      <Text style={[styles.actionLabel, primary && styles.actionLabelPrimary, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
         {label}
       </Text>
     </Pressable>
@@ -123,6 +125,7 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    flexWrap: 'wrap',
     gap: spacing.md,
   },
   name: {
@@ -136,13 +139,22 @@ const styles = StyleSheet.create({
   freshness: {
     fontWeight: '600',
   },
+  badgeRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    paddingTop: spacing.xs,
+  },
   actions: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   action: {
     minHeight: 48,
-    flex: 1,
+    minWidth: 92,
+    flexGrow: 1,
+    flexBasis: 0,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.md,
@@ -151,10 +163,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
     paddingHorizontal: spacing.xs,
   },
+  actionPrimary: {
+    borderColor: colors.primary100,
+    backgroundColor: colors.primary50,
+  },
   actionLabel: {
     color: colors.primary700,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  actionLabelPrimary: {
+    color: colors.primary700,
   },
   pressed: {
     opacity: 0.84,

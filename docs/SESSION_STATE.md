@@ -1,6 +1,31 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex ran final regression verification)
+Last updated: 2026-04-27 (Codex added mobile in-app route preview)
+
+## Mobile in-app route preview and discovery polish 2026-04-27
+- **Mobile app only.**
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- Added `apps/mobile/app/navigation/[storeId].tsx`.
+  - Shows a premium in-app route preview with road shapes, route line, You marker, destination marker/name, distance, estimated time, open/closed status, verified badge, optional medicine context, call action, store-detail action, back button, and safety note.
+  - Copy explicitly says navigation stays inside Medifind.
+- Replaced route/navigation actions to stay in Expo Router:
+  - `apps/mobile/app/home.tsx`
+  - `apps/mobile/app/medicine/[medicineId]/stores.tsx`
+  - `apps/mobile/app/stores/index.tsx`
+  - `apps/mobile/app/store/[storeId].tsx`
+- Medicine nearby-store route passes `medicineId` into `/navigation/[storeId]`.
+- Phone call actions still use `openExternalUrl(getPhoneUrl(...))`.
+- `apps/mobile/components/MapPlaceholder.tsx` now renders an in-app map preview with road/grid shapes, route segments, You marker, verified/unverified store pins, and a store-count chip.
+- `apps/mobile/components/StoreCard.tsx` has better wrapping, action hierarchy, open/freshness badges, and `Route` label.
+- `apps/mobile/app/welcome.tsx` no longer says directions open in a maps app.
+- Verification passed:
+  - `apps/mobile npm run typecheck`
+  - `apps/mobile npx expo export --platform android --output-dir .expo/mobile-in-app-navigation-polish-export`
+  - `rg "openExternalUrl\\(getMaps|getMapsUrl\\(" apps/mobile/app apps/mobile/components -n` returned no matches.
+  - graphify update via the absolute graphify path.
+- Android dev-client runtime smoke was not run in this session.
+- Suggested commit: `fix(mobile): add in-app route preview and polish discovery UI`.
 
 ## Final web store access and mobile discovery regression check 2026-04-27
 - **No Firebase deploy was run.**

@@ -1,12 +1,12 @@
 # Graph Report - C:\projects\nearnest\web-portal  (2026-04-27)
 
 ## Corpus Check
-- 127 files · ~191,309 words
+- 128 files · ~193,833 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 456 nodes · 578 edges · 78 communities detected
-- Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 82 edges (avg confidence: 0.8)
+- 460 nodes · 579 edges · 78 communities detected
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 78 edges (avg confidence: 0.8)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -96,12 +96,14 @@
 4. `normalizeStore()` - 9 edges
 5. `getPostAuthRouteForUser()` - 8 edges
 6. `useFontScale()` - 7 edges
-7. `openExternalUrl()` - 7 edges
-8. `getInventoryGroupsForStore()` - 7 edges
-9. `searchMedicinesApi()` - 6 edges
-10. `getMedicineDetailApi()` - 6 edges
+7. `getInventoryGroupsForStore()` - 7 edges
+8. `searchMedicinesApi()` - 6 edges
+9. `getMedicineDetailApi()` - 6 edges
+10. `getStoreDetailApi()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `getStockLabel()` --calls--> `formatFreshness()`  [INFERRED]
+  C:\projects\nearnest\web-portal\apps\mobile\app\store\[storeId].tsx → C:\projects\nearnest\web-portal\functions\index.js
 - `Badge()` --calls--> `useFontScale()`  [INFERRED]
   C:\projects\nearnest\web-portal\apps\mobile\components\Badge.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 - `Chip()` --calls--> `useFontScale()`  [INFERRED]
@@ -110,8 +112,6 @@
   C:\projects\nearnest\web-portal\apps\mobile\components\OfflineBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 - `SearchBar()` --calls--> `useFontScale()`  [INFERRED]
   C:\projects\nearnest\web-portal\apps\mobile\components\SearchBar.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
-- `StaleDataBanner()` --calls--> `useFontScale()`  [INFERRED]
-  C:\projects\nearnest\web-portal\apps\mobile\components\StaleDataBanner.tsx → C:\projects\nearnest\web-portal\apps\mobile\hooks\useFontScale.ts
 
 ## Communities
 
@@ -124,16 +124,16 @@ Cohesion: 0.07
 Nodes (41): getAuthErrorMessage(), reloadCurrentUser(), sendVerificationEmailToCurrentUser(), signInWithEmail(), signInWithGoogleIdToken(), signOut(), signUpWithEmail(), subscribeToAuthState() (+33 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.05
-Nodes (21): AdminLayout(), Icon(), useClickAway(), RoleRedirect(), useAuth(), CreateStore(), DocumentVerification(), Icon() (+13 more)
+Cohesion: 0.09
+Nodes (40): asStringArray(), buildQueryTokens(), compareAvailability(), distanceForStore(), encodeGeohash(), fetchStoreDocsByGeohash(), findMedicineDocs(), findNearbyStores() (+32 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.1
-Nodes (39): asStringArray(), buildQueryTokens(), compareAvailability(), distanceForStore(), encodeGeohash(), fetchStoreDocsByGeohash(), findMedicineDocs(), findNearbyStores() (+31 more)
+Cohesion: 0.06
+Nodes (16): AdminLayout(), Icon(), useClickAway(), RoleRedirect(), useAuth(), CreateStore(), ProtectedRoute(), ReviewSubmit() (+8 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.15
-Nodes (9): openExternalUrl(), openMaps(), openPhone(), openMaps(), openPhone(), getMapsUrl(), getPhoneUrl(), openMaps() (+1 more)
+Cohesion: 0.08
+Nodes (11): openExternalUrl(), openPhone(), openPhone(), formatFreshness(), getPhoneUrl(), getStockLabel(), callStore(), formatDistance() (+3 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.21
@@ -153,19 +153,19 @@ Nodes (8): assertStoreDocsSafe(), buildSearchTokens(), encodeGeohash(), freshnes
 
 ### Community 9 - "Community 9"
 Cohesion: 0.31
-Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
+Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
 
 ### Community 10 - "Community 10"
 Cohesion: 0.31
-Nodes (5): deleteStore(), listStores(), mockDelay(), normalizeStore(), setStoreStatus()
+Nodes (6): Card(), Dashboard(), Icon(), KPICard(), makeMonthBuckets(), RangeTabs()
 
 ### Community 11 - "Community 11"
-Cohesion: 0.25
-Nodes (4): formatFreshness(), formatFreshness(), getStockLabel(), getStockLabel()
-
-### Community 12 - "Community 12"
 Cohesion: 0.46
 Nodes (6): buildRange(), formatDate(), Icon(), Pagination(), StatusPill(), StoresPage()
+
+### Community 12 - "Community 12"
+Cohesion: 0.39
+Nodes (5): DocumentVerification(), Icon(), Pill(), prettyLabel(), toDate()
 
 ### Community 13 - "Community 13"
 Cohesion: 0.4
@@ -522,10 +522,10 @@ Nodes (0):
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `getPhoneUrl()` connect `Community 4` to `Community 0`?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
 - **Why does `handleSignOut()` connect `Community 1` to `Community 4`?**
   _High betweenness centrality (0.069) - this node is a cross-community bridge._
-- **Why does `getMapsUrl()` connect `Community 4` to `Community 0`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
 - **Are the 12 inferred relationships involving `useAuth()` (e.g. with `AdminLayout()` and `SupportTickets()`) actually correct?**
   _`useAuth()` has 12 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 3 inferred relationships involving `upsertUserProfileFromAuthUser()` (e.g. with `signInWithEmail()` and `signUpWithEmail()`) actually correct?**

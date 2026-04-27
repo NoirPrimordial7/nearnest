@@ -4,6 +4,59 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Add in-app route preview and polish mobile discovery UI
+**Agent:** Codex (GPT-5)
+**Session goal:** Keep Medifind route/navigation actions inside the mobile app and polish store/map discovery surfaces. No Firebase deploy and no production data mutation.
+
+### Files inspected
+- `AGENTS.md`, `graphify-out/GRAPH_REPORT.md`, `docs/MOBILE_APP_PLAN.md`, `docs/DESIGN_SYSTEM.md`
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx`
+- `apps/mobile/app/store/[storeId].tsx`
+- `apps/mobile/app/stores/index.tsx`
+- `apps/mobile/app/home.tsx`
+- `apps/mobile/components/MapPlaceholder.tsx`
+- `apps/mobile/components/StoreCard.tsx`
+- `apps/mobile/components/BottomSheet.tsx`
+- `apps/mobile/components/ActionButton.tsx`
+- `apps/mobile/components/Badge.tsx`
+- `apps/mobile/theme/tokens.ts`
+- `apps/mobile/services/discoveryApi.ts`
+- `apps/mobile/services/externalLinks.ts`
+- `apps/mobile/services/mockDiscovery.ts`
+- `apps/mobile/types/discovery.ts`
+
+### Files edited
+- `apps/mobile/app/navigation/[storeId].tsx`
+  - Added in-app route preview route with map-style hero, route line, start/destination markers, distance/time, store status, verified badge, medicine context, call action, store-detail action, back button, and safety note.
+- `apps/mobile/app/home.tsx`, `apps/mobile/app/medicine/[medicineId]/stores.tsx`, `apps/mobile/app/stores/index.tsx`, `apps/mobile/app/store/[storeId].tsx`
+  - Replaced external map navigation with `router.push('/navigation/[storeId]')`; medicine context passes `medicineId`.
+  - Kept phone call actions using `openExternalUrl(getPhoneUrl(...))`.
+- `apps/mobile/components/MapPlaceholder.tsx`
+  - Reworked the map preview into a premium in-app map surface with roads, route segments, You marker, store pins, verified/unverified styling, and store count chip.
+  - Removed copy that said navigation opens a maps app.
+- `apps/mobile/components/StoreCard.tsx`
+  - Improved spacing/wrapping, action hierarchy, status/freshness badges, and renamed the map action to `Route`.
+- `apps/mobile/app/welcome.tsx`
+  - Updated onboarding copy to describe in-app route previews instead of opening a maps app.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`, `graphify-out/**`
+  - Updated handoff and graph.
+
+### Verification
+- `cd apps/mobile && npm run typecheck` passed.
+- `cd apps/mobile && npx expo export --platform android --output-dir .expo/mobile-in-app-navigation-polish-export` passed after sandbox approval for the exact export command.
+- `rg "openExternalUrl\\(getMaps|getMapsUrl\\(" apps/mobile/app apps/mobile/components -n` returned no matches.
+- `graphify update .` passed via the absolute graphify path.
+- Final `git diff --check` still needs to run after this docs update.
+
+### Protected files
+- No Firebase deploy was run.
+- No production data was mutated.
+- Did not touch `src/**`, `public/**`, `dataconnect/**`, `functions/**`, `firestore.rules`, `firestore.indexes.json`, `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, or `.codex/*.png`.
+
+**Suggested commit message:** `fix(mobile): add in-app route preview and polish discovery UI`
+
+---
+
 ## 2026-04-27 - Final web store access and mobile discovery regression check
 **Agent:** Codex (GPT-5)
 **Session goal:** Run final regression verification after the web store visibility and stale permission banner fixes. No Firebase deploy and no production data mutation.

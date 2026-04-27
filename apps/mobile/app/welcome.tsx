@@ -20,7 +20,7 @@ const slides = [
   {
     icon: '03',
     title: 'Call or navigate before you go',
-    body: 'Confirm with the store, then open directions in your maps app.',
+    body: 'Confirm with the store, then preview the route inside Medifind.',
   },
 ];
 
@@ -82,7 +82,7 @@ export default function WelcomeScreen() {
       <View style={styles.promisePanel}>
         <Text style={styles.promiseTitle}>MVP focus</Text>
         <Text style={styles.promiseBody}>
-          Medifind helps you search, compare availability, call a store, and open directions.
+          Medifind helps you search, compare availability, call a store, and preview the route.
         </Text>
       </View>
     </Screen>

@@ -11,30 +11,52 @@ type MapPlaceholderProps = {
 
 export function MapPlaceholder({ stores, title = 'Pharmacies near you' }: MapPlaceholderProps) {
   const { scale, scaleLineHeight } = useFontScale();
+  const visibleStores = stores.slice(0, 8);
 
   return (
     <View accessibilityElementsHidden style={styles.map}>
-      <View style={styles.gridLineHorizontal} />
-      <View style={styles.gridLineVertical} />
-      <Text style={[styles.title, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
-        {title}
-      </Text>
-      <Text style={[styles.subtitle, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
-        Map preview placeholder. Navigation opens your maps app.
-      </Text>
-      {stores.slice(0, 12).map((store, index) => (
+      <View style={styles.softPatchOne} />
+      <View style={styles.softPatchTwo} />
+      <View style={styles.roadHorizontal} />
+      <View style={styles.roadVertical} />
+      <View style={styles.roadDiagonal} />
+      <View style={styles.routeSegmentOne} />
+      <View style={styles.routeSegmentTwo} />
+      <View style={styles.routeSegmentThree} />
+
+      <View style={styles.userPin}>
+        <Text style={styles.userPinText}>You</Text>
+      </View>
+
+      {visibleStores.map((store, index) => (
         <View
           key={store.id}
           style={[
-            styles.dot,
+            styles.pin,
+            store.verified ? styles.pinVerified : styles.pinUnverified,
             {
               left: `${16 + ((index * 17) % 68)}%`,
               top: `${24 + ((index * 23) % 52)}%`,
-              opacity: store.verified ? 1 : 0.45,
             },
           ]}
-        />
+        >
+          <View style={styles.pinCore} />
+        </View>
       ))}
+
+      <View style={styles.infoPanel}>
+        <View style={styles.infoHeader}>
+          <Text style={[styles.title, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+            {title}
+          </Text>
+          <View style={styles.countChip}>
+            <Text style={styles.countText}>{stores.length} stores</Text>
+          </View>
+        </View>
+        <Text style={[styles.subtitle, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+          In-app map preview with nearby verified pharmacies and route context.
+        </Text>
+      </View>
     </View>
   );
 }
@@ -43,48 +65,165 @@ const styles = StyleSheet.create({
   map: {
     minHeight: 260,
     overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
+    justifyContent: 'flex-end',
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.borderSoft,
-    backgroundColor: colors.surfaceAlt,
-    padding: spacing.xxl,
+    backgroundColor: colors.primary50,
+    padding: spacing.lg,
   },
-  gridLineHorizontal: {
+  softPatchOne: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    top: '52%',
-    height: 1,
-    backgroundColor: colors.border,
+    right: -28,
+    top: -22,
+    width: 132,
+    height: 132,
+    borderRadius: 66,
+    backgroundColor: colors.surface,
+    opacity: 0.68,
   },
-  gridLineVertical: {
+  softPatchTwo: {
     position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: '48%',
-    width: 1,
-    backgroundColor: colors.border,
+    left: -34,
+    bottom: -26,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: colors.primary100,
+    opacity: 0.6,
   },
-  dot: {
+  roadHorizontal: {
     position: 'absolute',
-    width: 14,
+    left: -12,
+    right: -12,
+    top: '46%',
+    height: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    opacity: 0.84,
+  },
+  roadVertical: {
+    position: 'absolute',
+    top: -18,
+    bottom: -18,
+    left: '44%',
+    width: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    opacity: 0.74,
+  },
+  roadDiagonal: {
+    position: 'absolute',
+    left: '9%',
+    top: '24%',
+    width: '88%',
     height: 14,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    opacity: 0.62,
+    transform: [{ rotate: '-21deg' }],
+  },
+  routeSegmentOne: {
+    position: 'absolute',
+    left: '20%',
+    top: '62%',
+    width: '28%',
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent500,
+    transform: [{ rotate: '-18deg' }],
+  },
+  routeSegmentTwo: {
+    position: 'absolute',
+    left: '44%',
+    top: '51%',
+    width: '24%',
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent500,
+    transform: [{ rotate: '-44deg' }],
+  },
+  routeSegmentThree: {
+    position: 'absolute',
+    left: '62%',
+    top: '36%',
+    width: '18%',
+    height: 5,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent500,
+    transform: [{ rotate: '12deg' }],
+  },
+  userPin: {
+    position: 'absolute',
+    left: '12%',
+    bottom: '24%',
+    minWidth: 48,
+    minHeight: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: colors.surface,
+    backgroundColor: colors.text,
+  },
+  userPinText: {
+    color: colors.textInvert,
+    fontSize: typography.caption,
+    fontWeight: '800',
+  },
+  pin: {
+    position: 'absolute',
+    width: 22,
+    height: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: radius.pill,
     borderWidth: 3,
     borderColor: colors.surface,
+  },
+  pinVerified: {
     backgroundColor: colors.primary500,
   },
+  pinUnverified: {
+    backgroundColor: colors.textSoft,
+  },
+  pinCore: {
+    width: 6,
+    height: 6,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+  },
+  infoPanel: {
+    gap: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+  },
+  infoHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  countChip: {
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary50,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  countText: {
+    color: colors.primary700,
+    fontSize: typography.caption,
+    fontWeight: '800',
+  },
   title: {
+    flex: 1,
     color: colors.text,
     fontWeight: '700',
-    textAlign: 'center',
   },
   subtitle: {
-    maxWidth: 240,
     color: colors.textMuted,
-    textAlign: 'center',
   },
 });

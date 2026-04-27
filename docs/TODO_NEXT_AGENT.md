@@ -4,29 +4,32 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after final regression verification)
+## Next up (as of 2026-04-27, after mobile in-app route preview polish)
 
-**Current local state:** Static regression checks passed after the web store visibility and stale permission banner fixes. This session changed docs only. No Firebase deploy was run and no production data was modified.
+**Current local state:** Medifind mobile route/navigation actions now stay inside the app. No Firebase deploy was run and no production data was modified.
+
+**What changed locally:**
+- Added `apps/mobile/app/navigation/[storeId].tsx`.
+- `StoreCard`, Nearby Stores, Store Detail, Stores mode, and Home stores mode now route to `/navigation/[storeId]` instead of opening Google Maps/browser.
+- Medicine-specific nearby-store routes pass `medicineId` into the in-app preview.
+- Phone call actions still use the dialer.
+- `MapPlaceholder` is now a premium in-app map preview with route segments, store pins, verified/unverified styling, and a store-count chip.
+- `StoreCard` action hierarchy and wrapping were polished; the map action is now `Route`.
+- Store Detail route actions are renamed to `In-app route` / `Route`, and action/address layout wraps better for larger text.
 
 **Verification passed:**
-- Root `npm run build` passed with only the existing large chunk warning.
-- `functions` lint passed.
-- `apps/mobile` typecheck passed.
-- `git diff --check` passed before final docs edits.
-- Route/code inspection confirms `/store-admin/home -> /home`, `/store-admin/:storeId -> dashboard`, and dashboard/inventory/support child routes remain wired.
-- `UserHome` still gates the red store permission banner so it cannot render while store cards are visible.
-- Mobile code-path inspection confirms Google auth hooks, `mobileUsers/{uid}` profile service, and discovery screens still point to the expected services.
-
-**Still needs manual authenticated runtime proof:**
-- Web: sign in as the owner/member account, confirm `/home` shows stores with no red permission banner, open dashboard/inventory/support, and sign out from the avatar menu.
-- Mobile: use the Android dev build to confirm Google login, profile path, Home, Dolo search, Results, Medicine detail, Nearby stores, and Store detail.
+- `apps/mobile npm run typecheck`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-in-app-navigation-polish-export`.
+- Search confirmed no app/component call still does `openExternalUrl(getMapsUrl(...))`.
+- `graphify update .` passed.
 
 ### Next steps
 
-1. Rerun `git diff --check` after this docs update.
-2. Commit this docs-only regression pass with: `git add docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md && git commit -m "test(app): verify web store access and mobile discovery regression"`.
+1. Rerun final `git diff --check` and `git status --short`.
+2. Commit with: `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): add in-app route preview and polish discovery UI"`.
 3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. Do not deploy Firebase for this regression pass.
+4. Optional runtime smoke: Android dev build -> Home -> search Dolo -> Results -> Medicine detail -> Nearby stores -> Route -> confirm `/navigation/[storeId]` opens inside Medifind -> Store detail -> Route -> Back.
+5. Do not deploy Firebase for this mobile UI task.
 
 ---
 

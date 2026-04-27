@@ -12,7 +12,6 @@ import { useFontScale } from '../../../hooks/useFontScale';
 import { getMedicineDetailApi, getNearbyStoresApi } from '../../../services/discoveryApi';
 import { openExternalUrl } from '../../../services/externalLinks';
 import {
-  getMapsUrl,
   getPhoneUrl,
 } from '../../../services/mockDiscovery';
 import { medifindTelemetry } from '../../../services/telemetry';
@@ -105,16 +104,16 @@ export default function NearbyStoresForMedicineScreen() {
     }
   }
 
-  async function openMaps(store: Store) {
+  function openRoute(store: Store) {
     setActionError('');
     medifindTelemetry.emit('medifind.stores.store_navigate_clicked', {
       store_id: store.id,
       from_screen: 'medicine_stores',
     });
-    const opened = await openExternalUrl(getMapsUrl(store));
-    if (!opened) {
-      setActionError('We could not open maps on this device.');
-    }
+    router.push({
+      pathname: '/navigation/[storeId]',
+      params: { storeId: store.id, medicineId },
+    });
   }
 
   function openStore(row: MedicineAvailability) {
@@ -183,7 +182,7 @@ export default function NearbyStoresForMedicineScreen() {
                   void openPhone(row.store);
                 }}
                 onNavigate={() => {
-                  void openMaps(row.store);
+                  openRoute(row.store);
                 }}
                 onPress={() => openStore(row)}
                 store={row.store}

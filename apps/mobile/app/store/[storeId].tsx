@@ -19,7 +19,6 @@ import {
   formatFreshness,
   formatPrice,
   formatStoreAddress,
-  getMapsUrl,
   getPhoneUrl,
   getStockLabel,
 } from '../../services/mockDiscovery';
@@ -109,16 +108,13 @@ export default function StoreDetailScreen() {
     }
   }
 
-  async function navigateToStore() {
+  function openRoutePreview() {
     setActionError('');
     medifindTelemetry.emit('medifind.stores.store_navigate_clicked', {
       store_id: currentStore.id,
       from_screen: 'store_detail',
     });
-    const opened = await openExternalUrl(getMapsUrl(currentStore));
-    if (!opened) {
-      setActionError('We could not open maps on this device.');
-    }
+    router.push({ pathname: '/navigation/[storeId]', params: { storeId: currentStore.id } });
   }
 
   function submitInventorySearch() {
@@ -135,7 +131,7 @@ export default function StoreDetailScreen() {
       description="Confirm the store, contact details, and inventory freshness before travelling."
       footer={
         <>
-          <ActionButton label="Navigate" onPress={() => void navigateToStore()} />
+          <ActionButton label="In-app route" onPress={openRoutePreview} />
           <ActionButton label="Call store" onPress={() => void callStore()} variant="secondary" />
         </>
       }
@@ -179,9 +175,9 @@ export default function StoreDetailScreen() {
         ) : null}
 
         <View style={styles.actionRow}>
-          <ActionButton label="Call" onPress={() => void callStore()} variant="secondary" />
-          <ActionButton label="Navigate" onPress={() => void navigateToStore()} variant="secondary" />
-          <ActionButton label="Hours" onPress={() => setHoursOpen((value) => !value)} variant="secondary" />
+          <ActionButton label="Call" onPress={() => void callStore()} style={styles.actionButton} variant="secondary" />
+          <ActionButton label="Route" onPress={openRoutePreview} style={styles.actionButton} variant="secondary" />
+          <ActionButton label="Hours" onPress={() => setHoursOpen((value) => !value)} style={styles.actionButton} variant="secondary" />
         </View>
 
         {hoursOpen ? <HoursPanel /> : null}
@@ -337,7 +333,12 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  actionButton: {
+    minWidth: 112,
+    flexGrow: 1,
   },
   hoursPanel: {
     gap: spacing.sm,
@@ -354,6 +355,11 @@ const styles = StyleSheet.create({
   },
   addressBlock: {
     gap: spacing.sm,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
   },
   sectionTitle: {
     color: colors.text,

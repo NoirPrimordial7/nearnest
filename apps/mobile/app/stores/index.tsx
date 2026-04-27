@@ -12,7 +12,6 @@ import { useFontScale } from '../../hooks/useFontScale';
 import { getNearbyStoresApi } from '../../services/discoveryApi';
 import { openExternalUrl } from '../../services/externalLinks';
 import {
-  getMapsUrl,
   getPhoneUrl,
   normalize,
 } from '../../services/mockDiscovery';
@@ -87,16 +86,13 @@ export default function StoresLandingScreen() {
     }
   }
 
-  async function openMaps(store: Store) {
+  function openRoute(store: Store) {
     setActionError('');
     medifindTelemetry.emit('medifind.stores.store_navigate_clicked', {
       store_id: store.id,
       from_screen: 'stores_landing',
     });
-    const opened = await openExternalUrl(getMapsUrl(store));
-    if (!opened) {
-      setActionError('We could not open maps on this device.');
-    }
+    router.push({ pathname: '/navigation/[storeId]', params: { storeId: store.id } });
   }
 
   function openStore(store: Store) {
@@ -160,7 +156,7 @@ export default function StoresLandingScreen() {
                   void openPhone(store);
                 }}
                 onNavigate={() => {
-                  void openMaps(store);
+                  openRoute(store);
                 }}
                 onPress={() => openStore(store)}
                 store={store}
