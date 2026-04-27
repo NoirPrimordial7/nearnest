@@ -4,26 +4,24 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after store resource-data rules fix)
+## Next up (as of 2026-04-27, after stale permission banner fix)
 
-**Current local state:** Firestore rules now allow top-level `stores` owner/member collection queries to evaluate access from `resource.data`. No real Firebase deploy was run and no production data was modified.
+**Current local state:** `/home` should no longer show the red "Missing or insufficient permissions" banner after store cards are visible. No Firebase deploy was run and no production data was modified.
 
 **What changed locally:**
-- Added `canAccessStoreData(storeData)` in `firestore.rules`.
-- `canAccessStore(storeId)` now delegates to `canAccessStoreData(storeDoc(storeId).data)`.
-- Top-level `match /stores/{storeId}` now uses `canAccessStoreData(resource.data)` for `allow read, get, list`.
-- Store subcollections still use `canAccessStore(storeId)` so nested documents inherit access from the parent store document.
+- `src/pages/User/UserHome.jsx` clears `errMsg` when `listenUserStores` delivers a valid non-empty store array.
+- The red store error banner is gated by `showStoreError`, so it only renders while there are no visible stores.
+- `src/pages/register-store/stores.js` listener behavior was inspected but not changed; primary query results still stay visible when optional query listeners warn/fail.
 
-**Why this matters:** browser `/home` queries list `stores` by fields on the candidate store docs (`ownerId`, `membersArr`, `visibleTo`, `members.{uid}`). The old top-level list rule used a separate parent `get()` via `storeDoc(storeId)`, causing `permission-denied` for those collection queries even when the UID was correctly linked. The new rule evaluates the candidate store document directly.
+**Root cause:** `UserHome.jsx` rendered `errMsg` unconditionally in the loaded-store panel. A previous listener error could set `errMsg`, then later successful snapshots would update `stores` without clearing the stale message.
 
 ### Next steps
 
-1. Commit the local rules/docs update with: `git add firestore.rules docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(firebase): allow store owner queries with resource data rules"`.
-2. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-3. After explicit approval, deploy rules only: `firebase deploy --only firestore:rules --project nearnest-platform`.
-4. Refresh `/home` and confirm the browser dev console no longer reports `permission-denied` for `ownerId`, `membersArr`, `visibleTo`, or `membersMap` store queries.
-5. If `/home` is still empty after the real rules deploy, copy the `[UserHome] store access query counts` and `[UserHome] store access query failed` logs before changing code or data.
-6. Do not mutate store data; the latest diagnostic already proved six UID-linked stores for `adityagholap19.06@gmail.com`.
+1. Rerun final verification before commit: `git diff --check` and `git status --short`.
+2. Commit this task with: `git add src/pages/User/UserHome.jsx docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(web): clear stale store permission banner after load"`.
+3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
+4. Refresh `/home` with the friend account. Expected result: store cards remain visible and no red permission banner appears.
+5. If an error still appears with visible stores, copy the `[UserHome] store access query counts` and `[UserHome] store access query failed` dev-console logs before changing rules or data.
 
 ---
 

@@ -1,6 +1,20 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex fixed top-level store query Firestore rules)
+Last updated: 2026-04-27 (Codex fixed stale /home permission banner)
+
+## Stale store permission banner fix 2026-04-27
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- Current runtime state before this fix:
+  - Firestore rules fix was committed/deployed separately.
+  - Stores now load correctly on `/home`.
+  - A friend account could see store cards but still saw the red banner: "Missing or insufficient permissions for one or more stores."
+- Root cause: `src/pages/User/UserHome.jsx` set `errMsg` from listener errors, but the successful `listenUserStores` data callback only updated `stores` and never cleared that stale error message.
+- `UserHome.jsx` now clears `errMsg` when a valid non-empty store array arrives.
+- The red store error banner now uses `showStoreError`, so it only renders when no stores are currently visible.
+- `src/pages/register-store/stores.js` was inspected and not changed; primary owner/member results still stay visible when optional `visibleTo` or `membersMap` listeners warn/fail.
+- Verification: `npm run build` passed on rerun with only the existing large chunk warning; graphify update passed via the absolute graphify path.
+- Suggested commit: `fix(web): clear stale store permission banner after load`.
 
 ## Store resource-data rules fix 2026-04-27
 - **No real Firebase deploy was run.**

@@ -78,10 +78,25 @@ export default function UserHome() {
       try {
         const unsub = await listenUserStores(
           user.uid,
-          (arrOrUpdater) =>
-            setStores((prev) =>
-              typeof arrOrUpdater === "function" ? arrOrUpdater(prev) : arrOrUpdater
-            ),
+          (arrOrUpdater) => {
+            if (typeof arrOrUpdater === "function") {
+              setStores((prev) => {
+                const nextStores = arrOrUpdater(prev);
+                if (Array.isArray(nextStores) && nextStores.length > 0) {
+                  queueMicrotask(() => {
+                    if (mounted) setErrMsg("");
+                  });
+                }
+                return nextStores;
+              });
+              return;
+            }
+
+            setStores(arrOrUpdater);
+            if (Array.isArray(arrOrUpdater) && arrOrUpdater.length > 0) {
+              setErrMsg("");
+            }
+          },
           (e) => {
             if (!mounted) return;
             setErrMsg(
@@ -120,6 +135,7 @@ export default function UserHome() {
     (x) => storeBucket(x.verificationStatus) !== "verified"
   );
   const noStores = stores !== null && stores.length === 0;
+  const showStoreError = Boolean(errMsg) && (!Array.isArray(stores) || stores.length === 0);
 
   const profileMissing =
     !profileLoading &&
@@ -292,7 +308,7 @@ export default function UserHome() {
                 </span>
               </div>
 
-              {errMsg && <div className={s.errBanner}>{errMsg}</div>}
+              {showStoreError && <div className={s.errBanner}>{errMsg}</div>}
 
               <div className={s.searchRow}>
                 <input

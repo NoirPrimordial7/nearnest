@@ -4,6 +4,42 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-27 - Clear stale store permission banner after load
+**Agent:** Codex (GPT-5)
+**Session goal:** Stop `/home` from showing a stale red permission banner after stores have successfully loaded. No Firebase deploy and no data mutation.
+
+### Files inspected
+- `AGENTS.md` and `graphify-out/GRAPH_REPORT.md` - required graphify and repo context.
+- `src/pages/User/UserHome.jsx` - `/home` store listener state and banner rendering.
+- `src/pages/register-store/stores.js` - confirmed listener still keeps successful primary query results and logs optional query failures in dev.
+
+### Files edited
+- `src/pages/User/UserHome.jsx`
+  - The `listenUserStores` data callback now clears `errMsg` when a valid non-empty store array arrives.
+  - Added `showStoreError` so the red permission banner only renders when there are no visible stores.
+  - Existing fatal startup/load errors still remain visible when stores are empty or not loaded.
+- `docs/AGENT_LOG.md`, `docs/TODO_NEXT_AGENT.md`, `docs/SESSION_STATE.md`
+  - Updated this handoff.
+- `graphify-out/**`
+  - Updated because a source file changed.
+
+### Root cause
+`UserHome.jsx` displayed `{errMsg && <div className={s.errBanner}>{errMsg}</div>}` in the loaded-store view. If a previous listener error set `errMsg`, later successful store snapshots updated `stores` but never cleared the stale error state, so users could see store cards and a red permission warning at the same time.
+
+### Verification
+- `npm run build` passed on rerun; Vite reported only the existing large chunk warning.
+- `graphify update .` passed via `C:\Users\Aditya\AppData\Roaming\Python\Python314\Scripts\graphify.exe update .`.
+- `git diff --check` should be run after this final docs update.
+
+### Protected files
+- No Firebase deploy was run.
+- No Firestore data was mutated.
+- Did not touch `firestore.rules`, `functions/**`, `apps/mobile/**`, `dataconnect/**`, `.env*`, `apps/mobile/.env`, `serviceAccountKey.json`, `.claude/settings.local.json`, or `.codex/*.png`.
+
+**Suggested commit message:** `fix(web): clear stale store permission banner after load`
+
+---
+
 ## 2026-04-27 - Allow store owner queries with resource data rules
 **Agent:** Codex (GPT-5)
 **Session goal:** Fix Firestore rules so web `/home` collection queries on `stores` can pass for UID-linked owner/member access without restoring broad signed-in reads. No real Firebase deploy.
