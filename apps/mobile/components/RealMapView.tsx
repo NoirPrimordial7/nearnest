@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, Polyline, type Region } from 'react-native-maps';
+import Constants from 'expo-constants';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
 
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 import type { Store } from '../types/discovery';
@@ -11,6 +12,10 @@ import type { UserLocation } from '../services/location';
 const PUNE_FALLBACK = {
   lat: 18.559,
   lng: 73.7868,
+};
+
+type MobileExtraConfig = {
+  hasAndroidMapsKey?: boolean;
 };
 
 type RealMapViewProps = {
@@ -57,6 +62,15 @@ function buildRegion(
   };
 }
 
+function canRenderNativeMap() {
+  if (Platform.OS !== 'android') {
+    return true;
+  }
+
+  const extra = Constants.expoConfig?.extra as MobileExtraConfig | undefined;
+  return extra?.hasAndroidMapsKey === true;
+}
+
 export function RealMapView({
   stores,
   selectedStore,
@@ -88,6 +102,13 @@ export function RealMapView({
     );
   }, [startMode, userLocation]);
 
+  if (!canRenderNativeMap()) {
+    if (__DEV__) {
+      console.warn('[RealMapView] Android Maps SDK key missing; using fallback map preview.');
+    }
+    return <MapPlaceholder stores={stores} title={title} />;
+  }
+
   if (mapFailed) {
     return <MapPlaceholder stores={stores} title={title} />;
   }
@@ -100,6 +121,7 @@ export function RealMapView({
         loadingEnabled
         onMapReady={() => setMapFailed(false)}
         onRegionChangeComplete={() => undefined}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         showsCompass={false}
         showsMyLocationButton={false}
         style={styles.map}

@@ -4,6 +4,53 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Fix Android Maps key crash and Stores tab label
+**Agent:** Codex (GPT-5)
+**Session goal:** Stop the real-phone Stores/Map tab crash caused by missing Android Maps SDK key and fix the bottom tab label without touching the web portal.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `docs/MOBILE_APP_PLAN.md` - MVP map/navigation scope.
+- `docs/DESIGN_SYSTEM.md` - mobile design constraints.
+- `apps/mobile/app.json` - existing Expo config.
+- `apps/mobile/components/RealMapView.tsx` - native map mount point.
+- `apps/mobile/app/(tabs)/_layout.tsx` - tab route names and labels.
+- `apps/mobile/package.json` - confirmed `expo-constants` and `react-native-maps` are installed.
+
+**Files created / edited:**
+- `apps/mobile/app.config.js` - dynamic Expo config that preserves `app.json`, reads `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY`, sets `android.config.googleMaps.apiKey`, and exposes `extra.hasAndroidMapsKey`.
+- `apps/mobile/plugins/withAndroidGoogleMapsApiKey.js` - local config plugin that writes `com.google.android.geo.API_KEY` into the Android manifest when a key exists.
+- `apps/mobile/components/RealMapView.tsx` - gates native Android `MapView` behind `Constants.expoConfig.extra.hasAndroidMapsKey`, returns `MapPlaceholder` when missing, and uses `PROVIDER_GOOGLE` on Android.
+- `apps/mobile/app/(tabs)/_layout.tsx` - changed Stores tab screen to `stores/index` and set label/title to `Stores`.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** A package-level `react-native-maps` config plugin was not added because the installed package does not include one in this repo. The hotfix uses Expo `android.config.googleMaps.apiKey` plus a local manifest plugin.
+
+**Verification:**
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed: `git diff --check` with existing Windows/protected-file warnings only.
+- Passed: `npx expo config --type public`; local config shows `extra.hasAndroidMapsKey: false`, so current dev-client JS will use fallback map.
+- Requested `npx expo export --platform android --output-dir .expo/mobile-map-key-hotfix-export` reached Metro bundling but failed at Windows `hermesc.exe` with exit code `3221225477`.
+- Passed: `npx expo export --platform android --output-dir .expo/mobile-map-key-hotfix-export --no-bytecode`.
+- Passed: `graphify update .` via user-site `graphify.exe`.
+
+**Warnings for next agent:**
+- Current dev build can avoid the crash via JS fallback, but native Google map rendering still needs a new Android dev APK built with `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY`.
+- Do not rerun medicine import; first 100 docs were already seeded.
+- Do not start another EAS build unless the user explicitly asks; they may already have a build in queue.
+
+**Suggested commit message:**
+`fix(mobile): configure Android maps key and stores tab`
+
+---
+
 ## 2026-04-27 - Add real maps location tabs and medicine seed pipeline
 **Agent:** Codex (GPT-5)
 **Session goal:** Make Medifind mobile demo-ready for real maps/location, bottom tabs, in-app route previews, and medicine seed data without touching the web portal UI.

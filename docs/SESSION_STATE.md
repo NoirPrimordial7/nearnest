@@ -1,6 +1,44 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex added real mobile maps, location, tabs, route proxy, and medicine seed pipeline)
+Last updated: 2026-04-28 (Codex fixed Android Maps key crash fallback and Stores tab label)
+
+## Mobile Android Maps key hotfix 2026-04-28
+- **Mobile-only emergency fix.**
+- **No web portal files were touched.**
+- **No Firebase deploy was run.**
+- **No production data was mutated.**
+- Real-phone crash root cause:
+  - `react-native-maps` mounted native Google Maps on Android.
+  - The installed Android dev build did not have a native Google Maps SDK API key in the Android manifest.
+  - Native Maps SDK threw `java.lang.IllegalStateException: API key not found`.
+- Added `apps/mobile/app.config.js`:
+  - Keeps existing `app.json` values intact.
+  - Reads `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY`.
+  - Sets `android.config.googleMaps.apiKey`.
+  - Adds `extra.hasAndroidMapsKey` for runtime JS gating.
+- Added `apps/mobile/plugins/withAndroidGoogleMapsApiKey.js`:
+  - Local Expo config plugin used only when an Android Maps key exists.
+  - Writes `com.google.android.geo.API_KEY` metadata into the Android manifest during native build.
+  - A package-level `react-native-maps` config plugin was not used because the installed package does not ship one in this repo.
+- Updated `apps/mobile/components/RealMapView.tsx`:
+  - Imports `Constants`, `Platform`, and `PROVIDER_GOOGLE`.
+  - On Android, does not mount `<MapView>` unless `Constants.expoConfig.extra.hasAndroidMapsKey === true`.
+  - Falls back to `MapPlaceholder` when the key is missing, preventing the current dev build from crashing.
+  - Uses `PROVIDER_GOOGLE` on Android when native maps are enabled.
+- Updated `apps/mobile/app/(tabs)/_layout.tsx`:
+  - Stores tab uses route name `stores/index`.
+  - Label/title is `Stores`, avoiding the ugly `stores/index` tab label.
+- Verification:
+  - `cd apps/mobile && npm run typecheck` passed.
+  - `git diff --check` passed with only existing Windows/protected-file warnings.
+  - `npx expo config --type public` showed `extra.hasAndroidMapsKey: false` in the current local env, meaning current dev-client JS will use fallback map.
+  - Requested Android export reached Metro bundling but failed at local Windows `hermesc.exe` with exit code `3221225477`.
+  - `npx expo export --platform android --output-dir .expo/mobile-map-key-hotfix-export --no-bytecode` passed.
+- Required for native map rendering:
+  - Add `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY` to the EAS build environment.
+  - Build a new Android dev APK.
+  - Without a rebuilt APK containing the native Android Maps SDK key, JS fallback prevents crash but native map tiles will not render.
+- Suggested commit: `fix(mobile): configure Android maps key and stores tab`.
 
 ## Mobile maps/location/tabs and medicine seed pipeline 2026-04-27
 - **Mobile-first deadline session.**

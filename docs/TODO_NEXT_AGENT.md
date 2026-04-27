@@ -4,49 +4,34 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after mobile maps/location/tabs and seed pipeline)
+## Next up (as of 2026-04-28, after Android Maps key hotfix)
 
-**Current local state:** Medifind mobile now has bottom tabs, real foreground location, `react-native-maps`, in-app route preview with route polyline fallback, a Firebase callable proxy for Google Routes, and medicine seed tooling. No Firebase deploy was run. The first 100 demo medicine documents were seeded to `medicines` in `nearnest-platform`.
+**Current local state:** Medifind mobile has a hotfix for the Android `API key not found` Maps SDK crash and the Stores tab label. No web app files were touched. No Firebase deploy was run. The first 100 demo medicine documents remain seeded; do not rerun the medicine import.
 
 **What changed locally:**
-- Added native dependencies `react-native-maps` and `expo-location`.
-- Added tab layout under `apps/mobile/app/(tabs)/` with Home, Search, Stores/Map, and Profile.
-- Kept deep routes hidden from tabs: results, medicine detail, medicine stores, store detail, navigation preview, category.
-- Removed Sign out from Home; Profile is now the only sign-out surface.
-- Added `apps/mobile/components/RealMapView.tsx`.
-- Added `apps/mobile/services/location.ts`.
-- Added `apps/mobile/services/routePreview.ts`.
-- Updated `/navigation/[storeId]` to request current location, call `getRoutePreview`, draw route coordinates, and support Start/End in-app preview mode.
-- Added `functions.getRoutePreview` as an authenticated Google Routes API proxy that returns only public route preview fields.
-- `getRoutePreview` declares `GOOGLE_MAPS_ROUTES_API_KEY` as a Functions secret, but the secret still needs to be set with a real value.
-- Added medicine seed scripts under `scripts/medicines/` with dry-run default import behavior.
+- Added `apps/mobile/app.config.js` to read `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY`.
+- Added `apps/mobile/plugins/withAndroidGoogleMapsApiKey.js` to write the Android manifest Maps SDK metadata when a key exists.
+- `RealMapView` no longer mounts native Android `MapView` unless `Constants.expoConfig.extra.hasAndroidMapsKey === true`.
+- Android maps use `PROVIDER_GOOGLE` when native maps are enabled.
+- Stores tab route is now `stores/index` with tab label/title `Stores`.
 
 **Verification passed:**
 - `apps/mobile npm run typecheck`.
-- `functions node --check index.js`.
-- `functions npm run lint`.
-- `node --check scripts/medicines/import_medicines_to_firestore.cjs`.
-- `python scripts/medicines/fetch_openfda_medicines.py --limit 25`.
-- `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 100 --dry-run`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-final-map-location-export`.
 - `git diff --check`.
-- `graphify update .`.
+- `npx expo config --type public` showed `extra.hasAndroidMapsKey: false` in current local env.
+- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-map-key-hotfix-export --no-bytecode`.
 
-**Ship-mode status:**
-- `firebase functions:secrets:set GOOGLE_MAPS_ROUTES_API_KEY --project nearnest-platform` was attempted, but the non-interactive shell sent an empty payload. Set the secret manually/securely before deploying `getRoutePreview`.
-- `python scripts/medicines/fetch_openfda_medicines.py --limit 1000` wrote 585 unique normalized records.
-- `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 100 --apply` wrote 100 medicine documents.
+**Known caveat:**
+- Requested Android export without `--no-bytecode` reached Metro bundling but failed at local Windows `hermesc.exe` with exit code `3221225477`. This is the same local Hermes bytecode issue seen previously; the JS bundle export passed with `--no-bytecode`.
 
 ### Next steps
 
-1. Commit and push the current mobile/functions/seed/docs/graphify work.
-2. Commit with: `git add apps/mobile functions/index.js scripts/medicines docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "feat(mobile): add real maps location tabs and medicine seed pipeline"`.
-3. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-4. Build a new Android development client because native dependencies changed:
-   `cd apps/mobile && eas build --profile development --platform android`
-5. Runtime smoke on a real phone/dev build: Home -> Search Dolo -> Results -> Medicine detail -> Nearby stores -> Route -> Start preview -> End preview -> Store detail -> Route -> Call store.
-6. Set `GOOGLE_MAPS_ROUTES_API_KEY` manually/securely, then deploy only the route callable:
-   `firebase deploy --only functions:getRoutePreview --project nearnest-platform`
+1. Run `graphify update .` if not already done after this hotfix, then commit:
+   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): configure Android maps key and stores tab"`.
+2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
+3. Set `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY` in the EAS build environment.
+4. Build a new Android dev APK. The current dev build can avoid the crash via JS fallback, but native map rendering needs a rebuilt APK with the Android Maps SDK key.
+5. Runtime smoke on phone: Stores tab opens without crash, tab label says `Stores`, Route opens inside Medifind, location prompt works, fallback map appears if native key is absent.
 
 ---
 

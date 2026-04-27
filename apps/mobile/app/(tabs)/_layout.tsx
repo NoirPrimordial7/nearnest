@@ -60,9 +60,10 @@ export default function MainTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="stores"
+        name="stores/index"
         options={{
-          title: 'Stores/Map',
+          title: 'Stores',
+          tabBarLabel: 'Stores',
           tabBarIcon: ({ focused }) => <TabIcon focused={focused} name="stores" />,
         }}
       />
