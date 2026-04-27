@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Chip } from '../components/Chip';
@@ -28,17 +28,34 @@ export default function ResultsScreen() {
     sameComposition: [],
     similarByCategory: [],
   });
+  const [availableNowOnly, setAvailableNowOnly] = useState(true);
+  const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(true);
+  const [sortMode, setSortMode] = useState<'distance' | 'freshness'>('distance');
   const [availabilityByMedicine, setAvailabilityByMedicine] = useState<
     Record<string, MedicineAvailability[]>
   >({});
   const [loading, setLoading] = useState(true);
   const [backendError, setBackendError] = useState('');
-  const visibleMedicines = [
-    groups.bestMatch,
-    ...groups.brandVariants,
-    ...groups.sameComposition,
-    ...groups.similarByCategory,
-  ].filter(Boolean) as Medicine[];
+  const visibleMedicines = useMemo(() => {
+    const medicines = [
+      groups.bestMatch,
+      ...groups.brandVariants,
+      ...groups.sameComposition,
+      ...groups.similarByCategory,
+    ].filter(Boolean) as Medicine[];
+
+    return medicines.filter((medicine) => {
+      const availability = availabilityByMedicine[medicine.id] ?? [];
+      const filteredAvailability = filterAvailability(
+        availability,
+        availableNowOnly,
+        openNowOnly,
+        verifiedOnly,
+      );
+      return !availableNowOnly || filteredAvailability.length > 0;
+    });
+  }, [availabilityByMedicine, availableNowOnly, groups, openNowOnly, verifiedOnly]);
   const hasStale = visibleMedicines.some((medicine) =>
     (availabilityByMedicine[medicine.id] ?? []).some(
       ({ freshnessStatus }) => freshnessStatus !== 'fresh',
@@ -118,6 +135,28 @@ export default function ResultsScreen() {
             />
           ))}
         </View>
+        <View style={styles.filterRow}>
+          <Chip
+            label="Available now"
+            onPress={() => setAvailableNowOnly((value) => !value)}
+            selected={availableNowOnly}
+          />
+          <Chip
+            label="Open now"
+            onPress={() => setOpenNowOnly((value) => !value)}
+            selected={openNowOnly}
+          />
+          <Chip
+            label="Verified stores"
+            onPress={() => setVerifiedOnly((value) => !value)}
+            selected={verifiedOnly}
+          />
+          <Chip
+            label={sortMode === 'distance' ? 'Sort: distance' : 'Sort: freshness'}
+            onPress={() => setSortMode((value) => (value === 'distance' ? 'freshness' : 'distance'))}
+            selected
+          />
+        </View>
 
         {backendError ? (
           <NeutralFraming text="Using local demo data while live pharmacy availability is unavailable." />
@@ -147,24 +186,36 @@ export default function ResultsScreen() {
 
             <ResultGroup
               availabilityByMedicine={availabilityByMedicine}
+              availableNowOnly={availableNowOnly}
               medicines={groups.brandVariants}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'brand_variant')}
+              openNowOnly={openNowOnly}
+              sortMode={sortMode}
               title={groups.bestMatch ? `Other ${groups.bestMatch.manufacturer.name} options` : 'Brand options'}
+              verifiedOnly={verifiedOnly}
             />
             <ResultGroup
               availabilityByMedicine={availabilityByMedicine}
+              availableNowOnly={availableNowOnly}
               medicines={groups.sameComposition}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'same_composition')}
+              openNowOnly={openNowOnly}
+              sortMode={sortMode}
               title="Same composition"
+              verifiedOnly={verifiedOnly}
             />
             <ResultGroup
               availabilityByMedicine={availabilityByMedicine}
+              availableNowOnly={availableNowOnly}
               medicines={groups.similarByCategory}
               onFindStores={openStores}
               onOpenMedicine={(medicine) => openMedicine(medicine, 'similar_category')}
+              openNowOnly={openNowOnly}
+              sortMode={sortMode}
               title="Similar by category"
+              verifiedOnly={verifiedOnly}
             />
           </>
         )}
@@ -186,18 +237,37 @@ function ResultGroup({
   title,
   medicines,
   availabilityByMedicine,
+  availableNowOnly,
+  openNowOnly,
+  verifiedOnly,
+  sortMode,
   onOpenMedicine,
   onFindStores,
 }: {
   title: string;
   medicines: Medicine[];
   availabilityByMedicine: Record<string, MedicineAvailability[]>;
+  availableNowOnly: boolean;
+  openNowOnly: boolean;
+  verifiedOnly: boolean;
+  sortMode: 'distance' | 'freshness';
   onOpenMedicine: (medicine: Medicine) => void;
   onFindStores: (medicine: Medicine) => void;
 }) {
   const { scale, scaleLineHeight } = useFontScale();
+  const filteredMedicines = medicines
+    .filter((medicine) => {
+      const availability = filterAvailability(
+        availabilityByMedicine[medicine.id] ?? [],
+        availableNowOnly,
+        openNowOnly,
+        verifiedOnly,
+      );
+      return !availableNowOnly || availability.length > 0;
+    })
+    .sort((a, b) => rankMedicine(a, b, availabilityByMedicine, sortMode));
 
-  if (medicines.length === 0) {
+  if (filteredMedicines.length === 0) {
     return null;
   }
 
@@ -207,9 +277,16 @@ function ResultGroup({
         {title}
       </Text>
       <View style={styles.groupStack}>
-        {medicines.map((medicine) => (
+        {filteredMedicines.map((medicine) => (
           <ProductCard
-            availabilityCount={availabilityByMedicine[medicine.id]?.length ?? 0}
+            availabilityCount={
+              filterAvailability(
+                availabilityByMedicine[medicine.id] ?? [],
+                availableNowOnly,
+                openNowOnly,
+                verifiedOnly,
+              ).length
+            }
             key={medicine.id}
             medicine={medicine}
             onFindStores={() => onFindStores(medicine)}
@@ -219,6 +296,40 @@ function ResultGroup({
       </View>
     </View>
   );
+}
+
+function filterAvailability(
+  availability: MedicineAvailability[],
+  availableNowOnly: boolean,
+  openNowOnly: boolean,
+  verifiedOnly: boolean,
+) {
+  return availability.filter((row) => {
+    if (availableNowOnly && !row.item.inStock) {
+      return false;
+    }
+    if (openNowOnly && !row.store.isOpenNow) {
+      return false;
+    }
+    if (verifiedOnly && !row.store.verified) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function rankMedicine(
+  a: Medicine,
+  b: Medicine,
+  availabilityByMedicine: Record<string, MedicineAvailability[]>,
+  sortMode: 'distance' | 'freshness',
+) {
+  const firstA = availabilityByMedicine[a.id]?.[0];
+  const firstB = availabilityByMedicine[b.id]?.[0];
+  if (sortMode === 'freshness') {
+    return (firstB?.item.updatedAt ?? 0) - (firstA?.item.updatedAt ?? 0);
+  }
+  return (firstA?.store.distanceKm ?? 999) - (firstB?.store.distanceKm ?? 999);
 }
 
 const styles = StyleSheet.create({

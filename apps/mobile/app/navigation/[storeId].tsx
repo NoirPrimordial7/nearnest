@@ -5,21 +5,49 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'rea
 import { ActionButton } from '../../components/ActionButton';
 import { Badge } from '../../components/Badge';
 import { ErrorState } from '../../components/ErrorState';
+import { RealMapView } from '../../components/RealMapView';
 import { useFontScale } from '../../hooks/useFontScale';
 import { getMedicineDetailApi, getStoreDetailApi } from '../../services/discoveryApi';
 import { openExternalUrl } from '../../services/externalLinks';
-import { formatDistance, formatStoreAddress, getPhoneUrl } from '../../services/mockDiscovery';
+import {
+  requestCurrentLocation,
+  watchUserLocation,
+  type LocationWatcher,
+  type UserLocation,
+} from '../../services/location';
+import { formatStoreAddress, getPhoneUrl } from '../../services/mockDiscovery';
+import {
+  formatRouteDistance,
+  formatRouteDuration,
+  getRoutePreviewApi,
+  type RoutePreview,
+} from '../../services/routePreview';
 import { medifindTelemetry } from '../../services/telemetry';
 import { colors, radius, spacing, type as typography } from '../../theme/tokens';
 import type { Medicine, Store } from '../../types/discovery';
+
+const PUNE_FALLBACK_LOCATION: UserLocation = {
+  lat: 18.559,
+  lng: 73.7868,
+};
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
 }
 
-function getTravelTimeLabel(distanceKm: number) {
-  const minutes = Math.max(4, Math.round(distanceKm * 8 + 3));
-  return `${minutes} min`;
+function storeDestination(store: Store): UserLocation {
+  const lat = Number(store.location?.lat);
+  const lng = Number(store.location?.lng);
+  if (Number.isFinite(lat) && Number.isFinite(lng) && lat !== 0 && lng !== 0) {
+    return { lat, lng };
+  }
+
+  if (__DEV__) {
+    console.warn('[RoutePreview] using Pune fallback destination coordinates', {
+      storeId: store.id,
+    });
+  }
+  return PUNE_FALLBACK_LOCATION;
 }
 
 export default function InAppRoutePreviewScreen() {
@@ -28,7 +56,13 @@ export default function InAppRoutePreviewScreen() {
   const medicineId = getParamValue(params.medicineId);
   const [store, setStore] = useState<Store | null>(null);
   const [medicine, setMedicine] = useState<Medicine | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [routePreview, setRoutePreview] = useState<RoutePreview | null>(null);
+  const [locationMessage, setLocationMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [routeLoading, setRouteLoading] = useState(true);
+  const [startMode, setStartMode] = useState(false);
+  const [watcher, setWatcher] = useState<LocationWatcher | null>(null);
   const [actionError, setActionError] = useState('');
   const [backendError, setBackendError] = useState('');
   const { scale, scaleLineHeight } = useFontScale();
@@ -65,7 +99,52 @@ export default function InAppRoutePreviewScreen() {
     };
   }, [medicineId, storeId]);
 
-  const travelTime = useMemo(() => getTravelTimeLabel(store?.distanceKm ?? 0), [store?.distanceKm]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadLocationAndRoute() {
+      if (!store) {
+        return;
+      }
+
+      setRouteLoading(true);
+      const locationResult = await requestCurrentLocation();
+      const origin =
+        locationResult.status === 'granted' ? locationResult.location : PUNE_FALLBACK_LOCATION;
+
+      if (locationResult.status !== 'granted') {
+        setLocationMessage('Location unavailable. Showing an in-app Pune preview.');
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      setUserLocation(origin);
+      const destination = storeDestination(store);
+      const preview = await getRoutePreviewApi(origin, destination);
+      if (!cancelled) {
+        setRoutePreview(preview);
+        setRouteLoading(false);
+      }
+    }
+
+    void loadLocationAndRoute();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [store]);
+
+  useEffect(() => {
+    return () => {
+      watcher?.remove();
+    };
+  }, [watcher]);
+
+  const destination = useMemo(() => (store ? storeDestination(store) : null), [store]);
+  const routeDistance = formatRouteDistance(routePreview?.distanceMeters);
+  const routeDuration = formatRouteDuration(routePreview?.duration);
 
   async function callStore() {
     if (!store) {
@@ -81,6 +160,24 @@ export default function InAppRoutePreviewScreen() {
     if (!opened) {
       setActionError('We could not open the dialer on this device.');
     }
+  }
+
+  async function startPreview() {
+    if (startMode) {
+      return;
+    }
+    setStartMode(true);
+    const nextWatcher = await watchUserLocation(
+      (location) => setUserLocation(location),
+      (message) => setLocationMessage(message),
+    );
+    setWatcher(nextWatcher);
+  }
+
+  function endPreview() {
+    watcher?.remove();
+    setWatcher(null);
+    setStartMode(false);
   }
 
   function viewStoreDetails() {
@@ -101,14 +198,14 @@ export default function InAppRoutePreviewScreen() {
             Preparing route preview
           </Text>
           <Text style={[styles.body, { fontSize: scale(typography.body), lineHeight: scaleLineHeight(22) }]}>
-            Loading public store details inside Medifind.
+            Loading public store details and your foreground location.
           </Text>
         </View>
       </SafeAreaView>
     );
   }
 
-  if (!store) {
+  if (!store || !destination) {
     return (
       <ErrorState
         body="This pharmacy is not available in Medifind yet."
@@ -129,40 +226,14 @@ export default function InAppRoutePreviewScreen() {
           <Text style={styles.stayInside}>Navigation stays inside Medifind</Text>
         </View>
 
-        <View style={styles.mapHero}>
-          <View style={styles.softZoneOne} />
-          <View style={styles.softZoneTwo} />
-          <View style={styles.roadOne} />
-          <View style={styles.roadTwo} />
-          <View style={styles.roadThree} />
-          <View style={styles.routeOne} />
-          <View style={styles.routeTwo} />
-          <View style={styles.routeThree} />
-
-          <View style={styles.startMarker}>
-            <Text style={styles.startText}>You</Text>
-          </View>
-          <View style={styles.destinationMarker}>
-            <View style={styles.destinationCore} />
-          </View>
-          <View style={styles.destinationLabel}>
-            <Text numberOfLines={2} style={styles.destinationLabelText}>
-              {store.name}
-            </Text>
-          </View>
-
-          <View style={styles.mapCard}>
-            <Text style={[styles.mapLabel, { fontSize: scale(typography.caption), lineHeight: scaleLineHeight(16) }]}>
-              ROUTE PREVIEW
-            </Text>
-            <Text style={[styles.mapTitle, { fontSize: scale(typography.h2), lineHeight: scaleLineHeight(28) }]}>
-              {store.name}
-            </Text>
-            <Text style={[styles.mapBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
-              {formatDistance(store.distanceKm)} away - about {travelTime}
-            </Text>
-          </View>
-        </View>
+        <RealMapView
+          routeCoordinates={routePreview?.coordinates}
+          selectedStore={store}
+          startMode={startMode}
+          stores={[store]}
+          title={startMode ? 'Navigation preview active' : 'In-app route preview'}
+          userLocation={userLocation}
+        />
 
         <View style={styles.panel}>
           <View style={styles.badgeRow}>
@@ -178,8 +249,8 @@ export default function InAppRoutePreviewScreen() {
           </Text>
 
           <View style={styles.metricRow}>
-            <Metric label="Distance" value={formatDistance(store.distanceKm)} />
-            <Metric label="Estimated time" value={travelTime} />
+            <Metric label="Distance" value={routeLoading ? 'Checking...' : routeDistance} />
+            <Metric label="Travel time" value={routeLoading ? 'Checking...' : routeDuration} />
           </View>
 
           {medicine ? (
@@ -194,6 +265,16 @@ export default function InAppRoutePreviewScreen() {
             </View>
           ) : null}
 
+          {routePreview?.source === 'fallback' ? (
+            <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              Live route unavailable. Showing in-app preview.
+            </Text>
+          ) : null}
+          {locationMessage ? (
+            <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              {locationMessage}
+            </Text>
+          ) : null}
           {backendError ? (
             <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
               Using local demo route details while live pharmacy data is unavailable.
@@ -207,15 +288,20 @@ export default function InAppRoutePreviewScreen() {
 
           <View style={styles.safetyBox}>
             <Text style={[styles.safetyTitle, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
-              This is an in-app route preview.
+              In-app route preview. Confirm local road conditions before travelling.
             </Text>
             <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
-              Confirm directions locally before travelling. Call the pharmacy to confirm availability.
+              This is not turn-by-turn GPS. Call the pharmacy to confirm availability before you go.
             </Text>
           </View>
 
           <View style={styles.actionStack}>
-            <ActionButton label="Call store" onPress={() => void callStore()} />
+            {startMode ? (
+              <ActionButton label="End preview" onPress={endPreview} />
+            ) : (
+              <ActionButton label="Start in-app preview" onPress={() => void startPreview()} />
+            )}
+            <ActionButton label="Call store" onPress={() => void callStore()} variant="secondary" />
             <ActionButton label="View store details" onPress={viewStoreDetails} variant="secondary" />
           </View>
         </View>
@@ -273,169 +359,6 @@ const styles = StyleSheet.create({
     fontSize: typography.bodySm,
     fontWeight: '700',
     textAlign: 'right',
-  },
-  mapHero: {
-    minHeight: 360,
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.primary50,
-    padding: spacing.lg,
-  },
-  softZoneOne: {
-    position: 'absolute',
-    right: -50,
-    top: -36,
-    width: 190,
-    height: 190,
-    borderRadius: 95,
-    backgroundColor: colors.surface,
-    opacity: 0.72,
-  },
-  softZoneTwo: {
-    position: 'absolute',
-    left: -54,
-    bottom: -44,
-    width: 210,
-    height: 210,
-    borderRadius: 105,
-    backgroundColor: colors.primary100,
-    opacity: 0.62,
-  },
-  roadOne: {
-    position: 'absolute',
-    left: -20,
-    right: -20,
-    top: '46%',
-    height: 22,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    opacity: 0.82,
-  },
-  roadTwo: {
-    position: 'absolute',
-    top: -30,
-    bottom: -30,
-    left: '52%',
-    width: 22,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    opacity: 0.74,
-  },
-  roadThree: {
-    position: 'absolute',
-    left: '8%',
-    top: '24%',
-    width: '92%',
-    height: 18,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    opacity: 0.66,
-    transform: [{ rotate: '-23deg' }],
-  },
-  routeOne: {
-    position: 'absolute',
-    left: '18%',
-    top: '66%',
-    width: '32%',
-    height: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent500,
-    transform: [{ rotate: '-22deg' }],
-  },
-  routeTwo: {
-    position: 'absolute',
-    left: '44%',
-    top: '52%',
-    width: '28%',
-    height: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent500,
-    transform: [{ rotate: '-46deg' }],
-  },
-  routeThree: {
-    position: 'absolute',
-    left: '64%',
-    top: '34%',
-    width: '20%',
-    height: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent500,
-    transform: [{ rotate: '10deg' }],
-  },
-  startMarker: {
-    position: 'absolute',
-    left: '12%',
-    top: '68%',
-    minWidth: 54,
-    minHeight: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 3,
-    borderColor: colors.surface,
-    backgroundColor: colors.text,
-  },
-  startText: {
-    color: colors.textInvert,
-    fontSize: typography.caption,
-    fontWeight: '800',
-  },
-  destinationMarker: {
-    position: 'absolute',
-    right: '15%',
-    top: '28%',
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    borderWidth: 4,
-    borderColor: colors.surface,
-    backgroundColor: colors.primary500,
-  },
-  destinationCore: {
-    width: 10,
-    height: 10,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-  },
-  destinationLabel: {
-    position: 'absolute',
-    right: '8%',
-    top: '39%',
-    maxWidth: 150,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  destinationLabelText: {
-    color: colors.text,
-    fontSize: typography.caption,
-    fontWeight: '800',
-  },
-  mapCard: {
-    gap: spacing.xs,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  mapLabel: {
-    color: colors.primary700,
-    fontWeight: '800',
-    letterSpacing: 0.48,
-  },
-  mapTitle: {
-    color: colors.text,
-    fontWeight: '800',
-  },
-  mapBody: {
-    color: colors.textMuted,
   },
   panel: {
     gap: spacing.lg,

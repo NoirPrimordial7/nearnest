@@ -14,7 +14,10 @@
       "backgroundColor": "#FBFBFA"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Medifind uses your location to show nearby pharmacies and in-app route previews."
+      }
     },
     "android": {
       "package": "com.nearnest.medifind",
@@ -22,6 +25,10 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FBFBFA"
       },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
@@ -30,7 +37,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Medifind uses your location to show nearby pharmacies and in-app route previews."
+        }
+      ]
     ],
     "extra": {
       "router": {},

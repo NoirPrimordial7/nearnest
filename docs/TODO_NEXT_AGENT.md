@@ -4,32 +4,49 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-27, after mobile in-app route preview polish)
+## Next up (as of 2026-04-27, after mobile maps/location/tabs and seed pipeline)
 
-**Current local state:** Medifind mobile route/navigation actions now stay inside the app. No Firebase deploy was run and no production data was modified.
+**Current local state:** Medifind mobile now has bottom tabs, real foreground location, `react-native-maps`, in-app route preview with route polyline fallback, a Firebase callable proxy for Google Routes, and medicine seed tooling. No Firebase deploy was run. The first 100 demo medicine documents were seeded to `medicines` in `nearnest-platform`.
 
 **What changed locally:**
-- Added `apps/mobile/app/navigation/[storeId].tsx`.
-- `StoreCard`, Nearby Stores, Store Detail, Stores mode, and Home stores mode now route to `/navigation/[storeId]` instead of opening Google Maps/browser.
-- Medicine-specific nearby-store routes pass `medicineId` into the in-app preview.
-- Phone call actions still use the dialer.
-- `MapPlaceholder` is now a premium in-app map preview with route segments, store pins, verified/unverified styling, and a store-count chip.
-- `StoreCard` action hierarchy and wrapping were polished; the map action is now `Route`.
-- Store Detail route actions are renamed to `In-app route` / `Route`, and action/address layout wraps better for larger text.
+- Added native dependencies `react-native-maps` and `expo-location`.
+- Added tab layout under `apps/mobile/app/(tabs)/` with Home, Search, Stores/Map, and Profile.
+- Kept deep routes hidden from tabs: results, medicine detail, medicine stores, store detail, navigation preview, category.
+- Removed Sign out from Home; Profile is now the only sign-out surface.
+- Added `apps/mobile/components/RealMapView.tsx`.
+- Added `apps/mobile/services/location.ts`.
+- Added `apps/mobile/services/routePreview.ts`.
+- Updated `/navigation/[storeId]` to request current location, call `getRoutePreview`, draw route coordinates, and support Start/End in-app preview mode.
+- Added `functions.getRoutePreview` as an authenticated Google Routes API proxy that returns only public route preview fields.
+- `getRoutePreview` declares `GOOGLE_MAPS_ROUTES_API_KEY` as a Functions secret, but the secret still needs to be set with a real value.
+- Added medicine seed scripts under `scripts/medicines/` with dry-run default import behavior.
 
 **Verification passed:**
 - `apps/mobile npm run typecheck`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-in-app-navigation-polish-export`.
-- Search confirmed no app/component call still does `openExternalUrl(getMapsUrl(...))`.
-- `graphify update .` passed.
+- `functions node --check index.js`.
+- `functions npm run lint`.
+- `node --check scripts/medicines/import_medicines_to_firestore.cjs`.
+- `python scripts/medicines/fetch_openfda_medicines.py --limit 25`.
+- `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 100 --dry-run`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-final-map-location-export`.
+- `git diff --check`.
+- `graphify update .`.
+
+**Ship-mode status:**
+- `firebase functions:secrets:set GOOGLE_MAPS_ROUTES_API_KEY --project nearnest-platform` was attempted, but the non-interactive shell sent an empty payload. Set the secret manually/securely before deploying `getRoutePreview`.
+- `python scripts/medicines/fetch_openfda_medicines.py --limit 1000` wrote 585 unique normalized records.
+- `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 100 --apply` wrote 100 medicine documents.
 
 ### Next steps
 
-1. Rerun final `git diff --check` and `git status --short`.
-2. Commit with: `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): add in-app route preview and polish discovery UI"`.
-3. Do not stage `.claude/settings.local.json` or `.codex/*.png`.
-4. Optional runtime smoke: Android dev build -> Home -> search Dolo -> Results -> Medicine detail -> Nearby stores -> Route -> confirm `/navigation/[storeId]` opens inside Medifind -> Store detail -> Route -> Back.
-5. Do not deploy Firebase for this mobile UI task.
+1. Commit and push the current mobile/functions/seed/docs/graphify work.
+2. Commit with: `git add apps/mobile functions/index.js scripts/medicines docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "feat(mobile): add real maps location tabs and medicine seed pipeline"`.
+3. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
+4. Build a new Android development client because native dependencies changed:
+   `cd apps/mobile && eas build --profile development --platform android`
+5. Runtime smoke on a real phone/dev build: Home -> Search Dolo -> Results -> Medicine detail -> Nearby stores -> Route -> Start preview -> End preview -> Store detail -> Route -> Call store.
+6. Set `GOOGLE_MAPS_ROUTES_API_KEY` manually/securely, then deploy only the route callable:
+   `firebase deploy --only functions:getRoutePreview --project nearnest-platform`
 
 ---
 

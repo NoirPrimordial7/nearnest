@@ -1,6 +1,75 @@
 # Nearnest Session State
 
-Last updated: 2026-04-27 (Codex added mobile in-app route preview)
+Last updated: 2026-04-27 (Codex added real mobile maps, location, tabs, route proxy, and medicine seed pipeline)
+
+## Mobile maps/location/tabs and medicine seed pipeline 2026-04-27
+- **Mobile-first deadline session.**
+- **No Firebase deploy was run.**
+- **No production data was modified.**
+- **Web portal UI was not touched.**
+- Added native mobile dependencies:
+  - `react-native-maps`
+  - `expo-location`
+- `apps/mobile/app.json` now declares foreground-only location permission copy:
+  - "Medifind uses your location to show nearby pharmacies and in-app route previews."
+  - No background location was added.
+- Added Expo Router bottom tabs:
+  - Home
+  - Search
+  - Stores/Map
+  - Profile
+- Moved tab screens under `apps/mobile/app/(tabs)/` while keeping deep routes hidden from tabs:
+  - `/results`
+  - `/medicine/[medicineId]`
+  - `/medicine/[medicineId]/stores`
+  - `/store/[storeId]`
+  - `/navigation/[storeId]`
+  - `/category/[categoryId]`
+- Removed Sign out from Home. Profile is now the only sign-out surface and includes account identity, larger text toggle, support/legal placeholders, and sign out.
+- Added real foreground location service in `apps/mobile/services/location.ts`.
+- Added reusable `apps/mobile/components/RealMapView.tsx` using `react-native-maps` with user marker, store markers, selected marker, route polyline, and styled fallback map.
+- In-app route preview now requests real current location, draws a route polyline, supports Start/End preview mode, and never opens Google Maps/browser for Route.
+- Added `getRoutePreview` callable in `functions/index.js`:
+  - Requires auth.
+  - Declares `GOOGLE_MAPS_ROUTES_API_KEY` as a Functions secret.
+  - Reads Routes API key from env/config only.
+  - Calls Google Routes API server-side.
+  - Returns only public route fields: distance, duration, encoded polyline, decoded coordinates, warnings, and travel mode.
+  - If not configured or unavailable, mobile falls back to a straight in-app preview line.
+- Improved mobile UI:
+  - Home tab spacing and map preview.
+  - Search tab actions and filter entry.
+  - Results filters for available now, open now, verified stores, and distance/freshness sort.
+  - Store detail real map preview and in-app route action.
+  - Privacy copy now points sign out to Profile, not Home.
+- Added medicine seed tooling:
+  - `scripts/medicines/fetch_openfda_medicines.py`
+  - `scripts/medicines/import_medicines_to_firestore.cjs`
+  - `scripts/medicines/README.md`
+  - sample output `scripts/medicines/out/medicines.openfda.sample.json`
+- Seed import is dry-run by default. `--apply` is required to write, and it writes only `medicines`.
+- Ship-mode actions run after implementation:
+  - `firebase functions:secrets:set GOOGLE_MAPS_ROUTES_API_KEY --project nearnest-platform` was attempted but failed because the non-interactive shell sent an empty secret payload. The secret still needs to be set manually/securely before route callable deploy.
+  - `python scripts/medicines/fetch_openfda_medicines.py --limit 1000` wrote 585 unique normalized records.
+  - Dry-run import for the first 100 records passed.
+  - Apply import for the first 100 records wrote 100 `medicines` documents to project `nearnest-platform`.
+- Verification passed:
+  - `apps/mobile npm run typecheck`
+  - `functions node --check index.js`
+  - `functions npm run lint`
+  - `node --check scripts/medicines/import_medicines_to_firestore.cjs`
+  - `python scripts/medicines/fetch_openfda_medicines.py --limit 25`
+  - `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 100 --dry-run`
+  - `apps/mobile npx expo export --platform android --output-dir .expo/mobile-final-map-location-export`
+  - `git diff --check`
+  - `graphify update .`
+- Earlier Android export with Hermes bytecode failed once locally because Windows `hermesc.exe` crashed with exit code `3221225477`; rerun later passed normally.
+- Because native dependencies were added, a new Android dev build is required:
+  - `cd apps/mobile`
+  - `eas build --profile development --platform android`
+- If deploying the route callable later, first set the secret with a real value, then use targeted deploy only:
+  - `firebase deploy --only functions:getRoutePreview --project nearnest-platform`
+- Suggested commit: `feat(mobile): add real maps location tabs and medicine seed pipeline`.
 
 ## Mobile in-app route preview and discovery polish 2026-04-27
 - **Mobile app only.**

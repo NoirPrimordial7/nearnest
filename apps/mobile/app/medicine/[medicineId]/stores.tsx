@@ -6,7 +6,7 @@ import { Badge } from '../../../components/Badge';
 import { BottomSheet } from '../../../components/BottomSheet';
 import { EmptyState } from '../../../components/EmptyState';
 import { ErrorState } from '../../../components/ErrorState';
-import { MapPlaceholder } from '../../../components/MapPlaceholder';
+import { RealMapView } from '../../../components/RealMapView';
 import { StoreCard } from '../../../components/StoreCard';
 import { useFontScale } from '../../../hooks/useFontScale';
 import { getMedicineDetailApi, getNearbyStoresApi } from '../../../services/discoveryApi';
@@ -125,7 +125,7 @@ export default function NearbyStoresForMedicineScreen() {
 
   return (
     <View style={styles.container}>
-      <MapPlaceholder stores={mapStores} title={medicine?.name ?? 'Nearby pharmacies'} />
+      <RealMapView stores={mapStores} title={medicine?.name ?? 'Nearby pharmacies'} />
       <BottomSheet>
         <View style={styles.sheetHeader}>
           <Pressable accessibilityRole="button" onPress={() => router.back()}>

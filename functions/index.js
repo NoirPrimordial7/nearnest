@@ -1,6 +1,8 @@
 /* eslint-disable max-len */
 const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
+const https = require("https");
+const {Buffer} = require("buffer");
 
 admin.initializeApp();
 
@@ -223,6 +225,59 @@ exports.getCategoryMedicines = functions
       return {
         category: resolveCategory(categoryId),
         medicines,
+      };
+    });
+
+exports.getRoutePreview = functions
+    .runWith({secrets: ["GOOGLE_MAPS_ROUTES_API_KEY"]})
+    .region(REGION)
+    .https.onCall(async (data, context) => {
+      requireAuthenticated(context);
+
+      const apiKey = getRoutesApiKey();
+      if (!apiKey) {
+        throw new functions.https.HttpsError(
+            "failed-precondition",
+            "Route preview service is not configured.",
+        );
+      }
+
+      const origin = normalizeLocation(data && data.origin, true);
+      const destination = normalizeLocation(data && data.destination, true);
+      const travelMode = normalizeRouteTravelMode(data && data.travelMode);
+      const response = await requestRoutesPreview(apiKey, {
+        origin,
+        destination,
+        travelMode,
+      });
+
+      if (!response.ok) {
+        throw new functions.https.HttpsError(
+            "unavailable",
+            "Live route unavailable.",
+        );
+      }
+
+      const route = Array.isArray(response.body.routes) ? response.body.routes[0] : null;
+      if (!route) {
+        throw new functions.https.HttpsError(
+            "not-found",
+            "No route preview is available for this trip.",
+        );
+      }
+
+      const encodedPolyline =
+        route.polyline && route.polyline.encodedPolyline ?
+          route.polyline.encodedPolyline :
+          "";
+
+      return {
+        distanceMeters: Number(route.distanceMeters || 0),
+        duration: route.duration || "",
+        encodedPolyline,
+        coordinates: decodePolyline(encodedPolyline),
+        warnings: Array.isArray(route.warnings) ? route.warnings.slice(0, 5) : [],
+        travelMode,
       };
     });
 
@@ -619,6 +674,134 @@ function normalizeLocation(value, required) {
   }
 
   return {lat, lng};
+}
+
+function requestRoutesPreview(apiKey, routeInput) {
+  const payload = JSON.stringify({
+    origin: {
+      location: {
+        latLng: {
+          latitude: routeInput.origin.lat,
+          longitude: routeInput.origin.lng,
+        },
+      },
+    },
+    destination: {
+      location: {
+        latLng: {
+          latitude: routeInput.destination.lat,
+          longitude: routeInput.destination.lng,
+        },
+      },
+    },
+    travelMode: routeInput.travelMode,
+    routingPreference: "TRAFFIC_AWARE",
+  });
+
+  return new Promise((resolve, reject) => {
+    const request = https.request(
+        "https://routes.googleapis.com/directions/v2:computeRoutes",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(payload),
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.warnings",
+          },
+        },
+        (response) => {
+          let raw = "";
+          response.setEncoding("utf8");
+          response.on("data", (chunk) => {
+            raw += chunk;
+          });
+          response.on("end", () => {
+            let body = {};
+            try {
+              body = raw ? JSON.parse(raw) : {};
+            } catch (parseError) {
+              void parseError;
+              body = {};
+            }
+            resolve({
+              ok: response.statusCode >= 200 && response.statusCode < 300,
+              statusCode: response.statusCode,
+              body,
+            });
+          });
+        },
+    );
+
+    request.on("error", reject);
+    request.write(payload);
+    request.end();
+  });
+}
+
+function getRoutesApiKey() {
+  const config = functions.config && functions.config();
+  return process.env.GOOGLE_MAPS_ROUTES_API_KEY ||
+    process.env.GOOGLE_ROUTES_API_KEY ||
+    getNested(config, ["google", "routes_api_key"]) ||
+    getNested(config, ["maps", "routes_api_key"]) ||
+    "";
+}
+
+function normalizeRouteTravelMode(value) {
+  const mode = normalizeString(value).toUpperCase();
+  if (["DRIVE", "TWO_WHEELER", "WALK", "BICYCLE", "TRANSIT"].includes(mode)) {
+    return mode;
+  }
+  if (mode === "DRIVING") {
+    return "DRIVE";
+  }
+  return "DRIVE";
+}
+
+function decodePolyline(encoded) {
+  if (!encoded) {
+    return [];
+  }
+
+  const points = [];
+  let index = 0;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < encoded.length) {
+    const latResult = decodePolylineValue(encoded, index);
+    index = latResult.index;
+    lat += latResult.value;
+
+    const lngResult = decodePolylineValue(encoded, index);
+    index = lngResult.index;
+    lng += lngResult.value;
+
+    points.push({
+      latitude: lat / 1e5,
+      longitude: lng / 1e5,
+    });
+  }
+
+  return points.slice(0, 500);
+}
+
+function decodePolylineValue(encoded, index) {
+  let result = 0;
+  let shift = 0;
+  let byte = null;
+
+  do {
+    byte = encoded.charCodeAt(index++) - 63;
+    result |= (byte & 0x1f) << shift;
+    shift += 5;
+  } while (byte >= 0x20 && index < encoded.length);
+
+  return {
+    value: result & 1 ? ~(result >> 1) : result >> 1,
+    index,
+  };
 }
 
 function medicinePassesFilters(data, queryText, filters) {

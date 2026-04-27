@@ -2,31 +2,31 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ActionButton } from '../components/ActionButton';
-import { CategoryCard } from '../components/CategoryCard';
-import { Chip } from '../components/Chip';
-import { ErrorState } from '../components/ErrorState';
-import { MapPlaceholder } from '../components/MapPlaceholder';
-import { ModeToggle } from '../components/ModeToggle';
-import { ProductCard } from '../components/ProductCard';
-import { Screen } from '../components/Screen';
-import { SearchBar } from '../components/SearchBar';
-import { StoreCard } from '../components/StoreCard';
-import { useFontScale } from '../hooks/useFontScale';
-import { getNearbyStoresApi } from '../services/discoveryApi';
-import { openExternalUrl } from '../services/externalLinks';
+import { ActionButton } from '../../components/ActionButton';
+import { CategoryCard } from '../../components/CategoryCard';
+import { Chip } from '../../components/Chip';
+import { ErrorState } from '../../components/ErrorState';
+import { ModeToggle } from '../../components/ModeToggle';
+import { ProductCard } from '../../components/ProductCard';
+import { RealMapView } from '../../components/RealMapView';
+import { Screen } from '../../components/Screen';
+import { SearchBar } from '../../components/SearchBar';
+import { StoreCard } from '../../components/StoreCard';
+import { useFontScale } from '../../hooks/useFontScale';
+import { getNearbyStoresApi } from '../../services/discoveryApi';
+import { openExternalUrl } from '../../services/externalLinks';
 import {
   getCategories,
   getMedicineById,
   getPhoneUrl,
   getPopularSuggestions,
   getRecentSearches,
-} from '../services/mockDiscovery';
-import { medifindTelemetry } from '../services/telemetry';
-import { signOut, subscribeToAuthState } from '../services/auth';
-import { loadUserProfile, type UserProfile } from '../services/userProfile';
-import { colors, spacing, type as typography } from '../theme/tokens';
-import type { DiscoveryMode, Store, StoreInventoryItem } from '../types/discovery';
+} from '../../services/mockDiscovery';
+import { medifindTelemetry } from '../../services/telemetry';
+import { subscribeToAuthState } from '../../services/auth';
+import { loadUserProfile, type UserProfile } from '../../services/userProfile';
+import { colors, spacing, type as typography } from '../../theme/tokens';
+import type { DiscoveryMode, Store, StoreInventoryItem } from '../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -37,7 +37,6 @@ export default function HomeScreen() {
   const initialMode = getParamValue(params.mode) === 'stores' ? 'stores' : 'medicine';
   const [mode, setMode] = useState<DiscoveryMode>(initialMode);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [signingOut, setSigningOut] = useState(false);
   const [actionError, setActionError] = useState('');
   const [stores, setStores] = useState<Store[]>([]);
   const [availableItemsByStore, setAvailableItemsByStore] = useState<
@@ -125,16 +124,6 @@ export default function HomeScreen() {
     medifindTelemetry.emit('medifind.home.mode_toggle', { mode: nextMode });
   }
 
-  async function handleSignOut() {
-    setSigningOut(true);
-    try {
-      await signOut();
-      router.replace('/welcome');
-    } finally {
-      setSigningOut(false);
-    }
-  }
-
   async function openPhone(store: Store, fromScreen = 'home') {
     setActionError('');
     medifindTelemetry.emit('medifind.stores.store_call_clicked', {
@@ -162,20 +151,10 @@ export default function HomeScreen() {
       title={profile?.displayName ? `Welcome, ${profile.displayName}` : 'Find medicine nearby'}
       description="Search a medicine, compare verified pharmacies, then call or preview the route before you go."
       footer={
-        <>
-          <ActionButton
-            label={mode === 'medicine' ? 'Search medicines' : 'Browse nearby pharmacies'}
-            onPress={() => router.push(mode === 'medicine' ? '/search' : '/stores')}
-          />
-          <ActionButton
-            disabled={signingOut}
-            label="Sign out"
-            loading={signingOut}
-            loadingLabel="Signing out"
-            onPress={handleSignOut}
-            variant="ghost"
-          />
-        </>
+        <ActionButton
+          label={mode === 'medicine' ? 'Search medicines' : 'Browse nearby pharmacies'}
+          onPress={() => router.push(mode === 'medicine' ? '/search' : '/stores')}
+        />
       }
     >
       <View style={styles.stack}>
@@ -254,7 +233,7 @@ export default function HomeScreen() {
           </>
         ) : (
           <>
-            <MapPlaceholder stores={stores} />
+            <RealMapView stores={stores} title="Stores around your search area" />
             <View style={styles.storeModeHeader}>
               <View>
                 <Text
@@ -398,3 +377,4 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+

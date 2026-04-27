@@ -7,6 +7,7 @@ import { Badge } from '../../components/Badge';
 import { Chip } from '../../components/Chip';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
+import { RealMapView } from '../../components/RealMapView';
 import { Screen } from '../../components/Screen';
 import { SearchBar } from '../../components/SearchBar';
 import { StaleDataBanner } from '../../components/StaleDataBanner';
@@ -159,6 +160,8 @@ export default function StoreDetailScreen() {
             </Text>
           ) : null}
         </View>
+
+        <RealMapView selectedStore={store} stores={[store]} title="Store route preview" />
 
         {actionError ? (
           <ErrorState

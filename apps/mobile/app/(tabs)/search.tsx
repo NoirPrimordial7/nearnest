@@ -3,19 +3,20 @@ import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Chip } from '../components/Chip';
-import { EmptyState } from '../components/EmptyState';
-import { Screen } from '../components/Screen';
-import { SearchBar } from '../components/SearchBar';
-import { useFontScale } from '../hooks/useFontScale';
+import { ActionButton } from '../../components/ActionButton';
+import { Chip } from '../../components/Chip';
+import { EmptyState } from '../../components/EmptyState';
+import { Screen } from '../../components/Screen';
+import { SearchBar } from '../../components/SearchBar';
+import { useFontScale } from '../../hooks/useFontScale';
 import {
   getPopularSuggestions,
   getRecentSearches,
   getSuggestions,
-} from '../services/mockDiscovery';
-import { medifindTelemetry } from '../services/telemetry';
-import { colors, radius, spacing, type as typography } from '../theme/tokens';
-import type { SearchSuggestion } from '../types/discovery';
+} from '../../services/mockDiscovery';
+import { medifindTelemetry } from '../../services/telemetry';
+import { colors, radius, spacing, type as typography } from '../../theme/tokens';
+import type { SearchSuggestion } from '../../types/discovery';
 
 function getParamValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? '';
@@ -109,6 +110,10 @@ export default function SearchScreen() {
           value={query}
           variant="input"
         />
+        <View style={styles.searchActions}>
+          <ActionButton label="Search" onPress={() => submitSearch()} />
+          <ActionButton label="Filters" onPress={() => router.push({ pathname: '/results', params: { q: query.trim() || 'Dolo' } })} variant="secondary" />
+        </View>
 
         {submittedNoResults || (!showStarter && suggestions.length === 0) ? (
           <EmptyState
@@ -241,6 +246,11 @@ const styles = StyleSheet.create({
   section: {
     gap: spacing.md,
   },
+  searchActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -304,3 +314,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
 });
+

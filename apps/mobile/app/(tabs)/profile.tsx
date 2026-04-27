@@ -1,15 +1,15 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
-import { ActionButton } from '../components/ActionButton';
-import { Screen } from '../components/Screen';
-import { useFontScale } from '../hooks/useFontScale';
-import { signOut, subscribeToAuthState } from '../services/auth';
-import { getRecentSearches } from '../services/mockDiscovery';
-import { medifindTelemetry } from '../services/telemetry';
-import { loadUserProfile, type UserProfile } from '../services/userProfile';
-import { colors, radius, spacing, type as typography } from '../theme/tokens';
+import { ActionButton } from '../../components/ActionButton';
+import { Screen } from '../../components/Screen';
+import { useFontScale } from '../../hooks/useFontScale';
+import { signOut, subscribeToAuthState } from '../../services/auth';
+import { getRecentSearches } from '../../services/mockDiscovery';
+import { medifindTelemetry } from '../../services/telemetry';
+import { loadUserProfile, type UserProfile } from '../../services/userProfile';
+import { colors, radius, spacing, type as typography } from '../../theme/tokens';
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -76,6 +76,29 @@ export default function ProfileScreen() {
       }
     >
       <View style={styles.stack}>
+        <View style={styles.profileCard}>
+          {profile?.photoURL || profile?.photoUrl ? (
+            <Image
+              source={{ uri: profile.photoURL ?? profile.photoUrl ?? '' }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarText}>
+                {(profile?.displayName ?? profile?.email ?? 'M').slice(0, 1).toUpperCase()}
+              </Text>
+            </View>
+          )}
+          <View style={styles.profileText}>
+            <Text style={[styles.cardTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+              {profile?.displayName ?? profile?.name ?? 'Medifind user'}
+            </Text>
+            <Text style={[styles.cardBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+              {profile?.email ?? 'Signed-in account'}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.preferenceCard}>
           <View style={styles.preferenceText}>
             <Text style={[styles.cardTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
@@ -106,6 +129,23 @@ export default function ProfileScreen() {
           <Text style={[styles.cardBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
             Preferred search radius: {profile?.preferences?.preferredSearchRadiusKm ?? 5} km
           </Text>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={[styles.cardTitle, { fontSize: scale(typography.h3), lineHeight: scaleLineHeight(24) }]}>
+            App and support
+          </Text>
+          {['Help and support', 'Privacy policy', 'Terms of use', 'About Medifind'].map((label) => (
+            <Pressable
+              accessibilityRole="button"
+              key={label}
+              style={({ pressed }) => [styles.recentRow, pressed && styles.pressed]}
+            >
+              <Text style={[styles.cardBody, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+                {label}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         <View style={styles.infoCard}>
@@ -144,6 +184,39 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: spacing.xl,
   },
+  profileCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+  },
+  avatar: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: colors.surfaceAlt,
+  },
+  avatarFallback: {
+    width: 58,
+    height: 58,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 29,
+    backgroundColor: colors.primary50,
+  },
+  avatarText: {
+    color: colors.primary700,
+    fontSize: typography.h2,
+    fontWeight: '800',
+  },
+  profileText: {
+    flex: 1,
+    gap: spacing.xs,
+  },
   preferenceText: {
     flex: 1,
     gap: spacing.xs,
@@ -174,3 +247,4 @@ const styles = StyleSheet.create({
     opacity: 0.84,
   },
 });
+

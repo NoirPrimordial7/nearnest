@@ -68,7 +68,7 @@ export default function PrivacyScreen() {
         />
 
         <Section title="5. Your choices">
-          <Bullet>You can sign out at any time from the home screen.</Bullet>
+          <Bullet>You can sign out at any time from the profile screen.</Bullet>
           <Bullet>You can revoke location permission from your phone settings.</Bullet>
           <Bullet>
             You can ask us to delete your account by contacting [TBD by team]. Account deletion

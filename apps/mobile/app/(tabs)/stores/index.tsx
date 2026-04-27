@@ -2,22 +2,22 @@ import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { BottomSheet } from '../../components/BottomSheet';
-import { EmptyState } from '../../components/EmptyState';
-import { ErrorState } from '../../components/ErrorState';
-import { MapPlaceholder } from '../../components/MapPlaceholder';
-import { SearchBar } from '../../components/SearchBar';
-import { StoreCard } from '../../components/StoreCard';
-import { useFontScale } from '../../hooks/useFontScale';
-import { getNearbyStoresApi } from '../../services/discoveryApi';
-import { openExternalUrl } from '../../services/externalLinks';
+import { BottomSheet } from '../../../components/BottomSheet';
+import { EmptyState } from '../../../components/EmptyState';
+import { ErrorState } from '../../../components/ErrorState';
+import { RealMapView } from '../../../components/RealMapView';
+import { SearchBar } from '../../../components/SearchBar';
+import { StoreCard } from '../../../components/StoreCard';
+import { useFontScale } from '../../../hooks/useFontScale';
+import { getNearbyStoresApi } from '../../../services/discoveryApi';
+import { openExternalUrl } from '../../../services/externalLinks';
 import {
   getPhoneUrl,
   normalize,
-} from '../../services/mockDiscovery';
-import { medifindTelemetry } from '../../services/telemetry';
-import { colors, spacing, type as typography } from '../../theme/tokens';
-import type { Store, StoreInventoryItem } from '../../types/discovery';
+} from '../../../services/mockDiscovery';
+import { medifindTelemetry } from '../../../services/telemetry';
+import { colors, spacing, type as typography } from '../../../theme/tokens';
+import type { Store, StoreInventoryItem } from '../../../types/discovery';
 
 export default function StoresLandingScreen() {
   const [query, setQuery] = useState('');
@@ -102,7 +102,7 @@ export default function StoresLandingScreen() {
 
   return (
     <View style={styles.container}>
-      <MapPlaceholder stores={visibleStores} />
+      <RealMapView stores={visibleStores} title="Nearby pharmacy map" />
       <BottomSheet>
         <View style={styles.header}>
           <Text style={[styles.title, { fontSize: scale(typography.h2), lineHeight: scaleLineHeight(28) }]}>
@@ -195,3 +195,4 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
 });
+
