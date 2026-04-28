@@ -4,6 +4,45 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Fix route preview fallback for demo stores
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix Medifind route preview so mock/demo stores shown in nearby results can still open in-app route preview when live store detail returns no store.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `apps/mobile/services/discoveryApi.ts` - store detail API fallback path.
+- `apps/mobile/app/navigation/[storeId].tsx` - route preview store loading and error state.
+- `apps/mobile/services/telemetry.ts` - allowed telemetry events.
+
+**Files created / edited:**
+- `apps/mobile/services/discoveryApi.ts` - falls back to `getStoreById(storeId)` and `getInventoryForStore(storeId, q, filter)` when backend store detail returns no store but a demo store exists.
+- `apps/mobile/app/navigation/[storeId].tsx` - emits fallback telemetry context when demo route details are used.
+- `apps/mobile/services/telemetry.ts` - added `medifind.navigation.store_fallback_used`.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+- `graphify-out/**` - refresh pending after code changes.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `functions/**` - out of scope for this client fallback fix.
+- `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Kept the existing honest fallback copy in the route screen and fixed the API adapter so known mock store IDs return a usable store instead of `null`.
+
+**Warnings for next agent:**
+- The Android Maps SDK key warning is separate from this bug and can still appear on APKs built without the native Maps key; fallback map preview should handle it.
+
+**Verification:**
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed after sandbox escalation: `cd apps/mobile && npx expo export --platform android --output-dir .expo/route-fallback-hotfix-export --no-bytecode`.
+- Passed: `git diff --check`.
+- Passed: `graphify update .`.
+
+**Suggested commit message:**
+`fix(mobile): fall back to demo store details for route preview`
+
 ## 2026-04-28 - Connect discovery data to Firestore inventory
 **Agent:** Codex (GPT-5)
 **Session goal:** Finish Medifind Firebase discovery data linkage by adding audit/sync/seed scripts, importing remaining medicines, and creating store inventory rows without touching web UI or private data.

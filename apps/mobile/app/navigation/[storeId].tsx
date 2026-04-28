@@ -84,6 +84,11 @@ export default function InAppRoutePreviewScreen() {
         setStore(storeResult.store);
         setMedicine(medicineResult?.medicine ?? null);
         if (storeResult.source === 'mock' && storeResult.error) {
+          medifindTelemetry.emit('medifind.navigation.store_fallback_used', {
+            store_id: storeId,
+            source: storeResult.source,
+            has_store: Boolean(storeResult.store),
+          });
           setBackendError(storeResult.error);
         } else if (medicineResult?.source === 'mock' && medicineResult.error) {
           setBackendError(medicineResult.error);

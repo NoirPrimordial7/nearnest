@@ -294,6 +294,16 @@ export async function getStoreDetailApi(
     const store = ensureStore(data.store);
 
     if (!store) {
+      const fallbackStore = getStoreById(storeId);
+      if (fallbackStore) {
+        return {
+          source: 'mock',
+          store: fallbackStore,
+          groups: getInventoryForStore(storeId, q, filter),
+          error: 'Live store details unavailable. Showing local demo store.',
+        };
+      }
+
       return {
         source: 'backend',
         store: null,

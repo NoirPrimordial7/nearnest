@@ -1,6 +1,32 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex connected Medifind discovery data to Firestore inventory)
+Last updated: 2026-04-28 (Codex fixed route preview fallback for demo stores)
+
+## Mobile route preview demo-store fallback hotfix 2026-04-28
+- **Mobile-only emergency demo fix.**
+- **No web portal UI files were touched.**
+- **No Firebase deploy was run.**
+- **No production data was mutated.**
+- Root cause:
+  - Nearby store lists can show mock/demo stores when live discovery is unavailable.
+  - `/navigation/[storeId]` loads store details through `getStoreDetailApi(storeId)`.
+  - `getStoreDetailApi` only used mock fallback on thrown callable errors, not on clean backend responses where `store` was `null`.
+  - Mock store IDs such as `store_greenleaf` therefore reached the route screen as `store: null` and showed `store_not_found`.
+- Fix:
+  - `apps/mobile/services/discoveryApi.ts` now falls back to `getStoreById(storeId)` and `getInventoryForStore(storeId, q, filter)` when live store detail returns no store but a demo store exists.
+  - `apps/mobile/app/navigation/[storeId].tsx` records dev telemetry when the route preview uses the demo-store fallback.
+  - `apps/mobile/services/telemetry.ts` includes `medifind.navigation.store_fallback_used`.
+- Expected demo behavior:
+  - Route from a mock/demo nearby store opens the in-app route preview normally.
+  - The screen shows the existing honest copy: "Using local demo route details while live pharmacy data is unavailable."
+  - The Android Maps SDK key warning can still appear on the current APK and should use the fallback map preview.
+- Verification passed:
+  - `cd apps/mobile && npm run typecheck`
+  - `cd apps/mobile && npx expo export --platform android --output-dir .expo/route-fallback-hotfix-export --no-bytecode`
+  - `git diff --check`
+  - `graphify update .`
+- Note: Expo export had to be rerun outside the sandbox because Node hit `EPERM` when resolving `C:\Users\Aditya`; the rerun passed.
+- Suggested commit: `fix(mobile): fall back to demo store details for route preview`.
 
 ## Mobile discovery Firestore inventory connection 2026-04-28
 - **Mobile/Firebase discovery data finish only.**

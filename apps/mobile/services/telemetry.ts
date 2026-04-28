@@ -12,6 +12,7 @@ export type MedifindTelemetryEvent =
   | 'medifind.stores.store_card_tapped'
   | 'medifind.stores.store_call_clicked'
   | 'medifind.stores.store_navigate_clicked'
+  | 'medifind.navigation.store_fallback_used'
   | 'medifind.store.in_store_search_used'
   | 'medifind.category.opened'
   | 'medifind.profile.large_type_toggled'

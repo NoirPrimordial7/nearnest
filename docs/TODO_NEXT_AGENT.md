@@ -4,41 +4,30 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after discovery Firestore inventory connection)
+## Next up (as of 2026-04-28, after route preview demo-store fallback hotfix)
 
-**Current local state:** Medifind discovery data is now connected enough for a demo: 593 active medicine docs, 4 public/verified stores with coordinates, 223 inventory docs, and 153 medicines with at least one availability row. No web app files were touched. No full Firebase deploy was run. Do not rerun medicine or inventory imports unless the user explicitly asks.
+**Current local state:** Route preview now falls back to local demo store details when the live `getStoreDetail` callable cleanly returns no store for a mock/demo store ID. This fixes `/navigation/[storeId]` showing `store_not_found` for demo stores such as `store_greenleaf`. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
 
 **What changed locally:**
-- Added `scripts/discovery/audit_discovery_data.cjs`.
-- Added `scripts/discovery/sync_store_products_to_discovery_inventory.cjs`.
-- Added `scripts/discovery/seed_demo_discovery_inventory.cjs`.
-- Updated `apps/mobile/components/Screen.tsx` and `apps/mobile/app/navigation/[storeId].tsx` to use `SafeAreaView` from `react-native-safe-area-context`.
-- No Medifind app code imports `keepAwake`, `useKeepAwake`, or `activateKeepAwake`.
+- `apps/mobile/services/discoveryApi.ts` now returns mock store details and inventory groups when backend store detail returns `null` but `getStoreById(storeId)` has a demo store.
+- `apps/mobile/app/navigation/[storeId].tsx` logs fallback telemetry context when a route uses the demo-store fallback.
+- `apps/mobile/services/telemetry.ts` includes `medifind.navigation.store_fallback_used`.
 
 **Verification passed:**
-- `node --check scripts/discovery/audit_discovery_data.cjs`.
-- `node --check scripts/discovery/sync_store_products_to_discovery_inventory.cjs`.
-- `node --check scripts/discovery/seed_demo_discovery_inventory.cjs`.
 - `apps/mobile npm run typecheck`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/route-fallback-hotfix-export --no-bytecode`.
 - `git diff --check`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-firebase-data-finish-export --no-bytecode`.
 - `graphify update .`.
-
-**Data operations already run:**
-- Audit before: 108 medicines, 17 inventory docs, 8 medicines with availability.
-- Medicine import `--limit 585 --apply`: wrote 485 new medicine docs, skipped 100 existing docs.
-- Product sync apply: wrote 56 new inventory docs, skipped 75 existing rows.
-- Demo inventory apply: wrote 180 inventory docs across public/verified stores.
-- Audit after: 593 medicines, 223 inventory docs, 153 medicines with availability, no top missing problems.
+- Note: Expo export needed an escalated rerun because Node hit Windows `EPERM` resolving `C:\Users\Aditya`; the rerun passed.
 
 ### Next steps
 
 1. Commit and push:
-   `git add apps/mobile scripts/discovery scripts/medicines docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): connect discovery data to Firestore inventory"`.
+   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): fall back to demo store details for route preview"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Install the latest Android dev APK built after the Maps key hotfix.
-4. Runtime smoke on phone: Search Dolo, Crocin, Paracetamol; check Results, Medicine detail, Nearby Stores, Store detail inventory, and Route inside Medifind.
-5. If search still falls back to mock, inspect callable logs for `searchMedicines` / `getMedicineDetail` / `getStoreDetail` before changing mobile UI.
+3. Restart Metro on the current APK and test: Search -> Medicine detail -> Nearby stores -> Route for `store_greenleaf` or another demo store.
+4. Expected result: route preview opens inside Medifind, shows demo fallback note if live details are unavailable, and does not show `Route unavailable`.
+5. The current APK may still show `[RealMapView] Android Maps SDK key missing; using fallback map preview`; that is separate and expected until a rebuilt APK with the Android Maps key is installed.
 
 ---
 
