@@ -233,7 +233,12 @@ export default function HomeScreen() {
           </>
         ) : (
           <>
-            <RealMapView stores={stores} title="Stores around your search area" />
+            <RealMapView
+              height={320}
+              stores={stores}
+              subtitle={`${stores.length} nearby ${stores.length === 1 ? 'store' : 'stores'}`}
+              title="Stores around your search area"
+            />
             <View style={styles.storeModeHeader}>
               <View>
                 <Text

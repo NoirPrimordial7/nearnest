@@ -68,10 +68,13 @@ export async function getRoutePreviewApi(
 }
 
 export function buildFallbackRoute(origin: UserLocation, destination: UserLocation): RoutePreview {
+  const estimatedDistanceMeters = estimateDistanceMeters(origin, destination);
+  const distanceMeters =
+    estimatedDistanceMeters < 1 ? 0 : Math.max(120, estimatedDistanceMeters);
   return {
     source: 'fallback',
-    distanceMeters: estimateDistanceMeters(origin, destination),
-    duration: `${Math.max(4, Math.round((estimateDistanceMeters(origin, destination) / 1000) * 8 + 3)) * 60}s`,
+    distanceMeters,
+    duration: `${Math.max(4, Math.round((distanceMeters / 1000) * 8 + 3)) * 60}s`,
     coordinates: [
       { latitude: origin.lat, longitude: origin.lng },
       {
@@ -95,8 +98,11 @@ export function formatRouteDuration(duration?: string) {
 }
 
 export function formatRouteDistance(distanceMeters?: number) {
+  if (distanceMeters === 0) {
+    return 'At destination';
+  }
   if (!distanceMeters || !Number.isFinite(distanceMeters)) {
-    return 'Distance pending';
+    return 'Estimating route';
   }
   if (distanceMeters < 1000) {
     return `${Math.round(distanceMeters)} m`;

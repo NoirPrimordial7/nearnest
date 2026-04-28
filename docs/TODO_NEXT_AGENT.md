@@ -4,18 +4,20 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after route preview demo-store fallback hotfix)
+## Next up (as of 2026-04-28, after real maps and route preview UI polish)
 
-**Current local state:** Route preview now falls back to local demo store details when the live `getStoreDetail` callable cleanly returns no store for a mock/demo store ID. This fixes `/navigation/[storeId]` showing `store_not_found` for demo stores such as `store_greenleaf`. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
+**Current local state:** Medifind real Google Maps surfaces have been polished in JS: muted medical map styling, compact overlays, better markers, fit-to-route/store camera behavior, a 4-second foreground location timeout, and stable fallback route distance/time. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
 
 **What changed locally:**
-- `apps/mobile/services/discoveryApi.ts` now returns mock store details and inventory groups when backend store detail returns `null` but `getStoreById(storeId)` has a demo store.
-- `apps/mobile/app/navigation/[storeId].tsx` logs fallback telemetry context when a route uses the demo-store fallback.
-- `apps/mobile/services/telemetry.ts` includes `medifind.navigation.store_fallback_used`.
+- `apps/mobile/components/RealMapView.tsx` now applies a muted medical `customMapStyle`, compact floating overlay, better marker styling, map padding, and fit-to-coordinates behavior.
+- `apps/mobile/services/location.ts` now times out foreground location lookup after 4 seconds instead of letting route loading hang.
+- `apps/mobile/services/routePreview.ts` now produces stable fallback distance/time and avoids zero-distance fallbacks unless origin and destination are truly the same.
+- `apps/mobile/app/navigation/[storeId].tsx` now clears route loading in `finally`, uses the Baner fallback origin, and passes route-specific overlay copy.
+- Home stores mode, Stores tab, Medicine nearby stores, and Store detail pass better map heights/subtitles.
 
 **Verification passed:**
 - `apps/mobile npm run typecheck`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/route-fallback-hotfix-export --no-bytecode`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/real-map-polish-export --no-bytecode`.
 - `git diff --check`.
 - `graphify update .`.
 - Note: Expo export needed an escalated rerun because Node hit Windows `EPERM` resolving `C:\Users\Aditya`; the rerun passed.
@@ -23,11 +25,11 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 ### Next steps
 
 1. Commit and push:
-   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): fall back to demo store details for route preview"`.
+   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "polish mobile real maps and route preview UI"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Restart Metro on the current APK and test: Search -> Medicine detail -> Nearby stores -> Route for `store_greenleaf` or another demo store.
-4. Expected result: route preview opens inside Medifind, shows demo fallback note if live details are unavailable, and does not show `Route unavailable`.
-5. The current APK may still show `[RealMapView] Android Maps SDK key missing; using fallback map preview`; that is separate and expected until a rebuilt APK with the Android Maps key is installed.
+3. Restart Metro on the current rebuilt dev APK and test: Home Medical Stores, Stores tab, Store detail, Route, Start/End preview, Search Crocin/Dolo, Find nearby stores, and Route from medicine stores.
+4. Expected result: route preview stays inside Medifind, map camera fits route/store markers, and route metrics do not stay stuck on Checking.
+5. No new EAS build should be required for this pass because only JS/UI files changed.
 
 ---
 

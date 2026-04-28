@@ -15,6 +15,8 @@ export type LocationWatcher = {
   remove: () => void;
 };
 
+const CURRENT_LOCATION_TIMEOUT_MS = 4000;
+
 function toUserLocation(location: Location.LocationObject): UserLocation {
   return {
     lat: location.coords.latitude,
@@ -33,9 +35,13 @@ export async function requestCurrentLocation(): Promise<LocationResult> {
       };
     }
 
-    const location = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
+    const location = await withTimeout(
+      Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      }),
+      CURRENT_LOCATION_TIMEOUT_MS,
+      'Location took too long to respond.',
+    );
 
     return {
       status: 'granted',
@@ -47,6 +53,21 @@ export async function requestCurrentLocation(): Promise<LocationResult> {
       message: error instanceof Error ? error.message : 'Location is unavailable.',
     };
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs);
+    promise
+      .then((value) => {
+        clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
 }
 
 export async function watchUserLocation(

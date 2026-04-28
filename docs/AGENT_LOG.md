@@ -4,6 +4,57 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Polish real maps and route preview UI
+**Agent:** Codex (GPT-5)
+**Session goal:** Improve Medifind real Google Maps presentation, camera behavior, location timeout, and route metric stability without touching web UI or Firebase deploys.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `docs/MOBILE_APP_PLAN.md` - mobile MVP map/navigation scope.
+- `docs/DESIGN_SYSTEM.md` - premium medical UI tokens and constraints.
+- `apps/mobile/components/RealMapView.tsx` - native map rendering and fallback behavior.
+- `apps/mobile/app/navigation/[storeId].tsx` - route preview loading, location, and metrics.
+- `apps/mobile/app/(tabs)/stores/index.tsx` - Stores tab map layout.
+- `apps/mobile/app/(tabs)/home.tsx` - Home stores mode map usage.
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx` - medicine nearby stores map usage.
+- `apps/mobile/app/store/[storeId].tsx` - store detail mini-map usage.
+- `apps/mobile/services/location.ts` - foreground location request/watch helpers.
+- `apps/mobile/services/routePreview.ts` - backend and fallback route preview.
+
+**Files created / edited:**
+- `apps/mobile/components/RealMapView.tsx` - added muted medical map styling, compact overlay, marker variants, map padding, and fit-to-coordinates camera behavior.
+- `apps/mobile/services/location.ts` - added 4-second timeout to current location lookup.
+- `apps/mobile/services/routePreview.ts` - stabilized fallback distance/time and distance formatting.
+- `apps/mobile/app/navigation/[storeId].tsx` - uses Baner fallback origin, clears route loading in `finally`, and passes route-specific map subtitle.
+- `apps/mobile/app/(tabs)/stores/index.tsx` - larger map and compact subtitle for Stores tab.
+- `apps/mobile/app/(tabs)/home.tsx` - improved Home stores mode map sizing/copy.
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx` - improved medicine stores map sizing/copy.
+- `apps/mobile/app/store/[storeId].tsx` - improved Store detail map sizing/copy.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `functions/**` - out of scope; no callable change needed.
+- `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Kept all changes JS/UI-only so the current rebuilt dev client can load them through Metro without requiring another EAS build.
+
+**Warnings for next agent:**
+- Live route lines still require signed-in Firebase auth and the deployed `getRoutePreview` function with `GOOGLE_MAPS_ROUTES_API_KEY` configured.
+- Expo export may need sandbox escalation on this Windows machine because Node hits `EPERM` resolving `C:\Users\Aditya`.
+
+**Verification:**
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed after sandbox escalation: `cd apps/mobile && npx expo export --platform android --output-dir .expo/real-map-polish-export --no-bytecode`.
+- Passed: `git diff --check`.
+- Passed: `graphify update .`.
+
+**Suggested commit message:**
+`polish mobile real maps and route preview UI`
+
 ## 2026-04-28 - Fix route preview fallback for demo stores
 **Agent:** Codex (GPT-5)
 **Session goal:** Fix Medifind route preview so mock/demo stores shown in nearby results can still open in-app route preview when live store detail returns no store.

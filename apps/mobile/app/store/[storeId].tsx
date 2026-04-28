@@ -161,7 +161,13 @@ export default function StoreDetailScreen() {
           ) : null}
         </View>
 
-        <RealMapView selectedStore={store} stores={[store]} title="Store route preview" />
+        <RealMapView
+          height={320}
+          selectedStore={store}
+          stores={[store]}
+          subtitle="Open the in-app route preview before travelling"
+          title="Store route preview"
+        />
 
         {actionError ? (
           <ErrorState

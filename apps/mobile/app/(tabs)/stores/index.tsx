@@ -102,7 +102,12 @@ export default function StoresLandingScreen() {
 
   return (
     <View style={styles.container}>
-      <RealMapView stores={visibleStores} title="Nearby pharmacy map" />
+      <RealMapView
+        height={380}
+        stores={visibleStores}
+        subtitle={`${visibleStores.length} nearby ${visibleStores.length === 1 ? 'store' : 'stores'}`}
+        title="Stores around your search area"
+      />
       <BottomSheet>
         <View style={styles.header}>
           <Text style={[styles.title, { fontSize: scale(typography.h2), lineHeight: scaleLineHeight(28) }]}>

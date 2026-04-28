@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Constants from 'expo-constants';
 import { Platform, StyleSheet, Text, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
+import MapView, {
+  Marker,
+  Polyline,
+  PROVIDER_GOOGLE,
+  type MapStyleElement,
+  type Region,
+} from 'react-native-maps';
 
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
 import type { Store } from '../types/discovery';
@@ -14,6 +20,71 @@ const PUNE_FALLBACK = {
   lng: 73.7868,
 };
 
+const MAP_PADDING = {
+  top: 84,
+  right: 36,
+  bottom: 42,
+  left: 36,
+};
+
+const MEDICAL_MAP_STYLE: MapStyleElement[] = [
+  {
+    featureType: 'administrative',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#5C6570' }],
+  },
+  {
+    featureType: 'landscape',
+    elementType: 'geometry',
+    stylers: [{ color: '#F4F7F3' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.medical',
+    elementType: 'labels',
+    stylers: [{ visibility: 'on' }, { color: '#2F9E7E' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#DCEFE7' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#FFFFFF' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#7A858F' }],
+  },
+  {
+    featureType: 'road.arterial',
+    elementType: 'geometry',
+    stylers: [{ color: '#E8EEE9' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#D6EDE6' }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#D7EAF4' }],
+  },
+];
+
 type MobileExtraConfig = {
   hasAndroidMapsKey?: boolean;
 };
@@ -24,7 +95,9 @@ type RealMapViewProps = {
   userLocation?: UserLocation | null;
   routeCoordinates?: RouteCoordinate[];
   title?: string;
+  subtitle?: string;
   startMode?: boolean;
+  height?: number;
 };
 
 function coordinateForStore(store: Store) {
@@ -77,30 +150,80 @@ export function RealMapView({
   userLocation,
   routeCoordinates = [],
   title = 'Pharmacies near you',
+  subtitle,
   startMode = false,
+  height = 340,
 }: RealMapViewProps) {
   const mapRef = useRef<MapView | null>(null);
   const [mapFailed, setMapFailed] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const region = useMemo(
     () => buildRegion(stores, selectedStore, userLocation),
     [selectedStore, stores, userLocation],
   );
+  const storeCoordinates = useMemo(() => stores.map(coordinateForStore), [stores]);
+  const selectedCoordinate = useMemo(
+    () => (selectedStore ? coordinateForStore(selectedStore) : null),
+    [selectedStore],
+  );
+  const userCoordinate = useMemo(
+    () =>
+      userLocation
+        ? { latitude: userLocation.lat, longitude: userLocation.lng }
+        : null,
+    [userLocation],
+  );
+  const overlaySubtitle =
+    subtitle ??
+    (routeCoordinates.length >= 2
+      ? 'Route preview active inside Medifind'
+      : `${stores.length} nearby ${stores.length === 1 ? 'store' : 'stores'}`);
 
   useEffect(() => {
-    if (!mapRef.current || !startMode || !userLocation) {
+    if (!mapRef.current || !mapReady) {
       return;
     }
 
-    mapRef.current.animateToRegion(
-      {
-        latitude: userLocation.lat,
-        longitude: userLocation.lng,
-        latitudeDelta: 0.025,
-        longitudeDelta: 0.025,
-      },
-      550,
-    );
-  }, [startMode, userLocation]);
+    if (startMode && userLocation) {
+      mapRef.current.animateToRegion(
+        {
+          latitude: userLocation.lat,
+          longitude: userLocation.lng,
+          latitudeDelta: 0.025,
+          longitudeDelta: 0.025,
+        },
+        550,
+      );
+      return;
+    }
+
+    const fitCoordinates =
+      routeCoordinates.length >= 2
+        ? routeCoordinates
+        : userCoordinate && selectedCoordinate
+          ? [userCoordinate, selectedCoordinate]
+          : storeCoordinates.length > 0
+            ? storeCoordinates
+            : [{ latitude: PUNE_FALLBACK.lat, longitude: PUNE_FALLBACK.lng }];
+
+    if (fitCoordinates.length >= 2) {
+      mapRef.current.fitToCoordinates(fitCoordinates, {
+        animated: true,
+        edgePadding: MAP_PADDING,
+      });
+    } else {
+      mapRef.current.animateToRegion(region, 550);
+    }
+  }, [
+    mapReady,
+    region,
+    routeCoordinates,
+    selectedCoordinate,
+    startMode,
+    storeCoordinates,
+    userCoordinate,
+    userLocation,
+  ]);
 
   if (!canRenderNativeMap()) {
     if (__DEV__) {
@@ -114,17 +237,25 @@ export function RealMapView({
   }
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { height, minHeight: height }]}>
       <MapView
         ref={mapRef}
+        customMapStyle={MEDICAL_MAP_STYLE}
         initialRegion={region}
         loadingEnabled
-        onMapReady={() => setMapFailed(false)}
+        mapPadding={MAP_PADDING}
+        onMapReady={() => {
+          setMapFailed(false);
+          setMapReady(true);
+        }}
         onRegionChangeComplete={() => undefined}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+        showsBuildings={false}
         showsCompass={false}
         showsMyLocationButton={false}
-        style={styles.map}
+        showsPointsOfInterest={false}
+        toolbarEnabled={false}
+        style={StyleSheet.absoluteFill}
       >
         {userLocation ? (
           <Marker
@@ -146,7 +277,13 @@ export function RealMapView({
               title={store.name}
               description={store.verified ? 'Verified pharmacy' : 'Call to confirm'}
             >
-              <View style={[styles.storeMarker, selected && styles.selectedMarker]}>
+              <View
+                style={[
+                  styles.storeMarker,
+                  !store.verified && styles.unverifiedMarker,
+                  selected && styles.selectedMarker,
+                ]}
+              >
                 <View style={styles.markerCore} />
               </View>
             </Marker>
@@ -156,16 +293,16 @@ export function RealMapView({
         {routeCoordinates.length >= 2 ? (
           <Polyline
             coordinates={routeCoordinates}
+            lineCap="round"
+            lineJoin="round"
             strokeColor={colors.accent500}
-            strokeWidth={5}
+            strokeWidth={6}
           />
         ) : null}
       </MapView>
       <View style={styles.overlay}>
         <Text style={styles.overlayTitle}>{title}</Text>
-        <Text style={styles.overlayBody}>
-          {routeCoordinates.length >= 2 ? 'Route preview active inside Medifind' : `${stores.length} nearby stores`}
-        </Text>
+        <Text style={styles.overlayBody}>{overlaySubtitle}</Text>
       </View>
     </View>
   );
@@ -173,27 +310,24 @@ export function RealMapView({
 
 const styles = StyleSheet.create({
   wrap: {
-    minHeight: 300,
     overflow: 'hidden',
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.borderSoft,
     backgroundColor: colors.surfaceAlt,
   },
-  map: {
-    minHeight: 300,
-  },
   overlay: {
     position: 'absolute',
     left: spacing.lg,
-    right: spacing.lg,
-    bottom: spacing.lg,
+    right: '24%',
+    top: spacing.lg,
     gap: spacing.xs,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.borderSoft,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
   },
   overlayTitle: {
     color: colors.text,
@@ -206,14 +340,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   userMarker: {
-    minWidth: 46,
-    minHeight: 30,
+    minWidth: 42,
+    minHeight: 28,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.pill,
     borderWidth: 2,
     borderColor: colors.surface,
-    backgroundColor: colors.text,
+    backgroundColor: colors.accent500,
   },
   userMarkerText: {
     color: colors.textInvert,
@@ -230,9 +364,12 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
     backgroundColor: colors.primary500,
   },
+  unverifiedMarker: {
+    backgroundColor: colors.warning,
+  },
   selectedMarker: {
-    width: 34,
-    height: 34,
+    width: 40,
+    height: 40,
     backgroundColor: colors.accent500,
   },
   markerCore: {

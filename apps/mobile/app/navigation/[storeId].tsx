@@ -28,8 +28,8 @@ import { colors, radius, spacing, type as typography } from '../../theme/tokens'
 import type { Medicine, Store } from '../../types/discovery';
 
 const PUNE_FALLBACK_LOCATION: UserLocation = {
-  lat: 18.559,
-  lng: 73.7868,
+  lat: 18.5607,
+  lng: 73.7795,
 };
 
 function getParamValue(value: string | string[] | undefined) {
@@ -114,24 +114,29 @@ export default function InAppRoutePreviewScreen() {
       }
 
       setRouteLoading(true);
-      const locationResult = await requestCurrentLocation();
-      const origin =
-        locationResult.status === 'granted' ? locationResult.location : PUNE_FALLBACK_LOCATION;
+      try {
+        const locationResult = await requestCurrentLocation();
+        const origin =
+          locationResult.status === 'granted' ? locationResult.location : PUNE_FALLBACK_LOCATION;
 
-      if (locationResult.status !== 'granted') {
-        setLocationMessage('Location unavailable. Showing an in-app Pune preview.');
-      }
+        if (locationResult.status !== 'granted') {
+          setLocationMessage('Location unavailable. Showing an in-app Pune preview.');
+        }
 
-      if (cancelled) {
-        return;
-      }
+        if (cancelled) {
+          return;
+        }
 
-      setUserLocation(origin);
-      const destination = storeDestination(store);
-      const preview = await getRoutePreviewApi(origin, destination);
-      if (!cancelled) {
-        setRoutePreview(preview);
-        setRouteLoading(false);
+        setUserLocation(origin);
+        const destination = storeDestination(store);
+        const preview = await getRoutePreviewApi(origin, destination);
+        if (!cancelled) {
+          setRoutePreview(preview);
+        }
+      } finally {
+        if (!cancelled) {
+          setRouteLoading(false);
+        }
       }
     }
 
@@ -235,6 +240,7 @@ export default function InAppRoutePreviewScreen() {
         <RealMapView
           routeCoordinates={routePreview?.coordinates}
           selectedStore={store}
+          subtitle={startMode ? 'Route preview active inside Medifind' : 'Distance and route stay in Medifind'}
           startMode={startMode}
           stores={[store]}
           title={startMode ? 'Navigation preview active' : 'In-app route preview'}
@@ -255,8 +261,8 @@ export default function InAppRoutePreviewScreen() {
           </Text>
 
           <View style={styles.metricRow}>
-            <Metric label="Distance" value={routeLoading ? 'Checking...' : routeDistance} />
-            <Metric label="Travel time" value={routeLoading ? 'Checking...' : routeDuration} />
+            <Metric label="Distance" value={routeLoading && !routePreview ? 'Estimating...' : routeDistance} />
+            <Metric label="Travel time" value={routeLoading && !routePreview ? 'Estimating...' : routeDuration} />
           </View>
 
           {medicine ? (

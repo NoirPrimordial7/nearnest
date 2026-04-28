@@ -125,7 +125,12 @@ export default function NearbyStoresForMedicineScreen() {
 
   return (
     <View style={styles.container}>
-      <RealMapView stores={mapStores} title={medicine?.name ?? 'Nearby pharmacies'} />
+      <RealMapView
+        height={380}
+        stores={mapStores}
+        subtitle={`${mapStores.length} stores with availability`}
+        title={medicine?.name ?? 'Nearby pharmacies'}
+      />
       <BottomSheet>
         <View style={styles.sheetHeader}>
           <Pressable accessibilityRole="button" onPress={() => router.back()}>

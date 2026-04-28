@@ -1,6 +1,41 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex fixed route preview fallback for demo stores)
+Last updated: 2026-04-28 (Codex polished Medifind real maps and route preview UI)
+
+## Mobile real maps and route preview polish 2026-04-28
+- **Mobile-only UI/runtime polish.**
+- **No web portal UI files were touched.**
+- **No Firebase deploy was run.**
+- **No production data was mutated.**
+- RealMapView improvements:
+  - Added muted medical Google map styling through `customMapStyle`.
+  - Reduced noisy POIs/transit labels while keeping roads, water, parks, and medical POIs readable.
+  - Replaced the large bottom overlay with a compact floating overlay.
+  - Added selected/verified/unverified marker differentiation.
+  - Added map padding and fit-to-coordinates behavior for routes, user+store, store sets, and Pune fallback.
+  - Keeps fallback `MapPlaceholder` behavior when Android Maps key is missing or the native map fails.
+- Route preview improvements:
+  - Uses fallback origin `{ lat: 18.5607, lng: 73.7795 }` when foreground location is unavailable.
+  - Keeps the destination as the store coordinate.
+  - Metrics now show stable fallback distance/time instead of staying at "Checking..." indefinitely.
+  - Route loading is cleared in a `finally` block.
+- Location service:
+  - `requestCurrentLocation()` now times out after 4 seconds and returns a friendly unavailable result.
+  - `watchUserLocation()` remains unchanged for Start preview mode.
+- Fallback route behavior:
+  - Fallback distance now uses a non-zero estimate unless origin and destination are truly the same.
+  - Duration is based on the fallback distance and remains usable.
+- Screens touched for map presentation:
+  - Home stores mode map
+  - Stores tab map
+  - Medicine nearby stores map
+  - Store detail mini-map
+- Verification passed:
+  - `cd apps/mobile && npm run typecheck`
+  - `cd apps/mobile && npx expo export --platform android --output-dir .expo/real-map-polish-export --no-bytecode`
+- Note: Expo export had to be rerun outside the sandbox because Node hit `EPERM` when resolving `C:\Users\Aditya`; the rerun passed.
+- No new EAS build is required for these JS/UI-only changes when testing with the already rebuilt dev client.
+- Suggested commit: `polish mobile real maps and route preview UI`.
 
 ## Mobile route preview demo-store fallback hotfix 2026-04-28
 - **Mobile-only emergency demo fix.**
