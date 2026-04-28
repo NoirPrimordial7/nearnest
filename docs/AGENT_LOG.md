@@ -4,6 +4,52 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Reduce map memory pressure and upgrade route start mode
+**Agent:** Codex (GPT-5)
+**Session goal:** Prevent Android Google Maps memory pressure from stacked native map views and make Start in-app preview feel like a map-first navigation preview.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `docs/MOBILE_APP_PLAN.md` - mobile MVP map/navigation scope.
+- `apps/mobile/components/RealMapView.tsx` - native map mount and feature settings.
+- `apps/mobile/app/navigation/[storeId].tsx` - Start preview route layout.
+- `apps/mobile/app/(tabs)/home.tsx` - Home stores mode map usage.
+- `apps/mobile/app/(tabs)/stores/index.tsx` - Stores tab map usage.
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx` - medicine nearby stores map usage.
+- `apps/mobile/app/store/[storeId].tsx` - store detail map usage.
+
+**Files created / edited:**
+- `apps/mobile/components/RealMapView.tsx` - added `active` and `liteMode`, avoids mounting native `MapView` when inactive, and disables unnecessary native map features.
+- `apps/mobile/app/navigation/[storeId].tsx` - uses screen focus, keeps full map active only while focused, and adds a large-map Start preview layout with compact bottom controls.
+- `apps/mobile/app/(tabs)/home.tsx` - gates Home stores map by screen focus and uses Android lite mode.
+- `apps/mobile/app/(tabs)/stores/index.tsx` - gates Stores tab map by screen focus and uses Android lite mode.
+- `apps/mobile/app/medicine/[medicineId]/stores.tsx` - gates medicine stores map by screen focus and uses Android lite mode.
+- `apps/mobile/app/store/[storeId].tsx` - gates store detail map by screen focus and uses Android lite mode.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `functions/**` - out of scope.
+- `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Used focus-based unmounting plus Android lite mode for preview maps instead of changing native configuration or forcing a new EAS build.
+
+**Warnings for next agent:**
+- Live Google route data still depends on signed-in Firebase auth and the deployed `getRoutePreview` function with `GOOGLE_MAPS_ROUTES_API_KEY`.
+- Expo export may need sandbox escalation on this Windows machine because Node hits `EPERM` resolving `C:\Users\Aditya`.
+
+**Verification:**
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed after sandbox escalation: `cd apps/mobile && npx expo export --platform android --output-dir .expo/final-route-mode-export --no-bytecode`.
+- Passed: `git diff --check`.
+- Passed: `graphify update .`.
+
+**Suggested commit message:**
+`fix(mobile): make route preview navigation mode and reduce map memory`
+
 ## 2026-04-28 - Polish real maps and route preview UI
 **Agent:** Codex (GPT-5)
 **Session goal:** Improve Medifind real Google Maps presentation, camera behavior, location timeout, and route metric stability without touching web UI or Firebase deploys.

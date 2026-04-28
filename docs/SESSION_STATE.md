@@ -1,6 +1,34 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex polished Medifind real maps and route preview UI)
+Last updated: 2026-04-28 (Codex reduced map memory pressure and upgraded route start mode)
+
+## Mobile route navigation mode and map memory fix 2026-04-28
+- **Mobile-only final route preview and Google Maps memory fix.**
+- **No web portal UI files were touched.**
+- **No Firebase deploy was run.**
+- **No production data was mutated.**
+- OOM root cause addressed:
+  - Android Google Maps native views can stay mounted across Expo Router navigation stack screens.
+  - Multiple mounted map views can pressure `google.android.gms.policy_maps_core_dynamite` memory on emulator.
+- RealMapView changes:
+  - Added `active?: boolean`; when false, native `MapView` is not mounted and `MapPlaceholder` renders instead.
+  - Added `liteMode?: boolean`; Android preview maps can use native lite mode.
+  - Disabled unnecessary map features: rotate, pitch, move-on-marker-press, traffic, and indoors.
+- Focus behavior:
+  - Home stores mode, Stores tab, medicine nearby stores, store detail, and route preview now pass `active={useIsFocused()}`.
+  - Home/list/detail preview maps pass Android `liteMode`.
+  - Route preview keeps full map mode with `liteMode={false}`.
+- Start preview upgrade:
+  - When Start in-app preview is active, the route screen switches to a map-first layout.
+  - Map height expands to roughly 63% of the screen.
+  - Bulky details are hidden.
+  - A compact bottom sheet shows store name, distance, ETA, honest preview copy, End preview, and Call store.
+- Verification passed:
+  - `cd apps/mobile && npm run typecheck`
+  - `cd apps/mobile && npx expo export --platform android --output-dir .expo/final-route-mode-export --no-bytecode`
+- Note: Expo export had to be rerun outside the sandbox because Node hit `EPERM` when resolving `C:\Users\Aditya`; the rerun passed.
+- No new EAS build is required for these JS/UI-only changes when testing with the already rebuilt dev client.
+- Suggested commit: `fix(mobile): make route preview navigation mode and reduce map memory`.
 
 ## Mobile real maps and route preview polish 2026-04-28
 - **Mobile-only UI/runtime polish.**

@@ -4,20 +4,20 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after real maps and route preview UI polish)
+## Next up (as of 2026-04-28, after route navigation mode and map memory fix)
 
-**Current local state:** Medifind real Google Maps surfaces have been polished in JS: muted medical map styling, compact overlays, better markers, fit-to-route/store camera behavior, a 4-second foreground location timeout, and stable fallback route distance/time. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
+**Current local state:** Medifind now avoids keeping native Google maps mounted on unfocused stack screens and Start in-app preview has a map-first navigation mode. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
 
 **What changed locally:**
-- `apps/mobile/components/RealMapView.tsx` now applies a muted medical `customMapStyle`, compact floating overlay, better marker styling, map padding, and fit-to-coordinates behavior.
-- `apps/mobile/services/location.ts` now times out foreground location lookup after 4 seconds instead of letting route loading hang.
-- `apps/mobile/services/routePreview.ts` now produces stable fallback distance/time and avoids zero-distance fallbacks unless origin and destination are truly the same.
-- `apps/mobile/app/navigation/[storeId].tsx` now clears route loading in `finally`, uses the Baner fallback origin, and passes route-specific overlay copy.
-- Home stores mode, Stores tab, Medicine nearby stores, and Store detail pass better map heights/subtitles.
+- `apps/mobile/components/RealMapView.tsx` now supports `active` and `liteMode`; when inactive, it does not mount native `MapView`.
+- Android preview maps use lite mode where appropriate, and native maps disable rotate, pitch, traffic, indoors, and move-on-marker-press.
+- Home stores mode, Stores tab, Medicine nearby stores, Store detail, and Route preview pass `active={useIsFocused()}`.
+- Route preview keeps full map mode while focused and uses `liteMode={false}`.
+- Start in-app preview now expands the map to roughly 63% of screen height and shows a compact bottom sheet with store name, distance, ETA, preview copy, End preview, and Call store.
 
 **Verification passed:**
 - `apps/mobile npm run typecheck`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/real-map-polish-export --no-bytecode`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/final-route-mode-export --no-bytecode`.
 - `git diff --check`.
 - `graphify update .`.
 - Note: Expo export needed an escalated rerun because Node hit Windows `EPERM` resolving `C:\Users\Aditya`; the rerun passed.
@@ -25,10 +25,10 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 ### Next steps
 
 1. Commit and push:
-   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "polish mobile real maps and route preview UI"`.
+   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): make route preview navigation mode and reduce map memory"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Restart Metro on the current rebuilt dev APK and test: Home Medical Stores, Stores tab, Store detail, Route, Start/End preview, Search Crocin/Dolo, Find nearby stores, and Route from medicine stores.
-4. Expected result: route preview stays inside Medifind, map camera fits route/store markers, and route metrics do not stay stuck on Checking.
+3. Restart Metro on the current rebuilt dev APK and test: Stores tab -> Store detail -> Route -> Start preview -> End preview, then back through the stack to confirm no emulator OOM.
+4. Expected result: route preview stays inside Medifind, Start mode is map-first with bottom controls, and returning to previous screens does not keep extra native maps mounted.
 5. No new EAS build should be required for this pass because only JS/UI files changed.
 
 ---
