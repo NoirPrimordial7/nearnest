@@ -9,7 +9,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\eslint.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_eslint_config_js",
-      "community": 62,
+      "community": 61,
       "norm_label": "eslint.config.js"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\main.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_main_jsx",
-      "community": 63,
+      "community": 62,
       "norm_label": "main.jsx"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\vite.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_vite_config_js",
-      "community": 64,
+      "community": 63,
       "norm_label": "vite.config.js"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_config_js",
-      "community": 65,
+      "community": 64,
       "norm_label": "app.config.js"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\index.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_index_tsx",
-      "community": 66,
+      "community": 65,
       "norm_label": "index.tsx"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\privacy.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_privacy_tsx",
-      "community": 67,
+      "community": 66,
       "norm_label": "privacy.tsx"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_results_tsx",
-      "community": 26,
+      "community": 25,
       "norm_label": "results.tsx"
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
       "source_location": "L16",
       "id": "results_getparamvalue",
-      "community": 26,
+      "community": 25,
       "norm_label": "getparamvalue()"
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\results.tsx",
       "source_location": "L20",
       "id": "results_resultsscreen",
-      "community": 26,
+      "community": 25,
       "norm_label": "resultsscreen()"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\terms.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_terms_tsx",
-      "community": 68,
+      "community": 67,
       "norm_label": "terms.tsx"
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\(tabs)\\_layout.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_app_tabs_layout_tsx",
-      "community": 27,
+      "community": 26,
       "norm_label": "_layout.tsx"
     },
     {
@@ -423,7 +423,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\(tabs)\\_layout.tsx",
       "source_location": "L13",
       "id": "layout_tabicon",
-      "community": 27,
+      "community": 26,
       "norm_label": "tabicon()"
     },
     {
@@ -432,7 +432,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\app\\(tabs)\\_layout.tsx",
       "source_location": "L27",
       "id": "layout_maintabslayout",
-      "community": 27,
+      "community": 26,
       "norm_label": "maintabslayout()"
     },
     {
@@ -666,7 +666,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ActionButton.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_actionbutton_tsx",
-      "community": 69,
+      "community": 68,
       "norm_label": "actionbutton.tsx"
     },
     {
@@ -711,7 +711,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\CategoryCard.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_categorycard_tsx",
-      "community": 70,
+      "community": 69,
       "norm_label": "categorycard.tsx"
     },
     {
@@ -738,7 +738,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\EmptyState.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_emptystate_tsx",
-      "community": 71,
+      "community": 70,
       "norm_label": "emptystate.tsx"
     },
     {
@@ -747,7 +747,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ErrorState.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_errorstate_tsx",
-      "community": 72,
+      "community": 71,
       "norm_label": "errorstate.tsx"
     },
     {
@@ -774,7 +774,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\MapPlaceholder.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_mapplaceholder_tsx",
-      "community": 73,
+      "community": 72,
       "norm_label": "mapplaceholder.tsx"
     },
     {
@@ -819,7 +819,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\ProductCard.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_productcard_tsx",
-      "community": 74,
+      "community": 73,
       "norm_label": "productcard.tsx"
     },
     {
@@ -828,7 +828,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\RealMapView.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_realmapview_tsx",
-      "community": 20,
+      "community": 19,
       "norm_label": "realmapview.tsx"
     },
     {
@@ -837,7 +837,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\RealMapView.tsx",
       "source_location": "L105",
       "id": "realmapview_coordinateforstore",
-      "community": 20,
+      "community": 19,
       "norm_label": "coordinateforstore()"
     },
     {
@@ -846,7 +846,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\RealMapView.tsx",
       "source_location": "L120",
       "id": "realmapview_buildregion",
-      "community": 20,
+      "community": 19,
       "norm_label": "buildregion()"
     },
     {
@@ -855,7 +855,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\RealMapView.tsx",
       "source_location": "L140",
       "id": "realmapview_canrendernativemap",
-      "community": 20,
+      "community": 19,
       "norm_label": "canrendernativemap()"
     },
     {
@@ -864,7 +864,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\components\\Screen.tsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_components_screen_tsx",
-      "community": 75,
+      "community": 74,
       "norm_label": "screen.tsx"
     },
     {
@@ -1251,7 +1251,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\firebase.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_services_firebase_ts",
-      "community": 28,
+      "community": 27,
       "norm_label": "firebase.ts"
     },
     {
@@ -1260,7 +1260,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\firebase.ts",
       "source_location": "L27",
       "id": "firebase_readrequiredenv",
-      "community": 28,
+      "community": 27,
       "norm_label": "readrequiredenv()"
     },
     {
@@ -1269,7 +1269,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\firebase.ts",
       "source_location": "L51",
       "id": "firebase_initializemobileauth",
-      "community": 28,
+      "community": 27,
       "norm_label": "initializemobileauth()"
     },
     {
@@ -1818,7 +1818,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\services\\telemetry.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_services_telemetry_ts",
-      "community": 76,
+      "community": 75,
       "norm_label": "telemetry.ts"
     },
     {
@@ -1962,7 +1962,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\types\\discovery.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_types_discovery_ts",
-      "community": 77,
+      "community": 76,
       "norm_label": "discovery.ts"
     },
     {
@@ -1971,7 +1971,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\apps\\mobile\\types\\firebase-auth-react-native.d.ts",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_apps_mobile_types_firebase_auth_react_native_d_ts",
-      "community": 78,
+      "community": 77,
       "norm_label": "firebase-auth-react-native.d.ts"
     },
     {
@@ -1980,7 +1980,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\functions\\eslint.config.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_functions_eslint_config_js",
-      "community": 79,
+      "community": 78,
       "norm_label": "eslint.config.js"
     },
     {
@@ -2538,7 +2538,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\scripts\\seedFirestore.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_scripts_seedfirestore_js",
-      "community": 80,
+      "community": 79,
       "norm_label": "seedfirestore.js"
     },
     {
@@ -2664,7 +2664,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\main.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_main_jsx",
-      "community": 81,
+      "community": 80,
       "norm_label": "main.jsx"
     },
     {
@@ -2673,7 +2673,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components\\MainContent.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_maincontent_jsx",
-      "community": 29,
+      "community": 28,
       "norm_label": "maincontent.jsx"
     },
     {
@@ -2682,7 +2682,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\MainContent.jsx",
       "source_location": "L3",
       "id": "maincontent_maincontent",
-      "community": 29,
+      "community": 28,
       "norm_label": "maincontent()"
     },
     {
@@ -2691,7 +2691,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components\\NavBar.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_navbar_jsx",
-      "community": 30,
+      "community": 29,
       "norm_label": "navbar.jsx"
     },
     {
@@ -2700,7 +2700,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\NavBar.jsx",
       "source_location": "L4",
       "id": "navbar_navbar",
-      "community": 30,
+      "community": 29,
       "norm_label": "navbar()"
     },
     {
@@ -2709,7 +2709,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components\\Sidebar.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_sidebar_jsx",
-      "community": 31,
+      "community": 30,
       "norm_label": "sidebar.jsx"
     },
     {
@@ -2718,7 +2718,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\Sidebar.jsx",
       "source_location": "L10",
       "id": "sidebar_sidebar",
-      "community": 31,
+      "community": 30,
       "norm_label": "sidebar()"
     },
     {
@@ -2727,7 +2727,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\MainContent.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_copy_maincontent_jsx",
-      "community": 29,
+      "community": 28,
       "norm_label": "maincontent.jsx"
     },
     {
@@ -2736,7 +2736,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\NavBar.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_copy_navbar_jsx",
-      "community": 30,
+      "community": 29,
       "norm_label": "navbar.jsx"
     },
     {
@@ -2745,7 +2745,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\components copy\\Sidebar.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_components_copy_sidebar_jsx",
-      "community": 31,
+      "community": 30,
       "norm_label": "sidebar.jsx"
     },
     {
@@ -2754,7 +2754,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\lib\\firebase.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_lib_firebase_js",
-      "community": 82,
+      "community": 81,
       "norm_label": "firebase.js"
     },
     {
@@ -2763,7 +2763,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\lib\\firestoreHelpers.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_lib_firestorehelpers_js",
-      "community": 32,
+      "community": 31,
       "norm_label": "firestorehelpers.js"
     },
     {
@@ -2772,7 +2772,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\lib\\firestoreHelpers.js",
       "source_location": "L7",
       "id": "firestorehelpers_onownedcollection",
-      "community": 32,
+      "community": 31,
       "norm_label": "onownedcollection()"
     },
     {
@@ -2781,7 +2781,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\lib\\firestoreHelpers.js",
       "source_location": "L16",
       "id": "firestorehelpers_onvisibletocollection",
-      "community": 32,
+      "community": 31,
       "norm_label": "onvisibletocollection()"
     },
     {
@@ -2790,17 +2790,26 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
-      "community": 49,
+      "community": 32,
       "norm_label": "nearnesthome.jsx"
     },
     {
-      "label": "NearNestHome()",
+      "label": "NearnestHome()",
       "file_type": "code",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
-      "source_location": "L6",
+      "source_location": "L34",
       "id": "nearnesthome_nearnesthome",
-      "community": 49,
+      "community": 32,
       "norm_label": "nearnesthome()"
+    },
+    {
+      "label": "DownloadLink()",
+      "file_type": "code",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
+      "source_location": "L176",
+      "id": "nearnesthome_downloadlink",
+      "community": 32,
+      "norm_label": "downloadlink()"
     },
     {
       "label": "AdminLayout.jsx",
@@ -2808,7 +2817,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\AdminLayout.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_adminlayout_jsx",
-      "community": 15,
+      "community": 3,
       "norm_label": "adminlayout.jsx"
     },
     {
@@ -2817,7 +2826,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L7",
       "id": "adminlayout_useclickaway",
-      "community": 15,
+      "community": 3,
       "norm_label": "useclickaway()"
     },
     {
@@ -2826,7 +2835,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L21",
       "id": "adminlayout_icon",
-      "community": 15,
+      "community": 3,
       "norm_label": "icon()"
     },
     {
@@ -2835,7 +2844,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L54",
       "id": "adminlayout_adminlayout",
-      "community": 15,
+      "community": 3,
       "norm_label": "adminlayout()"
     },
     {
@@ -2844,7 +2853,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_dashboard_dashboard_jsx",
-      "community": 12,
+      "community": 11,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -2853,7 +2862,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L60",
       "id": "dashboard_icon",
-      "community": 12,
+      "community": 11,
       "norm_label": "icon()"
     },
     {
@@ -2862,7 +2871,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_kpicard",
-      "community": 12,
+      "community": 11,
       "norm_label": "kpicard()"
     },
     {
@@ -2871,7 +2880,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L93",
       "id": "dashboard_card",
-      "community": 12,
+      "community": 11,
       "norm_label": "card()"
     },
     {
@@ -2880,7 +2889,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L108",
       "id": "dashboard_rangetabs",
-      "community": 12,
+      "community": 11,
       "norm_label": "rangetabs()"
     },
     {
@@ -2889,7 +2898,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Dashboard\\Dashboard.jsx",
       "source_location": "L69",
       "id": "dashboard_makemonthbuckets",
-      "community": 12,
+      "community": 11,
       "norm_label": "makemonthbuckets()"
     },
     {
@@ -2898,7 +2907,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L126",
       "id": "dashboard_dashboard",
-      "community": 12,
+      "community": 11,
       "norm_label": "dashboard()"
     },
     {
@@ -2907,7 +2916,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_stores_storeservice_js",
-      "community": 11,
+      "community": 12,
       "norm_label": "storeservice.js"
     },
     {
@@ -2916,7 +2925,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L20",
       "id": "storeservice_prettylabel",
-      "community": 11,
+      "community": 12,
       "norm_label": "prettylabel()"
     },
     {
@@ -2925,7 +2934,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L46",
       "id": "storeservice_normalizestore",
-      "community": 11,
+      "community": 12,
       "norm_label": "normalizestore()"
     },
     {
@@ -2934,7 +2943,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L41",
       "id": "storeservice_liststores",
-      "community": 11,
+      "community": 12,
       "norm_label": "liststores()"
     },
     {
@@ -2943,7 +2952,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L82",
       "id": "storeservice_setstorestatus",
-      "community": 11,
+      "community": 12,
       "norm_label": "setstorestatus()"
     },
     {
@@ -2952,7 +2961,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L99",
       "id": "storeservice_deletestore",
-      "community": 11,
+      "community": 12,
       "norm_label": "deletestore()"
     },
     {
@@ -2961,7 +2970,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L216",
       "id": "storeservice_getstoredocuments",
-      "community": 11,
+      "community": 12,
       "norm_label": "getstoredocuments()"
     },
     {
@@ -2970,7 +2979,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Stores\\storeService.js",
       "source_location": "L238",
       "id": "storeservice_getstoreverificationlogs",
-      "community": 11,
+      "community": 12,
       "norm_label": "getstoreverificationlogs()"
     },
     {
@@ -3042,7 +3051,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_support_supporttickets_jsx",
-      "community": 14,
+      "community": 3,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -3051,7 +3060,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L15",
       "id": "supporttickets_tstostr",
-      "community": 14,
+      "community": 3,
       "norm_label": "tstostr()"
     },
     {
@@ -3060,7 +3069,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Support\\SupportTickets.jsx",
       "source_location": "L25",
       "id": "supporttickets_normalizeticket",
-      "community": 14,
+      "community": 3,
       "norm_label": "normalizeticket()"
     },
     {
@@ -3069,7 +3078,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Support\\SupportTickets.jsx",
       "source_location": "L10",
       "id": "supporttickets_supporttickets",
-      "community": 14,
+      "community": 3,
       "norm_label": "supporttickets()"
     },
     {
@@ -3078,7 +3087,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin\\Verification\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_verification_documentverification_jsx",
-      "community": 3,
+      "community": 14,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -3087,7 +3096,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L14",
       "id": "documentverification_icon",
-      "community": 3,
+      "community": 14,
       "norm_label": "icon()"
     },
     {
@@ -3096,7 +3105,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L21",
       "id": "documentverification_pill",
-      "community": 3,
+      "community": 14,
       "norm_label": "pill()"
     },
     {
@@ -3105,7 +3114,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L30",
       "id": "documentverification_prettylabel",
-      "community": 3,
+      "community": 14,
       "norm_label": "prettylabel()"
     },
     {
@@ -3114,7 +3123,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L45",
       "id": "documentverification_todate",
-      "community": 3,
+      "community": 14,
       "norm_label": "todate()"
     },
     {
@@ -3123,7 +3132,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L53",
       "id": "documentverification_documentverification",
-      "community": 3,
+      "community": 14,
       "norm_label": "documentverification()"
     },
     {
@@ -3132,7 +3141,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Ad.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_ad_jsx",
-      "community": 21,
+      "community": 20,
       "norm_label": "ad.jsx"
     },
     {
@@ -3141,7 +3150,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Ad.jsx",
       "source_location": "L60",
       "id": "ad_formatdate",
-      "community": 21,
+      "community": 20,
       "norm_label": "formatdate()"
     },
     {
@@ -3150,7 +3159,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Ad.jsx",
       "source_location": "L66",
       "id": "ad_exporttocsv",
-      "community": 21,
+      "community": 20,
       "norm_label": "exporttocsv()"
     },
     {
@@ -3159,7 +3168,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Ad.jsx",
       "source_location": "L93",
       "id": "ad_ad",
-      "community": 21,
+      "community": 20,
       "norm_label": "ad()"
     },
     {
@@ -3168,7 +3177,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_admindashboard_jsx",
-      "community": 50,
+      "community": 49,
       "norm_label": "admindashboard.jsx"
     },
     {
@@ -3177,7 +3186,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminDashboard.jsx",
       "source_location": "L9",
       "id": "admindashboard_admindashboard",
-      "community": 50,
+      "community": 49,
       "norm_label": "admindashboard()"
     },
     {
@@ -3186,7 +3195,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\AdminLayout.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_adminlayout_jsx",
-      "community": 15,
+      "community": 3,
       "norm_label": "adminlayout.jsx"
     },
     {
@@ -3195,7 +3204,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_jsx",
-      "community": 12,
+      "community": 11,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -3204,7 +3213,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_documentverification_jsx",
-      "community": 3,
+      "community": 14,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -3213,7 +3222,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Notifications.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_notifications_jsx",
-      "community": 51,
+      "community": 50,
       "norm_label": "notifications.jsx"
     },
     {
@@ -3222,7 +3231,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Notifications.jsx",
       "source_location": "L43",
       "id": "notifications_notifications",
-      "community": 51,
+      "community": 50,
       "norm_label": "notifications()"
     },
     {
@@ -3231,7 +3240,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\RolePermission.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_rolepermission_jsx",
-      "community": 52,
+      "community": 51,
       "norm_label": "rolepermission.jsx"
     },
     {
@@ -3240,7 +3249,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\RolePermission.jsx",
       "source_location": "L4",
       "id": "rolepermission_rolepermission",
-      "community": 52,
+      "community": 51,
       "norm_label": "rolepermission()"
     },
     {
@@ -3249,7 +3258,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Settings.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_settings_jsx",
-      "community": 53,
+      "community": 52,
       "norm_label": "settings.jsx"
     },
     {
@@ -3258,7 +3267,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Settings.jsx",
       "source_location": "L5",
       "id": "settings_settings",
-      "community": 53,
+      "community": 52,
       "norm_label": "settings()"
     },
     {
@@ -3267,7 +3276,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\StoreManagement.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_storemanagement_jsx",
-      "community": 54,
+      "community": 53,
       "norm_label": "storemanagement.jsx"
     },
     {
@@ -3276,7 +3285,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\StoreManagement.jsx",
       "source_location": "L4",
       "id": "storemanagement_storemanagement",
-      "community": 54,
+      "community": 53,
       "norm_label": "storemanagement()"
     },
     {
@@ -3285,7 +3294,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_supporttickets_jsx",
-      "community": 14,
+      "community": 3,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -3294,7 +3303,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_dashboard_dashboard_jsx",
-      "community": 12,
+      "community": 11,
       "norm_label": "dashboard.jsx"
     },
     {
@@ -3303,7 +3312,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Dashboard\\Dashboard.jsx",
       "source_location": "L20",
       "id": "dashboard_makemonthly",
-      "community": 12,
+      "community": 11,
       "norm_label": "makemonthly()"
     },
     {
@@ -3312,7 +3321,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_stores_storeservice_js",
-      "community": 11,
+      "community": 12,
       "norm_label": "storeservice.js"
     },
     {
@@ -3321,7 +3330,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Stores\\storeService.js",
       "source_location": "L37",
       "id": "storeservice_mockdelay",
-      "community": 11,
+      "community": 12,
       "norm_label": "mockdelay()"
     },
     {
@@ -3339,7 +3348,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Support\\SupportTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_support_supporttickets_jsx",
-      "community": 14,
+      "community": 3,
       "norm_label": "supporttickets.jsx"
     },
     {
@@ -3348,7 +3357,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Admin copy\\Verification\\DocumentVerification.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_admin_copy_verification_documentverification_jsx",
-      "community": 3,
+      "community": 14,
       "norm_label": "documentverification.jsx"
     },
     {
@@ -3393,7 +3402,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\firebase.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_firebase_js",
-      "community": 83,
+      "community": 82,
       "norm_label": "firebase.js"
     },
     {
@@ -3402,7 +3411,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignIn.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_signin_jsx",
-      "community": 22,
+      "community": 21,
       "norm_label": "signin.jsx"
     },
     {
@@ -3411,7 +3420,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignIn.jsx",
       "source_location": "L10",
       "id": "signin_fetchroles",
-      "community": 22,
+      "community": 21,
       "norm_label": "fetchroles()"
     },
     {
@@ -3420,7 +3429,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignIn.jsx",
       "source_location": "L24",
       "id": "signin_redirectbyrole",
-      "community": 22,
+      "community": 21,
       "norm_label": "redirectbyrole()"
     },
     {
@@ -3429,7 +3438,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignIn.jsx",
       "source_location": "L30",
       "id": "signin_signin",
-      "community": 22,
+      "community": 21,
       "norm_label": "signin()"
     },
     {
@@ -3438,7 +3447,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignUp.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_signup_jsx",
-      "community": 55,
+      "community": 54,
       "norm_label": "signup.jsx"
     },
     {
@@ -3447,7 +3456,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\SignUp.jsx",
       "source_location": "L10",
       "id": "signup_signup",
-      "community": 55,
+      "community": 54,
       "norm_label": "signup()"
     },
     {
@@ -3456,7 +3465,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\VerifyEmail.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_auth_verifyemail_jsx",
-      "community": 56,
+      "community": 55,
       "norm_label": "verifyemail.jsx"
     },
     {
@@ -3465,7 +3474,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Auth\\VerifyEmail.jsx",
       "source_location": "L10",
       "id": "verifyemail_verifyemail",
-      "community": 56,
+      "community": 55,
       "norm_label": "verifyemail()"
     },
     {
@@ -3474,7 +3483,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Landing\\landing.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_landing_landing_jsx",
-      "community": 57,
+      "community": 56,
       "norm_label": "landing.jsx"
     },
     {
@@ -3483,7 +3492,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\Landing\\landing.jsx",
       "source_location": "L5",
       "id": "landing_landing",
-      "community": 57,
+      "community": 56,
       "norm_label": "landing()"
     },
     {
@@ -3852,7 +3861,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\RegisterStore.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_registerstore_registerstore_jsx",
-      "community": 58,
+      "community": 57,
       "norm_label": "registerstore.jsx"
     },
     {
@@ -3861,7 +3870,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\RegisterStore.jsx",
       "source_location": "L4",
       "id": "registerstore_registerstore",
-      "community": 58,
+      "community": 57,
       "norm_label": "registerstore()"
     },
     {
@@ -3870,7 +3879,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\StoreForm.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_registerstore_storeform_jsx",
-      "community": 59,
+      "community": 58,
       "norm_label": "storeform.jsx"
     },
     {
@@ -3879,7 +3888,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\RegisterStore\\StoreForm.jsx",
       "source_location": "L3",
       "id": "storeform_storeform",
-      "community": 59,
+      "community": 58,
       "norm_label": "storeform()"
     },
     {
@@ -3906,7 +3915,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_analytics_jsx",
-      "community": 16,
+      "community": 15,
       "norm_label": "analytics.jsx"
     },
     {
@@ -3915,7 +3924,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L12",
       "id": "analytics_downloadcsv",
-      "community": 16,
+      "community": 15,
       "norm_label": "downloadcsv()"
     },
     {
@@ -3924,7 +3933,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L48",
       "id": "analytics_renderpercentlabel",
-      "community": 16,
+      "community": 15,
       "norm_label": "renderpercentlabel()"
     },
     {
@@ -3933,7 +3942,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L68",
       "id": "analytics_analytics",
-      "community": 16,
+      "community": 15,
       "norm_label": "analytics()"
     },
     {
@@ -3987,7 +3996,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadmindashboard_jsx",
-      "community": 17,
+      "community": 16,
       "norm_label": "storeadmindashboard.jsx"
     },
     {
@@ -3996,7 +4005,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L41",
       "id": "storeadmindashboard_storeadmindashboard",
-      "community": 17,
+      "community": 16,
       "norm_label": "storeadmindashboard()"
     },
     {
@@ -4059,7 +4068,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\storeadvertisement.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadvertisement_jsx",
-      "community": 24,
+      "community": 22,
       "norm_label": "storeadvertisement.jsx"
     },
     {
@@ -4068,7 +4077,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\storeadvertisement11\\storeadvertisement.jsx",
       "source_location": "L11",
       "id": "storeadvertisement_formatbytes",
-      "community": 24,
+      "community": 22,
       "norm_label": "formatbytes()"
     },
     {
@@ -4077,7 +4086,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\storeadvertisement11\\storeadvertisement.jsx",
       "source_location": "L33",
       "id": "storeadvertisement_storeadvertisement",
-      "community": 24,
+      "community": 22,
       "norm_label": "storeadvertisement()"
     },
     {
@@ -4104,7 +4113,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\Analytics\\Analytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_analytics_analytics_jsx",
-      "community": 16,
+      "community": 15,
       "norm_label": "analytics.jsx"
     },
     {
@@ -4131,7 +4140,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadmindashboard_storeadmindashboard_jsx",
-      "community": 17,
+      "community": 16,
       "norm_label": "storeadmindashboard.jsx"
     },
     {
@@ -4140,7 +4149,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L15",
       "id": "storeadmindashboard_kpicard",
-      "community": 17,
+      "community": 16,
       "norm_label": "kpicard()"
     },
     {
@@ -4149,7 +4158,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\StoreAdminDashboard\\StoreAdminDashboard.jsx",
       "source_location": "L34",
       "id": "storeadmindashboard_builddaybuckets",
-      "community": 17,
+      "community": 16,
       "norm_label": "builddaybuckets()"
     },
     {
@@ -4167,7 +4176,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\StoreAdmin\\storeadvertisement11\\storeadvertisement.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_storeadmin_storeadvertisement11_storeadvertisement_jsx",
-      "community": 24,
+      "community": 22,
       "norm_label": "storeadvertisement.jsx"
     },
     {
@@ -4185,7 +4194,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_alltickets_jsx",
-      "community": 18,
+      "community": 17,
       "norm_label": "alltickets.jsx"
     },
     {
@@ -4194,7 +4203,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L114",
       "id": "alltickets_buildticket",
-      "community": 18,
+      "community": 17,
       "norm_label": "buildticket()"
     },
     {
@@ -4203,7 +4212,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L170",
       "id": "alltickets_ticketrow",
-      "community": 18,
+      "community": 17,
       "norm_label": "ticketrow()"
     },
     {
@@ -4212,7 +4221,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L196",
       "id": "alltickets_chatmessage",
-      "community": 18,
+      "community": 17,
       "norm_label": "chatmessage()"
     },
     {
@@ -4221,7 +4230,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\AllTickets.jsx",
       "source_location": "L212",
       "id": "alltickets_alltickets",
-      "community": 18,
+      "community": 17,
       "norm_label": "alltickets()"
     },
     {
@@ -4257,7 +4266,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportAnalytics.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supportanalytics_jsx",
-      "community": 60,
+      "community": 59,
       "norm_label": "supportanalytics.jsx"
     },
     {
@@ -4266,7 +4275,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportAnalytics.jsx",
       "source_location": "L75",
       "id": "supportanalytics_supportanalytics",
-      "community": 60,
+      "community": 59,
       "norm_label": "supportanalytics()"
     },
     {
@@ -4275,7 +4284,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supportdashboard_jsx",
-      "community": 19,
+      "community": 18,
       "norm_label": "supportdashboard.jsx"
     },
     {
@@ -4284,7 +4293,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L10",
       "id": "supportdashboard_getnow",
-      "community": 19,
+      "community": 18,
       "norm_label": "getnow()"
     },
     {
@@ -4293,7 +4302,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L27",
       "id": "supportdashboard_statcard",
-      "community": 19,
+      "community": 18,
       "norm_label": "statcard()"
     },
     {
@@ -4302,7 +4311,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L37",
       "id": "supportdashboard_sidebaricon",
-      "community": 19,
+      "community": 18,
       "norm_label": "sidebaricon()"
     },
     {
@@ -4311,7 +4320,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\supportDashboard.jsx",
       "source_location": "L45",
       "id": "supportdashboard_supportdashboard",
-      "community": 19,
+      "community": 18,
       "norm_label": "supportdashboard()"
     },
     {
@@ -4320,7 +4329,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportHome.jsx",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_pages_supportteam_supporthome_jsx",
-      "community": 61,
+      "community": 60,
       "norm_label": "supporthome.jsx"
     },
     {
@@ -4329,7 +4338,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\SupportTeam\\SupportHome.jsx",
       "source_location": "L5",
       "id": "supporthome_supporthome",
-      "community": 61,
+      "community": 60,
       "norm_label": "supporthome()"
     },
     {
@@ -4491,7 +4500,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\utils\\places.js",
       "source_location": "L1",
       "id": "c_projects_nearnest_web_portal_src_utils_places_js",
-      "community": 25,
+      "community": 24,
       "norm_label": "places.js"
     },
     {
@@ -4500,7 +4509,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\utils\\places.js",
       "source_location": "L6",
       "id": "places_getgoogle",
-      "community": 25,
+      "community": 24,
       "norm_label": "getgoogle()"
     },
     {
@@ -4509,7 +4518,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\utils\\places.js",
       "source_location": "L20",
       "id": "places_parselatlngfromurl",
-      "community": 25,
+      "community": 24,
       "norm_label": "parselatlngfromurl()"
     },
     {
@@ -4518,7 +4527,7 @@
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\utils\\places.js",
       "source_location": "L42",
       "id": "places_extractaddr",
-      "community": 25,
+      "community": 24,
       "norm_label": "extractaddr()"
     }
   ],
@@ -9675,12 +9684,24 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
-      "source_location": "L6",
+      "source_location": "L34",
       "weight": 1.0,
       "_src": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
       "_tgt": "nearnesthome_nearnesthome",
       "source": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
       "target": "nearnesthome_nearnesthome",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "C:\\projects\\nearnest\\web-portal\\src\\pages\\NearnestHome.jsx",
+      "source_location": "L176",
+      "weight": 1.0,
+      "_src": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
+      "_tgt": "nearnesthome_downloadlink",
+      "source": "c_projects_nearnest_web_portal_src_pages_nearnesthome_jsx",
+      "target": "nearnesthome_downloadlink",
       "confidence_score": 1.0
     },
     {

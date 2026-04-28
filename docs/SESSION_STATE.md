@@ -1,6 +1,32 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex reduced map memory pressure and upgraded route start mode)
+Last updated: 2026-04-28 (Codex redesigned public landing page and hosting output)
+
+## Public landing page redesign and hosting output 2026-04-28
+- **Public web landing page only.**
+- **No mobile app, Firebase Functions, Firestore rules/indexes, or production data were touched.**
+- Root route `/` still uses `src/pages/NearnestHome.jsx`.
+- Redesigned `NearnestHome` into a premium NearNest/Medifind medical/pharmacy-tech landing page:
+  - Navbar with NearNest brand mark/name.
+  - Hero: "Find medicines nearby. Help pharmacies get discovered."
+  - Customer + pharmacy owner positioning.
+  - Get Started CTA.
+  - Android download CTA using `import.meta.env.VITE_MEDIFIND_ANDROID_URL`.
+  - iOS button using `import.meta.env.VITE_MEDIFIND_IOS_URL`, disabled/coming soon when missing.
+  - Stats, how-it-works, pharmacy-owner, app download, and footer sections.
+- Replaced red/black styling with teal/green/white medical theme and a CSS app/map visual.
+- Updated Firebase Hosting output:
+  - `firebase.json` hosting public directory changed from `public` to `dist` for Vite build output.
+- Verification passed:
+  - `npm run build`
+- Build warning:
+  - Vite reported a large JS chunk over 500 kB. This is pre-existing app bundle structure and not a landing-page blocker.
+- Pending until session close:
+  - `git diff --check`
+  - `graphify update .`
+- Suggested deploy command after commit/review:
+  - `firebase deploy --only hosting --project nearnest-platform`
+- Suggested commit: `feat(web): redesign public landing page and hosting output`.
 
 ## Mobile route navigation mode and map memory fix 2026-04-28
 - **Mobile-only final route preview and Google Maps memory fix.**

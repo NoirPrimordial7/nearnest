@@ -4,6 +4,44 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Redesign public landing page and hosting output
+**Agent:** Codex (GPT-5)
+**Session goal:** Redesign the public NearNest/Medifind root landing page and prepare Firebase Hosting to serve Vite build output.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `src/App.jsx` - confirmed `/` uses `NearnestHome`.
+- `src/pages/NearnestHome.jsx` - existing landing page content.
+- `src/pages/NearnestHome.module.css` - existing red/black styling.
+- `firebase.json` - hosting output directory.
+
+**Files created / edited:**
+- `src/pages/NearnestHome.jsx` - replaced single hero with full NearNest/Medifind landing page, CTAs, stats, how-it-works, pharmacy-owner section, app download section, and footer.
+- `src/pages/NearnestHome.module.css` - replaced red/black theme with responsive teal/green/white medical landing design and CSS app/map visual.
+- `firebase.json` - changed hosting `public` from `public` to `dist`.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+
+**Files intentionally NOT touched:**
+- `apps/mobile/**` - protected for this task.
+- `functions/**`, `firestore.rules`, `firestore.indexes.json`, `dataconnect/**` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Download buttons use `VITE_MEDIFIND_ANDROID_URL` / `VITE_MEDIFIND_IOS_URL`; missing URLs render disabled coming-soon buttons instead of broken links.
+
+**Warnings for next agent:**
+- `npm run build` passes, but Vite still warns that the main JS chunk is larger than 500 kB.
+- Firebase Hosting deploy command should be hosting-only unless the user explicitly approves broader deploys.
+
+**Verification:**
+- Passed: `npm run build`.
+- Passed: `git diff --check`.
+- Passed: `graphify update .`.
+
+**Suggested commit message:**
+`feat(web): redesign public landing page and hosting output`
+
 ## 2026-04-28 - Reduce map memory pressure and upgrade route start mode
 **Agent:** Codex (GPT-5)
 **Session goal:** Prevent Android Google Maps memory pressure from stacked native map views and make Start in-app preview feel like a map-first navigation preview.

@@ -1,112 +1,517 @@
-/* src/pages/NearNestHome.module.css */
-
-/* Netflix-style cinematic hero background */
 .root {
-  position: relative;
   min-height: 100vh;
-  background: linear-gradient(to bottom right, #000000, #141414);
-  color: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
-  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(47, 158, 126, 0.18), transparent 34%),
+    radial-gradient(circle at 88% 2%, rgba(58, 111, 248, 0.13), transparent 30%),
+    linear-gradient(180deg, #f7fbf8 0%, #ffffff 46%, #f1f8f5 100%);
+  color: #14181a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-      circle at 20% 20%,
-      rgba(229, 9, 20, 0.15),
-      transparent 40%
-    ),
-    radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.05), transparent 60%);
-  pointer-events: none;
-  z-index: 0;
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-/* Center box */
-.centerBox {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  max-width: 700px;
-  padding: 0 1rem;
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
 }
 
-/* Netflix-style title */
-.title {
-  font-size: 4rem;
+.logoMark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2f9e7e, #1a6a54);
+  box-shadow: 0 16px 34px rgba(35, 136, 107, 0.25);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.brandName,
+.brandSub {
+  display: block;
+}
+
+.brandName {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.brandSub {
+  color: #5c6570;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.navActions,
+.ctaRow,
+.downloadActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.navLink,
+.navCta,
+.primaryCta,
+.secondaryCta,
+.disabledCta {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.navLink {
+  border: 0;
+  background: transparent;
+  color: #1a6a54;
+  cursor: pointer;
+}
+
+.navCta,
+.primaryCta {
+  border: 0;
+  background: linear-gradient(135deg, #2f9e7e, #23886b);
+  box-shadow: 0 18px 36px rgba(47, 158, 126, 0.22);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.secondaryCta {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d6ede6;
+  background: rgba(255, 255, 255, 0.84);
+  color: #1a6a54;
+}
+
+.disabledCta {
+  border: 1px solid #e6e8e4;
+  background: #f4f5f3;
+  color: #8a94a0;
+  cursor: not-allowed;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  gap: 54px;
+  align-items: center;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 72px 24px 36px;
+}
+
+.heroCopy {
+  max-width: 720px;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  color: #23886b;
+  font-size: 12px;
   font-weight: 900;
-  letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #e50914, #f3123a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-/* Subtitle / tagline */
-.tagline {
-  font-size: 1.2rem;
-  color: #e5e5e5;
-  max-width: 520px;
-  margin: 0 auto 2rem;
-  line-height: 1.5;
-  opacity: 0.95;
+.hero h1,
+.section h2,
+.ownerSection h2,
+.downloadSection h2 {
+  margin: 0;
+  color: #101617;
+  font-weight: 850;
+  letter-spacing: 0;
 }
 
-/* Netflix-style button */
-.signupButton {
-  background: #e50914;
-  color: #ffffff;
-  border: none;
-  padding: 0.9rem 2.2rem;
-  font-size: 1.05rem;
-  font-weight: 700;
-  border-radius: 4px;
-  cursor: pointer;
-  box-shadow: 0 10px 40px rgba(229, 9, 20, 0.35);
-  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+.hero h1 {
+  max-width: 820px;
+  font-size: clamp(42px, 7vw, 82px);
+  line-height: 0.98;
 }
 
-.signupButton:hover {
-  background: #f6121d;
-  transform: translateY(-2px);
-  box-shadow: 0 15px 45px rgba(229, 9, 20, 0.5);
+.heroText {
+  max-width: 650px;
+  margin: 24px 0 30px;
+  color: #4f5d63;
+  font-size: 18px;
+  line-height: 1.7;
 }
 
-.signupButton:active {
-  transform: translateY(0);
-  box-shadow: 0 5px 20px rgba(229, 9, 20, 0.4);
+.heroVisual {
+  position: relative;
+  min-height: 560px;
 }
 
-/* Footer */
-.footer {
+.phoneShell {
   position: absolute;
-  bottom: 20px;
-  font-size: 0.8rem;
-  color: #a1a1a1;
-  opacity: 0.7;
-  text-align: center;
-  width: 100%;
+  inset: 0 26px 0 auto;
+  width: min(390px, 86vw);
+  border: 1px solid rgba(26, 106, 84, 0.14);
+  border-radius: 42px;
+  background: linear-gradient(180deg, #ffffff, #f0f7f5);
+  box-shadow: 0 30px 80px rgba(20, 24, 26, 0.16);
+  padding: 26px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .title {
-    font-size: 2.8rem;
+.phoneTop {
+  display: flex;
+  justify-content: space-between;
+  color: #14181a;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.searchPill {
+  margin: 28px 0 18px;
+  border: 1px solid #d6ede6;
+  border-radius: 20px;
+  background: #ffffff;
+  padding: 16px 18px;
+  color: #5c6570;
+  font-weight: 800;
+}
+
+.mapPanel {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.65) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.68) 1px, transparent 1px),
+    linear-gradient(135deg, #d6ede6, #f7fbf8);
+  background-size: 42px 42px;
+}
+
+.routeLine {
+  position: absolute;
+  left: 78px;
+  top: 112px;
+  width: 210px;
+  height: 72px;
+  border-top: 8px solid #3a6ff8;
+  border-right: 8px solid #3a6ff8;
+  border-radius: 0 48px 0 0;
+  transform: rotate(-10deg);
+}
+
+.routeDotStart,
+.routeDotEnd {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  min-width: 54px;
+  min-height: 34px;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.routeDotStart {
+  left: 42px;
+  top: 92px;
+  background: #3a6ff8;
+}
+
+.routeDotEnd {
+  right: 38px;
+  bottom: 52px;
+  background: #2f9e7e;
+}
+
+.storeCard,
+.floatingCard {
+  border: 1px solid #eff1ed;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 22px 60px rgba(20, 24, 26, 0.1);
+}
+
+.storeCard {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.storeCard strong,
+.floatingCard strong {
+  color: #14181a;
+}
+
+.storeCard p {
+  margin: 0;
+  color: #5c6570;
+  font-size: 13px;
+}
+
+.verifiedPill {
+  width: fit-content;
+  border-radius: 999px;
+  background: #d6ede6;
+  color: #1a6a54;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.floatingCard {
+  position: absolute;
+  right: 0;
+  bottom: 74px;
+  display: grid;
+  gap: 6px;
+  width: 230px;
+  padding: 18px;
+}
+
+.floatingCard span {
+  color: #23886b;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.statsGrid,
+.section,
+.ownerSection,
+.downloadSection {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 36px 24px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.statCard,
+.infoCard,
+.ownerSection,
+.downloadSection {
+  border: 1px solid #e6e8e4;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 18px 48px rgba(20, 24, 26, 0.06);
+}
+
+.statCard {
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.statCard strong {
+  display: block;
+  color: #1a6a54;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.statCard span,
+.sectionHeader p,
+.infoCard p,
+.ownerSection p,
+.downloadSection p {
+  color: #5c6570;
+}
+
+.sectionHeader {
+  max-width: 760px;
+  margin-bottom: 22px;
+}
+
+.section h2,
+.ownerSection h2,
+.downloadSection h2 {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.08;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.infoCard {
+  display: grid;
+  gap: 12px;
+  border-radius: 28px;
+  padding: 26px;
+}
+
+.stepNumber,
+.checkMark {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #f0f7f5;
+  color: #1a6a54;
+  font-weight: 900;
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+}
+
+.infoCard h3 {
+  margin: 0;
+  color: #14181a;
+  font-size: 20px;
+}
+
+.infoCard p,
+.ownerSection p,
+.downloadSection p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.ownerSection,
+.downloadSection {
+  display: grid;
+  grid-template-columns: 1fr 0.82fr;
+  gap: 28px;
+  align-items: center;
+  border-radius: 34px;
+  margin-top: 28px;
+  margin-bottom: 28px;
+}
+
+.ownerSection > div:first-child,
+.downloadSection > div:first-child {
+  display: grid;
+  gap: 18px;
+}
+
+.ownerList {
+  display: grid;
+  gap: 12px;
+}
+
+.ownerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 18px;
+  background: #f7fbf8;
+  padding: 14px;
+  color: #14181a;
+  font-weight: 750;
+}
+
+.checkMark {
+  width: 28px;
+  height: 28px;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 34px 24px 42px;
+  color: #5c6570;
+}
+
+.footer div {
+  display: flex;
+  gap: 18px;
+}
+
+.footer a {
+  color: #1a6a54;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .ownerSection,
+  .downloadSection {
+    grid-template-columns: 1fr;
   }
 
-  .tagline {
-    font-size: 1rem;
-    max-width: 90%;
+  .hero {
+    padding-top: 34px;
   }
 
-  .signupButton {
-    width: 80%;
-    max-width: 280px;
+  .heroVisual {
+    min-height: 520px;
+  }
+
+  .phoneShell {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
+
+  .statsGrid,
+  .cardGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar,
+  .footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .hero h1 {
+    font-size: 42px;
+  }
+
+  .heroText {
+    font-size: 16px;
+  }
+
+  .statsGrid,
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .heroVisual {
+    min-height: 480px;
+  }
+
+  .phoneShell {
+    width: min(342px, 92vw);
+    padding: 20px;
+  }
+
+  .floatingCard {
+    right: 12px;
+    bottom: 34px;
+    width: 210px;
   }
 }

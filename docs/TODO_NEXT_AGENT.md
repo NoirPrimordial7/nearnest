@@ -4,32 +4,31 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after route navigation mode and map memory fix)
+## Next up (as of 2026-04-28, after public landing redesign)
 
-**Current local state:** Medifind now avoids keeping native Google maps mounted on unfocused stack screens and Start in-app preview has a map-first navigation mode. No web app files were touched, no Firebase deploy was run, and no production data was mutated.
+**Current local state:** The public root landing page has been redesigned for NearNest/Medifind with a premium medical/pharmacy-tech theme, safe Android/iOS download button behavior, and Firebase Hosting now points to Vite `dist`. No mobile app, Firebase Functions, Firestore rules/indexes, or production data were touched.
 
 **What changed locally:**
-- `apps/mobile/components/RealMapView.tsx` now supports `active` and `liteMode`; when inactive, it does not mount native `MapView`.
-- Android preview maps use lite mode where appropriate, and native maps disable rotate, pitch, traffic, indoors, and move-on-marker-press.
-- Home stores mode, Stores tab, Medicine nearby stores, Store detail, and Route preview pass `active={useIsFocused()}`.
-- Route preview keeps full map mode while focused and uses `liteMode={false}`.
-- Start in-app preview now expands the map to roughly 63% of screen height and shows a compact bottom sheet with store name, distance, ETA, preview copy, End preview, and Call store.
+- `src/pages/NearnestHome.jsx` now renders full landing content: nav, hero, stats, how-it-works, pharmacy owner section, app download section, and footer.
+- `src/pages/NearnestHome.module.css` now uses a teal/green/white medical visual system with responsive layout and CSS app/map preview.
+- Download buttons read `VITE_MEDIFIND_ANDROID_URL` and `VITE_MEDIFIND_IOS_URL`; missing URLs render disabled coming-soon buttons.
+- `firebase.json` hosting output changed from `public` to `dist`.
 
 **Verification passed:**
-- `apps/mobile npm run typecheck`.
-- `apps/mobile npx expo export --platform android --output-dir .expo/final-route-mode-export --no-bytecode`.
+- `npm run build`.
 - `git diff --check`.
 - `graphify update .`.
-- Note: Expo export needed an escalated rerun because Node hit Windows `EPERM` resolving `C:\Users\Aditya`; the rerun passed.
+- Build warning: Vite reported a JS chunk larger than 500 kB; no build failure.
 
 ### Next steps
 
 1. Commit and push:
-   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): make route preview navigation mode and reduce map memory"`.
+   `git add src/pages/NearnestHome.jsx src/pages/NearnestHome.module.css firebase.json docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "feat(web): redesign public landing page and hosting output"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Restart Metro on the current rebuilt dev APK and test: Stores tab -> Store detail -> Route -> Start preview -> End preview, then back through the stack to confirm no emulator OOM.
-4. Expected result: route preview stays inside Medifind, Start mode is map-first with bottom controls, and returning to previous screens does not keep extra native maps mounted.
-5. No new EAS build should be required for this pass because only JS/UI files changed.
+3. Preview `/` locally with `npm run dev` if a visual pass is needed.
+4. Deploy hosting only after approval:
+   `firebase deploy --only hosting --project nearnest-platform`.
+5. If adding real download links, set `VITE_MEDIFIND_ANDROID_URL` and optionally `VITE_MEDIFIND_IOS_URL` in the deployment environment; do not commit `.env` files.
 
 ---
 
