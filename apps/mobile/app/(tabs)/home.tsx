@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../../components/ActionButton';
 import { CategoryCard } from '../../components/CategoryCard';
@@ -33,6 +34,7 @@ function getParamValue(value: string | string[] | undefined) {
 }
 
 export default function HomeScreen() {
+  const isFocused = useIsFocused();
   const params = useLocalSearchParams();
   const initialMode = getParamValue(params.mode) === 'stores' ? 'stores' : 'medicine';
   const [mode, setMode] = useState<DiscoveryMode>(initialMode);
@@ -234,7 +236,9 @@ export default function HomeScreen() {
         ) : (
           <>
             <RealMapView
+              active={isFocused}
               height={320}
+              liteMode={Platform.OS === 'android'}
               stores={stores}
               subtitle={`${stores.length} nearby ${stores.length === 1 ? 'store' : 'stores'}`}
               title="Stores around your search area"

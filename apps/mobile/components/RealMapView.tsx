@@ -90,6 +90,8 @@ type MobileExtraConfig = {
 };
 
 type RealMapViewProps = {
+  active?: boolean;
+  liteMode?: boolean;
   stores: Store[];
   selectedStore?: Store | null;
   userLocation?: UserLocation | null;
@@ -145,6 +147,8 @@ function canRenderNativeMap() {
 }
 
 export function RealMapView({
+  active = true,
+  liteMode = false,
   stores,
   selectedStore,
   userLocation,
@@ -225,6 +229,10 @@ export function RealMapView({
     userLocation,
   ]);
 
+  if (!active) {
+    return <MapPlaceholder stores={stores} title={title} />;
+  }
+
   if (!canRenderNativeMap()) {
     if (__DEV__) {
       console.warn('[RealMapView] Android Maps SDK key missing; using fallback map preview.');
@@ -243,17 +251,23 @@ export function RealMapView({
         customMapStyle={MEDICAL_MAP_STYLE}
         initialRegion={region}
         loadingEnabled
+        liteMode={Platform.OS === 'android' ? liteMode : undefined}
         mapPadding={MAP_PADDING}
+        moveOnMarkerPress={false}
         onMapReady={() => {
           setMapFailed(false);
           setMapReady(true);
         }}
         onRegionChangeComplete={() => undefined}
+        pitchEnabled={false}
         provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+        rotateEnabled={false}
         showsBuildings={false}
         showsCompass={false}
+        showsIndoors={false}
         showsMyLocationButton={false}
         showsPointsOfInterest={false}
+        showsTraffic={false}
         toolbarEnabled={false}
         style={StyleSheet.absoluteFill}
       >

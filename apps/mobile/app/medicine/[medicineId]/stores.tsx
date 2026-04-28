@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Badge } from '../../../components/Badge';
 import { BottomSheet } from '../../../components/BottomSheet';
@@ -23,6 +24,7 @@ function getParamValue(value: string | string[] | undefined) {
 }
 
 export default function NearbyStoresForMedicineScreen() {
+  const isFocused = useIsFocused();
   const params = useLocalSearchParams();
   const medicineId = getParamValue(params.medicineId);
   const [medicine, setMedicine] = useState<Medicine | null>(null);
@@ -126,7 +128,9 @@ export default function NearbyStoresForMedicineScreen() {
   return (
     <View style={styles.container}>
       <RealMapView
+        active={isFocused}
         height={380}
+        liteMode={Platform.OS === 'android'}
         stores={mapStores}
         subtitle={`${mapStores.length} stores with availability`}
         title={medicine?.name ?? 'Nearby pharmacies'}

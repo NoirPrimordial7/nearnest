@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ActionButton } from '../../components/ActionButton';
 import { Badge } from '../../components/Badge';
@@ -32,6 +33,7 @@ function getParamValue(value: string | string[] | undefined) {
 }
 
 export default function StoreDetailScreen() {
+  const isFocused = useIsFocused();
   const params = useLocalSearchParams();
   const storeId = getParamValue(params.storeId);
   const [store, setStore] = useState<Store | null>(null);
@@ -162,7 +164,9 @@ export default function StoreDetailScreen() {
         </View>
 
         <RealMapView
+          active={isFocused}
           height={320}
+          liteMode={Platform.OS === 'android'}
           selectedStore={store}
           stores={[store]}
           subtitle="Open the in-app route preview before travelling"

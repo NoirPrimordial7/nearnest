@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionButton } from '../../components/ActionButton';
@@ -52,7 +53,9 @@ function storeDestination(store: Store): UserLocation {
 }
 
 export default function InAppRoutePreviewScreen() {
+  const isFocused = useIsFocused();
   const params = useLocalSearchParams();
+  const { height: windowHeight } = useWindowDimensions();
   const storeId = getParamValue(params.storeId);
   const medicineId = getParamValue(params.medicineId);
   const [store, setStore] = useState<Store | null>(null);
@@ -156,6 +159,11 @@ export default function InAppRoutePreviewScreen() {
   const destination = useMemo(() => (store ? storeDestination(store) : null), [store]);
   const routeDistance = formatRouteDistance(routePreview?.distanceMeters);
   const routeDuration = formatRouteDuration(routePreview?.duration);
+  const routeDistanceLabel = routeLoading && !routePreview ? 'Estimating...' : routeDistance;
+  const routeDurationLabel = routeLoading && !routePreview ? 'Estimating...' : routeDuration;
+  const routeMapHeight = startMode
+    ? Math.max(440, Math.round(windowHeight * 0.63))
+    : 340;
 
   async function callStore() {
     if (!store) {
@@ -229,7 +237,10 @@ export default function InAppRoutePreviewScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.content, startMode && styles.navigationContent]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.topRow}>
           <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.backButton}>
             <Text style={styles.backText}>Back</Text>
@@ -238,6 +249,9 @@ export default function InAppRoutePreviewScreen() {
         </View>
 
         <RealMapView
+          active={isFocused}
+          height={routeMapHeight}
+          liteMode={false}
           routeCoordinates={routePreview?.coordinates}
           selectedStore={store}
           subtitle={startMode ? 'Route preview active inside Medifind' : 'Distance and route stay in Medifind'}
@@ -247,6 +261,54 @@ export default function InAppRoutePreviewScreen() {
           userLocation={userLocation}
         />
 
+        {startMode ? (
+          <View style={styles.navigationSheet}>
+            <View style={styles.navigationSheetHeader}>
+              <View style={styles.navigationTitleBlock}>
+                <Text style={[styles.contextLabel, { fontSize: scale(typography.caption), lineHeight: scaleLineHeight(16) }]}>
+                  PREVIEW MODE INSIDE MEDIFIND
+                </Text>
+                <Text
+                  numberOfLines={2}
+                  style={[styles.navigationStoreName, { fontSize: scale(typography.h2), lineHeight: scaleLineHeight(28) }]}
+                >
+                  {store.name}
+                </Text>
+              </View>
+              {store.verified ? <Badge kind="verified" /> : null}
+            </View>
+
+            <View style={styles.navigationMetrics}>
+              <Metric label="Distance" value={routeDistanceLabel} />
+              <Metric label="ETA" value={routeDurationLabel} />
+            </View>
+
+            {routePreview?.source === 'fallback' || locationMessage ? (
+              <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+                {routePreview?.source === 'fallback'
+                  ? 'Live route unavailable. Showing an estimated in-app preview.'
+                  : locationMessage}
+              </Text>
+            ) : null}
+
+            <View style={styles.safetyBoxCompact}>
+              <Text style={[styles.note, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+                This is not turn-by-turn GPS. Confirm local road conditions before travelling.
+              </Text>
+            </View>
+
+            {actionError ? (
+              <Text style={[styles.errorText, { fontSize: scale(typography.bodySm), lineHeight: scaleLineHeight(18) }]}>
+                {actionError}
+              </Text>
+            ) : null}
+
+            <View style={styles.actionStack}>
+              <ActionButton label="End preview" onPress={endPreview} />
+              <ActionButton label="Call store" onPress={() => void callStore()} variant="secondary" />
+            </View>
+          </View>
+        ) : (
         <View style={styles.panel}>
           <View style={styles.badgeRow}>
             {store.verified ? <Badge kind="verified" /> : <Badge kind="callToConfirm" label="Not verified" />}
@@ -261,8 +323,8 @@ export default function InAppRoutePreviewScreen() {
           </Text>
 
           <View style={styles.metricRow}>
-            <Metric label="Distance" value={routeLoading && !routePreview ? 'Estimating...' : routeDistance} />
-            <Metric label="Travel time" value={routeLoading && !routePreview ? 'Estimating...' : routeDuration} />
+            <Metric label="Distance" value={routeDistanceLabel} />
+            <Metric label="Travel time" value={routeDurationLabel} />
           </View>
 
           {medicine ? (
@@ -317,6 +379,7 @@ export default function InAppRoutePreviewScreen() {
             <ActionButton label="View store details" onPress={viewStoreDetails} variant="secondary" />
           </View>
         </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -340,6 +403,11 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
     padding: spacing.xxl,
     paddingTop: spacing.xxxl,
+  },
+  navigationContent: {
+    gap: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   loadingWrap: {
     flex: 1,
@@ -379,6 +447,32 @@ const styles = StyleSheet.create({
     borderColor: colors.borderSoft,
     backgroundColor: colors.surface,
     padding: spacing.xl,
+  },
+  navigationSheet: {
+    gap: spacing.lg,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    backgroundColor: colors.surface,
+    padding: spacing.xl,
+  },
+  navigationSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  navigationTitleBlock: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+  navigationStoreName: {
+    color: colors.text,
+    fontWeight: '800',
+  },
+  navigationMetrics: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   badgeRow: {
     flexDirection: 'row',
@@ -440,6 +534,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     backgroundColor: colors.primary50,
     padding: spacing.lg,
+  },
+  safetyBoxCompact: {
+    borderRadius: radius.lg,
+    backgroundColor: colors.primary50,
+    padding: spacing.md,
   },
   safetyTitle: {
     color: colors.text,

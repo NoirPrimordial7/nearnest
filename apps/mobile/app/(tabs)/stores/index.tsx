@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BottomSheet } from '../../../components/BottomSheet';
 import { EmptyState } from '../../../components/EmptyState';
@@ -20,6 +21,7 @@ import { colors, spacing, type as typography } from '../../../theme/tokens';
 import type { Store, StoreInventoryItem } from '../../../types/discovery';
 
 export default function StoresLandingScreen() {
+  const isFocused = useIsFocused();
   const [query, setQuery] = useState('');
   const [actionError, setActionError] = useState('');
   const [stores, setStores] = useState<Store[]>([]);
@@ -103,7 +105,9 @@ export default function StoresLandingScreen() {
   return (
     <View style={styles.container}>
       <RealMapView
+        active={isFocused}
         height={380}
+        liteMode={Platform.OS === 'android'}
         stores={visibleStores}
         subtitle={`${visibleStores.length} nearby ${visibleStores.length === 1 ? 'store' : 'stores'}`}
         title="Stores around your search area"
