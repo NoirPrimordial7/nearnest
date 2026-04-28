@@ -4,34 +4,41 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after Android Maps key hotfix)
+## Next up (as of 2026-04-28, after discovery Firestore inventory connection)
 
-**Current local state:** Medifind mobile has a hotfix for the Android `API key not found` Maps SDK crash and the Stores tab label. No web app files were touched. No Firebase deploy was run. The first 100 demo medicine documents remain seeded; do not rerun the medicine import.
+**Current local state:** Medifind discovery data is now connected enough for a demo: 593 active medicine docs, 4 public/verified stores with coordinates, 223 inventory docs, and 153 medicines with at least one availability row. No web app files were touched. No full Firebase deploy was run. Do not rerun medicine or inventory imports unless the user explicitly asks.
 
 **What changed locally:**
-- Added `apps/mobile/app.config.js` to read `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY`.
-- Added `apps/mobile/plugins/withAndroidGoogleMapsApiKey.js` to write the Android manifest Maps SDK metadata when a key exists.
-- `RealMapView` no longer mounts native Android `MapView` unless `Constants.expoConfig.extra.hasAndroidMapsKey === true`.
-- Android maps use `PROVIDER_GOOGLE` when native maps are enabled.
-- Stores tab route is now `stores/index` with tab label/title `Stores`.
+- Added `scripts/discovery/audit_discovery_data.cjs`.
+- Added `scripts/discovery/sync_store_products_to_discovery_inventory.cjs`.
+- Added `scripts/discovery/seed_demo_discovery_inventory.cjs`.
+- Updated `apps/mobile/components/Screen.tsx` and `apps/mobile/app/navigation/[storeId].tsx` to use `SafeAreaView` from `react-native-safe-area-context`.
+- No Medifind app code imports `keepAwake`, `useKeepAwake`, or `activateKeepAwake`.
 
 **Verification passed:**
+- `node --check scripts/discovery/audit_discovery_data.cjs`.
+- `node --check scripts/discovery/sync_store_products_to_discovery_inventory.cjs`.
+- `node --check scripts/discovery/seed_demo_discovery_inventory.cjs`.
 - `apps/mobile npm run typecheck`.
 - `git diff --check`.
-- `npx expo config --type public` showed `extra.hasAndroidMapsKey: false` in current local env.
-- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-map-key-hotfix-export --no-bytecode`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/mobile-firebase-data-finish-export --no-bytecode`.
+- `graphify update .`.
 
-**Known caveat:**
-- Requested Android export without `--no-bytecode` reached Metro bundling but failed at local Windows `hermesc.exe` with exit code `3221225477`. This is the same local Hermes bytecode issue seen previously; the JS bundle export passed with `--no-bytecode`.
+**Data operations already run:**
+- Audit before: 108 medicines, 17 inventory docs, 8 medicines with availability.
+- Medicine import `--limit 585 --apply`: wrote 485 new medicine docs, skipped 100 existing docs.
+- Product sync apply: wrote 56 new inventory docs, skipped 75 existing rows.
+- Demo inventory apply: wrote 180 inventory docs across public/verified stores.
+- Audit after: 593 medicines, 223 inventory docs, 153 medicines with availability, no top missing problems.
 
 ### Next steps
 
-1. Run `graphify update .` if not already done after this hotfix, then commit:
-   `git add apps/mobile docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): configure Android maps key and stores tab"`.
+1. Commit and push:
+   `git add apps/mobile scripts/discovery scripts/medicines docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): connect discovery data to Firestore inventory"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Set `EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_API_KEY` or `GOOGLE_MAPS_ANDROID_API_KEY` in the EAS build environment.
-4. Build a new Android dev APK. The current dev build can avoid the crash via JS fallback, but native map rendering needs a rebuilt APK with the Android Maps SDK key.
-5. Runtime smoke on phone: Stores tab opens without crash, tab label says `Stores`, Route opens inside Medifind, location prompt works, fallback map appears if native key is absent.
+3. Install the latest Android dev APK built after the Maps key hotfix.
+4. Runtime smoke on phone: Search Dolo, Crocin, Paracetamol; check Results, Medicine detail, Nearby Stores, Store detail inventory, and Route inside Medifind.
+5. If search still falls back to mock, inspect callable logs for `searchMedicines` / `getMedicineDetail` / `getStoreDetail` before changing mobile UI.
 
 ---
 

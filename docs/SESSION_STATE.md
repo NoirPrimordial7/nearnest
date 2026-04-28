@@ -1,6 +1,74 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex fixed Android Maps key crash fallback and Stores tab label)
+Last updated: 2026-04-28 (Codex connected Medifind discovery data to Firestore inventory)
+
+## Mobile discovery Firestore inventory connection 2026-04-28
+- **Mobile/Firebase discovery data finish only.**
+- **No web portal UI files were touched.**
+- **No full Firebase deploy was run.**
+- **No users, roles, orders, tickets, private store documents, owner/member fields, or license/admin fields were mutated.**
+- Added read-only audit script:
+  - `scripts/discovery/audit_discovery_data.cjs`
+- Added store product to discovery inventory bridge:
+  - `scripts/discovery/sync_store_products_to_discovery_inventory.cjs`
+  - Dry-run by default.
+  - `--apply` required to write.
+  - Writes only `stores/{storeId}/inventory/{medicineId}`.
+  - Supports optional `--apply-public-discovery` only for already verified/approved stores.
+- Added demo inventory fallback seeder:
+  - `scripts/discovery/seed_demo_discovery_inventory.cjs`
+  - Dry-run by default.
+  - `--apply` required to write.
+  - Writes only `stores/{storeId}/inventory/{medicineId}` for public/verified stores.
+- Mobile warning fix:
+  - `apps/mobile/components/Screen.tsx` now imports `SafeAreaView` from `react-native-safe-area-context`.
+  - `apps/mobile/app/navigation/[storeId].tsx` now imports `SafeAreaView` from `react-native-safe-area-context`.
+  - Search found no Medifind app imports of `keepAwake`, `useKeepAwake`, or `activateKeepAwake`; the dev-client keep-awake warning is not from app code.
+- Data audit before additional import/sync:
+  - medicines: 108
+  - active medicines: 108
+  - public/verified stores: 4
+  - stores with valid coordinates: 4
+  - stores with public phone: 14
+  - stores with inventory subcollection: 4
+  - total inventory docs: 17
+  - medicines with at least one availability row: 8
+  - top missing problems: none
+- Data operations run:
+  - Imported remaining openFDA medicines with `--limit 585 --apply`; skipped 100 existing docs and wrote 485 new medicine docs.
+  - Product sync dry-run scanned 15 stores, 4 product collections, 250 products, found 131 matches.
+  - Product sync apply scanned 15 stores, skipped 75 existing inventory rows, and wrote 56 new inventory docs.
+  - Demo inventory dry-run planned 180 rows across 4 public/verified stores.
+  - Demo inventory apply wrote 180 inventory docs.
+- Final data audit:
+  - medicines: 593
+  - active medicines: 593
+  - medicines missing search tokens: 0
+  - stores: 12
+  - public/verified stores: 4
+  - stores with valid coordinates: 4
+  - stores with public phone: 11
+  - stores with inventory subcollection: 6
+  - total inventory docs: 223
+  - medicines with at least one availability row: 153
+  - orphan inventory medicine IDs: 0
+  - top missing problems: none
+- Verification passed:
+  - `node --check scripts/discovery/audit_discovery_data.cjs`
+  - `node --check scripts/discovery/sync_store_products_to_discovery_inventory.cjs`
+  - `node --check scripts/discovery/seed_demo_discovery_inventory.cjs`
+  - `cd apps/mobile && npm run typecheck`
+  - `cd apps/mobile && npx expo export --platform android --output-dir .expo/mobile-firebase-data-finish-export --no-bytecode`
+  - `git diff --check`
+  - `graphify update .`
+- Phone runtime checks still need to be run on the new dev APK:
+  - Search Dolo
+  - Search Crocin
+  - Search Paracetamol
+  - Results should use backend source when callables are reachable.
+  - Medicine detail should show Firestore availability.
+  - Nearby stores and Store detail should show real Firestore-backed data.
+- Suggested commit: `fix(mobile): connect discovery data to Firestore inventory`.
 
 ## Mobile Android Maps key hotfix 2026-04-28
 - **Mobile-only emergency fix.**

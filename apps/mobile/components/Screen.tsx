@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useFontScale } from '../hooks/useFontScale';
 import { colors, spacing, type as typography } from '../theme/tokens';

@@ -4,6 +4,95 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-28 - Connect discovery data to Firestore inventory
+**Agent:** Codex (GPT-5)
+**Session goal:** Finish Medifind Firebase discovery data linkage by adding audit/sync/seed scripts, importing remaining medicines, and creating store inventory rows without touching web UI or private data.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `docs/MOBILE_APP_PLAN.md` - MVP discovery scope.
+- `docs/DESIGN_SYSTEM.md` - mobile UI constraints.
+- `apps/mobile/components/Screen.tsx` - SafeAreaView import warning fix.
+- `apps/mobile/app/navigation/[storeId].tsx` - SafeAreaView import warning fix.
+- `scripts/medicines/import_medicines_to_firestore.cjs` - existing dry-run-first medicine importer.
+
+**Files created / edited:**
+- `scripts/discovery/audit_discovery_data.cjs` - read-only Firestore audit for medicines, public/verified stores, coordinates, phone readiness, inventory counts, availability coverage, and top missing problems.
+- `scripts/discovery/sync_store_products_to_discovery_inventory.cjs` - dry-run-first bridge from `stores/{storeId}/products` to `stores/{storeId}/inventory/{medicineId}` with name/token/composition matching.
+- `scripts/discovery/seed_demo_discovery_inventory.cjs` - dry-run-first demo inventory fallback seeder for public/verified stores.
+- `apps/mobile/components/Screen.tsx` - uses `SafeAreaView` from `react-native-safe-area-context`.
+- `apps/mobile/app/navigation/[storeId].tsx` - uses `SafeAreaView` from `react-native-safe-area-context`.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+- `graphify-out/**` - refreshed after code changes.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `functions/**` - no callable schema change was needed.
+- `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Used the demo seeder after real product sync because final audit after product sync still had only 43 inventory docs / 23 medicines with availability, which was too thin for the deadline demo.
+
+**Data audit before:**
+- medicines: 108
+- active medicines: 108
+- public/verified stores: 4
+- stores with valid coordinates: 4
+- stores with public phone: 14
+- stores with inventory subcollection: 4
+- total inventory docs: 17
+- medicines with availability: 8
+- top missing problems: none
+
+**Data operations:**
+- `node scripts/medicines/import_medicines_to_firestore.cjs --project nearnest-platform --file scripts/medicines/out/medicines.openfda.sample.json --limit 585 --apply`
+  - skipped 100 existing medicine docs
+  - wrote 485 new medicine docs
+- Product sync dry-run:
+  - scanned 15 stores, 4 product collections, 250 products
+  - found 131 matches
+- Product sync apply:
+  - wrote 56 new inventory docs
+  - skipped 75 existing inventory rows
+- Demo inventory dry-run:
+  - planned 180 rows across 4 public/verified stores
+- Demo inventory apply:
+  - wrote 180 inventory docs
+
+**Data audit after:**
+- medicines: 593
+- active medicines: 593
+- medicines missing search tokens: 0
+- public/verified stores: 4
+- stores with valid coordinates: 4
+- stores with public phone: 11
+- stores with inventory subcollection: 6
+- total inventory docs: 223
+- medicines with availability: 153
+- orphan inventory medicine IDs: 0
+- top missing problems: none
+
+**Verification:**
+- Passed: `node --check scripts/discovery/audit_discovery_data.cjs`.
+- Passed: `node --check scripts/discovery/sync_store_products_to_discovery_inventory.cjs`.
+- Passed: `node --check scripts/discovery/seed_demo_discovery_inventory.cjs`.
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed: `cd apps/mobile && npx expo export --platform android --output-dir .expo/mobile-firebase-data-finish-export --no-bytecode`.
+- Passed: `git diff --check`.
+- Passed: `graphify update .` via user-site `graphify.exe`.
+
+**Warnings for next agent:**
+- Do not rerun medicine import or demo inventory seed unless the user explicitly asks.
+- Phone runtime verification still needs to check Dolo, Crocin, Paracetamol, medicine detail availability, nearby stores, store detail inventory, and Route staying inside Medifind.
+- The dev-client keep-awake warning is not from app code; repo search found no `keepAwake`, `useKeepAwake`, or `activateKeepAwake` imports.
+
+**Suggested commit message:**
+`fix(mobile): connect discovery data to Firestore inventory`
+
+---
+
 ## 2026-04-28 - Fix Android Maps key crash and Stores tab label
 **Agent:** Codex (GPT-5)
 **Session goal:** Stop the real-phone Stores/Map tab crash caused by missing Android Maps SDK key and fix the bottom tab label without touching the web portal.
