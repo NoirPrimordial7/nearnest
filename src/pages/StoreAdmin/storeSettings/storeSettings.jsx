@@ -1,7 +1,6 @@
 // src/pages/StoreAdmin/StoreSettings.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
-import Sidebar from "../../../components copy/Sidebar";
 
 import "./storesettings.css";
 
@@ -87,7 +86,6 @@ const DEFAULT_BRANDING = {
 export default function StoreSettings() {
   const { storeId } = useParams();
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState("");
@@ -345,21 +343,7 @@ export default function StoreSettings() {
 
   return (
     <div className="settings-root">
-      <div className="sa-shell">
-        {/* Sidebar */}
-        <aside className={`sa-left ${sidebarCollapsed ? "collapsed" : ""}`}>
-          <div className="sa-left-inner">
-            <Sidebar
-              role="store"
-              collapsed={sidebarCollapsed}
-              onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-            />
-          </div>
-        </aside>
-
-        {/* Main content */}
-        <main className={`sa-right ${sidebarCollapsed ? "shifted" : ""}`}>
-          <div className="settings-container">
+      <div className="settings-container">
             {/* Header */}
             <header className="settings-head">
               <div className="title-block">
@@ -1197,8 +1181,6 @@ export default function StoreSettings() {
                 <span>{toast}</span>
               </div>
             )}
-          </div>
-        </main>
       </div>
     </div>
   );
