@@ -4,31 +4,30 @@ The top section ("Next up") is rewritten at the end of every session by the `age
 
 ---
 
-## Next up (as of 2026-04-28, after public landing redesign)
+## Next up (as of 2026-04-29, after Expo public env inlining fix)
 
-**Current local state:** The public root landing page has been redesigned for NearNest/Medifind with a premium medical/pharmacy-tech theme, safe Android/iOS download button behavior, and Firebase Hosting now points to Vite `dist`. No mobile app, Firebase Functions, Firestore rules/indexes, or production data were touched.
+**Current local state:** Mobile preview APK env inlining has been fixed. Firebase and Google auth public env values are now referenced with `process.env.EXPO_PUBLIC_*` dot notation so EAS/Expo can inline them into preview builds. No web app, Firebase backend, Firestore rules/indexes, production data, or env files were touched.
 
 **What changed locally:**
-- `src/pages/NearnestHome.jsx` now renders full landing content: nav, hero, stats, how-it-works, pharmacy owner section, app download section, and footer.
-- `src/pages/NearnestHome.module.css` now uses a teal/green/white medical visual system with responsive layout and CSS app/map preview.
-- Download buttons read `VITE_MEDIFIND_ANDROID_URL` and `VITE_MEDIFIND_IOS_URL`; missing URLs render disabled coming-soon buttons.
-- `firebase.json` hosting output changed from `public` to `dist`.
+- `apps/mobile/services/firebase.ts` now defines `firebaseEnv` using explicit dot-notation `process.env.EXPO_PUBLIC_FIREBASE_*` reads.
+- `readRequiredEnv(key)` reads from `firebaseEnv[key]` instead of `process.env[key]`.
+- `apps/mobile/services/googleAuth.ts` now defines `googleAuthEnv` using explicit dot-notation `process.env.EXPO_PUBLIC_GOOGLE_*` reads.
+- `getEnvValue(key)` reads from `googleAuthEnv[key]` instead of `process.env[key]`.
 
 **Verification passed:**
-- `npm run build`.
-- `git diff --check`.
+- `apps/mobile npm run typecheck`.
+- `apps/mobile npx expo export --platform android --output-dir .expo/fix-preview-env-inline-export --no-bytecode`.
 - `graphify update .`.
-- Build warning: Vite reported a JS chunk larger than 500 kB; no build failure.
+- `git diff --check`.
+- Note: Expo export needed an escalated rerun because Node hit Windows `EPERM` resolving `C:\Users\Aditya`; the rerun passed.
 
 ### Next steps
 
 1. Commit and push:
-   `git add src/pages/NearnestHome.jsx src/pages/NearnestHome.module.css firebase.json docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "feat(web): redesign public landing page and hosting output"`.
+   `git add apps/mobile/services/firebase.ts apps/mobile/services/googleAuth.ts docs/AGENT_LOG.md docs/TODO_NEXT_AGENT.md docs/SESSION_STATE.md graphify-out && git commit -m "fix(mobile): inline Expo public env references"`.
 2. Do not stage `.claude/settings.local.json`, `.codex/*.png`, `.env*`, `apps/mobile/.env`, or `serviceAccountKey.json`.
-3. Preview `/` locally with `npm run dev` if a visual pass is needed.
-4. Deploy hosting only after approval:
-   `firebase deploy --only hosting --project nearnest-platform`.
-5. If adding real download links, set `VITE_MEDIFIND_ANDROID_URL` and optionally `VITE_MEDIFIND_IOS_URL` in the deployment environment; do not commit `.env` files.
+3. Rebuild the preview APK after this commit so the inlined env values are baked into the bundle.
+4. If preview still crashes on startup, inspect the EAS preview environment for missing non-secret `EXPO_PUBLIC_FIREBASE_*` values before changing app code.
 
 ---
 

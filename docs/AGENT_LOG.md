@@ -4,6 +4,44 @@ Append-only. Newest entries on top. Always include absolute dates.
 
 ---
 
+## 2026-04-29 - Inline Expo public env references for preview APK
+**Agent:** Codex (GPT-5)
+**Session goal:** Fix Medifind preview APK startup crash by changing Firebase and Google auth env reads to Expo-inlineable dot notation.
+
+**Files inspected (read-only):**
+- `AGENTS.md` - graphify requirement.
+- `graphify-out/GRAPH_REPORT.md` - code graph context.
+- `.agents/skills/react-native-expo-builder/SKILL.md` - mobile-only editing guardrails.
+- `apps/mobile/services/firebase.ts` - Firebase public env validation and config initialization.
+- `apps/mobile/services/googleAuth.ts` - Google auth client ID env reads.
+
+**Files created / edited:**
+- `apps/mobile/services/firebase.ts` - added `firebaseEnv` with explicit `process.env.EXPO_PUBLIC_FIREBASE_*` dot-notation reads and changed `readRequiredEnv` to read from it.
+- `apps/mobile/services/googleAuth.ts` - added `googleAuthEnv` with explicit `process.env.EXPO_PUBLIC_GOOGLE_*` dot-notation reads and changed `getEnvValue` to read from it.
+- `docs/SESSION_STATE.md`, `docs/TODO_NEXT_AGENT.md`, `docs/AGENT_LOG.md` - updated handoff.
+- `graphify-out/**` - refreshed after mobile service code changes.
+
+**Files intentionally NOT touched:**
+- `src/**`, `public/**`, `dataconnect/**` - protected web surfaces.
+- `functions/**`, `firestore.rules`, `firestore.indexes.json` - out of scope.
+- `.env*`, `apps/mobile/.env`, `serviceAccountKey.json` - protected secrets/config.
+- `.claude/settings.local.json`, `.codex/*.png` - protected local files.
+
+**Decisions made:** Kept the existing typed key-based helper API, but backed it with constants whose values are all read via Expo-supported dot notation.
+
+**Warnings for next agent:**
+- Preview APK needs a rebuild after this change because env inlining happens at bundle/build time.
+- Expo export may need sandbox escalation on this Windows machine because Node hits `EPERM` resolving `C:\Users\Aditya`.
+
+**Verification:**
+- Passed: `cd apps/mobile && npm run typecheck`.
+- Passed after sandbox escalation: `cd apps/mobile && npx expo export --platform android --output-dir .expo/fix-preview-env-inline-export --no-bytecode`.
+- Passed: `graphify update .`.
+- Passed: `git diff --check`.
+
+**Suggested commit message:**
+`fix(mobile): inline Expo public env references`
+
 ## 2026-04-28 - Redesign public landing page and hosting output
 **Agent:** Codex (GPT-5)
 **Session goal:** Redesign the public NearNest/Medifind root landing page and prepare Firebase Hosting to serve Vite build output.

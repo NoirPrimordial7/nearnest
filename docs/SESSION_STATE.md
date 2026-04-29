@@ -1,6 +1,28 @@
 # Nearnest Session State
 
-Last updated: 2026-04-28 (Codex redesigned public landing page and hosting output)
+Last updated: 2026-04-29 (Codex fixed Expo public env inlining for preview APK)
+
+## Mobile Expo public env inlining fix 2026-04-29
+- **Mobile-only preview APK crash fix.**
+- **No web app, Firebase backend, Firestore rules/indexes, data, or env files were touched.**
+- Crash addressed:
+  - Preview APK crashed with `Missing required mobile Firebase env var: EXPO_PUBLIC_FIREBASE_API_KEY`.
+  - Root cause was dynamic bracket access on `process.env[key]`, which Expo does not inline for `EXPO_PUBLIC_*` variables in EAS builds.
+- Fix:
+  - `apps/mobile/services/firebase.ts` now defines `firebaseEnv` with explicit dot-notation reads for every required Firebase public env var.
+  - `readRequiredEnv(key)` now reads from `firebaseEnv[key]`.
+  - `apps/mobile/services/googleAuth.ts` now defines `googleAuthEnv` with explicit dot-notation reads for Google client IDs.
+  - `getEnvValue(key)` now reads from `googleAuthEnv[key]`.
+- Expected result:
+  - Preview APK embeds Firebase config and Google auth client IDs correctly.
+  - Startup should no longer crash because Firebase env values were not inlined.
+- Verification passed:
+  - `cd apps/mobile && npm run typecheck`
+  - `cd apps/mobile && npx expo export --platform android --output-dir .expo/fix-preview-env-inline-export --no-bytecode`
+  - `graphify update .`
+  - `git diff --check`
+- Note: Expo export had to be rerun outside the sandbox because Node hit `EPERM` when resolving `C:\Users\Aditya`; the rerun passed.
+- Suggested commit: `fix(mobile): inline Expo public env references`.
 
 ## Public landing page redesign and hosting output 2026-04-28
 - **Public web landing page only.**

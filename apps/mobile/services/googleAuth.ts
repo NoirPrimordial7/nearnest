@@ -16,6 +16,12 @@ declare const process: {
   env: GoogleAuthEnv;
 };
 
+const googleAuthEnv = {
+  EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+  EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+} satisfies GoogleAuthEnv;
+
 const googleEnvKeys = {
   android: 'EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
   ios: 'EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID',
@@ -23,7 +29,7 @@ const googleEnvKeys = {
 } as const;
 
 function getEnvValue(key: keyof GoogleAuthEnv) {
-  return process.env[key]?.trim();
+  return googleAuthEnv[key]?.trim();
 }
 
 export function getGoogleAuthRequestConfig(): Partial<Google.GoogleAuthRequestConfig> {
