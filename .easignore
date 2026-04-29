@@ -58,6 +58,7 @@ serviceAccountKey.json
 serviceAccountKey.json
 **/serviceAccountKey.json
 
-# Local assistant/tooling files
+# Local assistant/tooling files - never needed for EAS Build
 .claude/
 .codex/
+graphify-out/cache/
