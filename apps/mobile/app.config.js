@@ -7,6 +7,11 @@ const androidMapsApiKey =
 
 const baseConfig = appJson.expo;
 const plugins = [...(baseConfig.plugins || [])];
+const googleSignInPlugin = '@react-native-google-signin/google-signin';
+
+if (!plugins.some((plugin) => plugin === googleSignInPlugin || plugin[0] === googleSignInPlugin)) {
+  plugins.push(googleSignInPlugin);
+}
 
 if (androidMapsApiKey) {
   plugins.push([

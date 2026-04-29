@@ -1,15 +1,14 @@
 import { router } from 'expo-router';
-import * as Google from 'expo-auth-session/providers/google';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
-import { getAuthErrorMessage, signInWithGoogleAccessToken, signUpWithEmail } from '../services/auth';
+import { getAuthErrorMessage, signInWithGoogleIdToken, signUpWithEmail } from '../services/auth';
 import {
-  getGoogleAuthRequestConfig,
-  getGoogleAuthResultMessage,
   getGoogleAuthUnavailableMessage,
+  getGoogleNativeSignInErrorMessage,
+  getNativeGoogleIdToken,
 } from '../services/googleAuth';
 import { getPostAuthRouteForUser } from '../services/userProfile';
 import { colors, radius, spacing, type as typography } from '../theme/tokens';
@@ -81,10 +80,6 @@ export default function SignUpScreen() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
-  const [googleRequest, googleResponse, promptGoogleSignIn] = Google.useAuthRequest(
-    getGoogleAuthRequestConfig(),
-  );
-  const handledGoogleResponse = useRef<typeof googleResponse>(null);
 
   const fieldErrors = useMemo(
     () => validateForm({ fullName, email, password, confirmPassword, acceptedTerms }),
@@ -93,56 +88,6 @@ export default function SignUpScreen() {
   const isFormValid = Object.keys(fieldErrors).length === 0;
   const showFieldError = (key: keyof FieldErrors) =>
     submitAttempted ? fieldErrors[key] : undefined;
-
-  useEffect(() => {
-    if (
-      !googleResponse ||
-      loadingAction !== 'google' ||
-      handledGoogleResponse.current === googleResponse
-    ) {
-      return;
-    }
-
-    handledGoogleResponse.current = googleResponse;
-
-    async function completeGoogleSignIn() {
-      if (!googleResponse || googleResponse.type === 'opened') {
-        return;
-      }
-
-      if (googleResponse.type !== 'success') {
-        const message = getGoogleAuthResultMessage(googleResponse);
-        // Empty message = silent (user pressed back / closed the sheet).
-        if (message) {
-          setFormError(message);
-        }
-        setLoadingAction(null);
-        return;
-      }
-
-      const accessToken =
-        googleResponse.authentication?.accessToken ?? googleResponse.params.access_token;
-
-      if (!accessToken) {
-        setFormError(
-          'Google returned no access token. Check Android OAuth client ID, package name, and SHA fingerprints.',
-        );
-        setLoadingAction(null);
-        return;
-      }
-
-      try {
-        const result = await signInWithGoogleAccessToken(accessToken);
-        router.replace(await getPostAuthRouteForUser(result.user));
-      } catch (error) {
-        setFormError(getAuthErrorMessage(error));
-      } finally {
-        setLoadingAction(null);
-      }
-    }
-
-    void completeGoogleSignIn();
-  }, [googleResponse, loadingAction]);
 
   async function handleCreateAccount() {
     setSubmitAttempted(true);
@@ -171,18 +116,23 @@ export default function SignUpScreen() {
       return;
     }
 
-    if (!googleRequest) {
-      setFormError('Google sign-up is still loading. Try again in a moment.');
-      return;
-    }
-
     setFormError('');
     setLoadingAction('google');
 
     try {
-      await promptGoogleSignIn();
+      const idToken = await getNativeGoogleIdToken();
+
+      if (!idToken) {
+        setLoadingAction(null);
+        return;
+      }
+
+      const result = await signInWithGoogleIdToken(idToken);
+      router.replace(await getPostAuthRouteForUser(result.user));
     } catch (error) {
-      setFormError(getAuthErrorMessage(error));
+      const googleMessage = getGoogleNativeSignInErrorMessage(error);
+      setFormError(googleMessage || getAuthErrorMessage(error));
+    } finally {
       setLoadingAction(null);
     }
   }

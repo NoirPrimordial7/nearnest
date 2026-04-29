@@ -64,13 +64,6 @@ export async function signInWithGoogleIdToken(idToken: string) {
   return result;
 }
 
-export async function signInWithGoogleAccessToken(accessToken: string) {
-  const credential = GoogleAuthProvider.credential(null, accessToken);
-  const result = await signInWithCredential(auth, credential);
-  await upsertUserProfileFromAuthUser(result.user, GoogleAuthProvider.PROVIDER_ID);
-  return result;
-}
-
 export function signOut() {
   return firebaseSignOut(auth);
 }
