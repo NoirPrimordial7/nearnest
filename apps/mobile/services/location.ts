@@ -16,6 +16,7 @@ export type LocationWatcher = {
 };
 
 const CURRENT_LOCATION_TIMEOUT_MS = 4000;
+let foregroundPermissionPromise: Promise<Location.PermissionResponse> | null = null;
 
 function toUserLocation(location: Location.LocationObject): UserLocation {
   return {
@@ -25,13 +26,41 @@ function toUserLocation(location: Location.LocationObject): UserLocation {
   };
 }
 
+function getPermissionDeniedMessage(permission: Location.PermissionResponse) {
+  if (permission.canAskAgain === false) {
+    return 'Location permission is blocked. Enable it from Android Settings > Apps > Medifind > Permissions.';
+  }
+
+  return 'Location permission was not granted.';
+}
+
+async function getForegroundLocationPermission(): Promise<Location.PermissionResponse> {
+  if (!foregroundPermissionPromise) {
+    foregroundPermissionPromise = (async () => {
+      const currentPermission = await Location.getForegroundPermissionsAsync();
+      if (
+        currentPermission.status === Location.PermissionStatus.GRANTED ||
+        currentPermission.canAskAgain === false
+      ) {
+        return currentPermission;
+      }
+
+      return Location.requestForegroundPermissionsAsync();
+    })().finally(() => {
+      foregroundPermissionPromise = null;
+    });
+  }
+
+  return foregroundPermissionPromise;
+}
+
 export async function requestCurrentLocation(): Promise<LocationResult> {
   try {
-    const permission = await Location.requestForegroundPermissionsAsync();
+    const permission = await getForegroundLocationPermission();
     if (permission.status !== Location.PermissionStatus.GRANTED) {
       return {
         status: 'denied',
-        message: 'Location permission was not granted.',
+        message: getPermissionDeniedMessage(permission),
       };
     }
 
@@ -75,9 +104,9 @@ export async function watchUserLocation(
   onError?: (message: string) => void,
 ): Promise<LocationWatcher | null> {
   try {
-    const permission = await Location.requestForegroundPermissionsAsync();
+    const permission = await getForegroundLocationPermission();
     if (permission.status !== Location.PermissionStatus.GRANTED) {
-      onError?.('Location permission was not granted.');
+      onError?.(getPermissionDeniedMessage(permission));
       return null;
     }
 
