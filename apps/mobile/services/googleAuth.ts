@@ -42,6 +42,7 @@ export function getGoogleAuthRequestConfig(): Partial<Google.GoogleAuthRequestCo
     androidClientId,
     iosClientId,
     clientId: androidClientId ?? iosClientId ?? webClientId ?? 'missing-google-client-id',
+    scopes: ['openid', 'profile', 'email'],
     selectAccount: true,
   };
 }
@@ -74,7 +75,7 @@ export function getGoogleAuthUnavailableMessage() {
   const missing = getMissingGoogleAuthEnvKeys();
 
   if (missing.length > 0) {
-    return `Google sign-in needs ${missing.join(' and ')} in apps/mobile/.env. Restart Expo after adding it.`;
+    return `Google sign-in needs ${missing.join(' and ')}. Android builds also require package com.nearnest.medifind and the EAS keystore SHA-1/SHA-256 in Firebase/Google Cloud.`;
   }
 
   return '';
@@ -87,7 +88,7 @@ export function getGoogleAuthResultMessage(result: AuthSessionResult) {
       // Silent: user pressed back / closed the sheet. Do not surface as an error.
       return '';
     case 'error':
-      return 'Google sign-in could not start. Check your connection and try again.';
+      return 'Google sign-in could not start. Check EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID, package com.nearnest.medifind, and the EAS keystore SHA fingerprints.';
     case 'locked':
       return 'Another sign-in window is already open.';
     default:

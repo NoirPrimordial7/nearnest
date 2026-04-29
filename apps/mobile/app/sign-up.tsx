@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ActionButton } from '../components/ActionButton';
 import { Screen } from '../components/Screen';
-import { getAuthErrorMessage, signInWithGoogleIdToken, signUpWithEmail } from '../services/auth';
+import { getAuthErrorMessage, signInWithGoogleAccessToken, signUpWithEmail } from '../services/auth';
 import {
   getGoogleAuthRequestConfig,
   getGoogleAuthResultMessage,
@@ -81,7 +81,7 @@ export default function SignUpScreen() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [formError, setFormError] = useState('');
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
-  const [googleRequest, googleResponse, promptGoogleSignIn] = Google.useIdTokenAuthRequest(
+  const [googleRequest, googleResponse, promptGoogleSignIn] = Google.useAuthRequest(
     getGoogleAuthRequestConfig(),
   );
   const handledGoogleResponse = useRef<typeof googleResponse>(null);
@@ -120,16 +120,19 @@ export default function SignUpScreen() {
         return;
       }
 
-      const idToken = googleResponse.params.id_token;
+      const accessToken =
+        googleResponse.authentication?.accessToken ?? googleResponse.params.access_token;
 
-      if (!idToken) {
-        setFormError('Google did not return an ID token. Check the Google client ID setup.');
+      if (!accessToken) {
+        setFormError(
+          'Google returned no access token. Check Android OAuth client ID, package name, and SHA fingerprints.',
+        );
         setLoadingAction(null);
         return;
       }
 
       try {
-        const result = await signInWithGoogleIdToken(idToken);
+        const result = await signInWithGoogleAccessToken(accessToken);
         router.replace(await getPostAuthRouteForUser(result.user));
       } catch (error) {
         setFormError(getAuthErrorMessage(error));
